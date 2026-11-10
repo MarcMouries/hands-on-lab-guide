@@ -1,0 +1,14 @@
+<!--
+  Shown when a user reaches the portal home page without lab access.
+  Participants with access never see this: the client script redirects them to
+  their plan list, and facilitators are redirected by the sp_page_route_map
+  before this widget renders.
+-->
+<div id="holg-home-gate" class="panel panel-default" ng-if="!c.data.redirectToPage">
+  <div id="holg-home-gate-heading" class="panel-heading">
+    <h2 id="holg-home-gate-title" class="panel-title">Hands-On Lab Guide</h2>
+  </div>
+  <div id="holg-home-gate-body" class="panel-body">
+    <p id="holg-home-gate-message" role="status">You don't have access to this lab</p>
+  </div>
+</div>

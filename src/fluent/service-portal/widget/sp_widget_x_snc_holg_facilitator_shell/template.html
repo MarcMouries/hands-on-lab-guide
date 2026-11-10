@@ -1,0 +1,12 @@
+<!--
+  Mount point for the facilitator React bundle (facilitator.jsdbx).
+
+  The inner id MUST remain exactly "react-root": the compiled facilitator entry
+  mounts with document.getElementById('react-root'), and this widget's client
+  script stamps the data-holg context attribute onto the same node via
+  $element[0].querySelector('#react-root'). Renaming that id would break the
+  app - the meaningful id therefore goes on the wrapper.
+-->
+<div id="holg-facilitator-shell" class="holg-facilitator-shell">
+  <div id="react-root"></div>
+</div>

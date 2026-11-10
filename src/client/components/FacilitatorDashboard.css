@@ -1,0 +1,594 @@
+/*
+ * Facilitator dashboard styling.
+ *
+ * SIZING: all lengths are px, never rem.
+ *
+ * Service Portal's Bootstrap sets `html { font-size: 62.5% }`, so the root
+ * font size there is 10px rather than 16px. Any `rem` length - including the
+ * values behind --now-static-space--* and --now-static-font-size--*, which are
+ * themselves expressed in rem - renders at 62.5% of its intended size on the
+ * portal while looking correct on the standalone .do page. Using px keeps both
+ * surfaces identical.
+ *
+ * Colour tokens are still used: those resolve to unitless "r, g, b" triplets
+ * and are unaffected by the root font size. Literal fallbacks matter because
+ * the portal injects this bundle without <sdk:now-ux-globals>.
+ */
+
+.holg-fac {
+    font-family: var(--now-font-family, system-ui, sans-serif);
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.holg-fac *,
+.holg-fac *::before,
+.holg-fac *::after {
+    box-sizing: border-box;
+}
+
+/* ---------- header / toolbar ---------- */
+
+.holg-fac__header {
+    margin-bottom: 16px;
+}
+
+.holg-fac__title {
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.holg-fac__note {
+    margin: 12px 0 0 0;
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+}
+
+.holg-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.holg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 256px;
+}
+
+.holg-field__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-select {
+    font-family: inherit;
+    font-size: 16px;
+    color: inherit;
+    padding: 6px 8px;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    min-height: 36px;
+}
+
+.holg-button {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 14px;
+    min-height: 36px;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+}
+
+/* Row-level action button, e.g. Impersonate in the participant table. */
+.holg-button--sm {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 10px;
+    min-height: 28px;
+    white-space: nowrap;
+}
+
+.holg-button:hover:not(:disabled) {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-button:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.holg-updated {
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    min-width: 176px;
+    text-align: right;
+}
+
+/* ---------- focus visibility ---------- */
+
+.holg-fac select:focus-visible,
+.holg-fac button:focus-visible {
+    outline: 2px solid var(--holg-accent);
+    outline-offset: 2px;
+}
+
+/* ---------- messages ---------- */
+
+.holg-alert {
+    margin: 0 0 16px 0;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid rgb(var(--now-alert--critical--border-color, 242, 145, 156));
+    border-left-width: 4px;
+    border-radius: 4px;
+    background-color: rgb(var(--now-alert--critical--background-color, 249, 200, 206));
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+}
+
+.holg-loading,
+.holg-empty {
+    margin: 0;
+    padding: 12px 0;
+    font-size: 16px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-muted {
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---------- panels ---------- */
+
+.holg-panel {
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.holg-panel__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.holg-panel__title {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0;
+}
+
+.holg-panel__aside {
+    margin-left: auto;
+}
+
+/* ---------- tiles ---------- */
+
+.holg-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(192px, 1fr));
+    gap: 16px;
+    margin: 0 0 16px 0;
+}
+
+.holg-tile {
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 16px;
+}
+
+.holg-tile__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    margin: 0;
+}
+
+.holg-tile__value {
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+    margin: 4px 0 0 0;
+}
+
+.holg-tile__hint {
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    margin: 4px 0 0 0;
+}
+
+/* ---------- table ---------- */
+
+.holg-table-scroll {
+    overflow-x: auto;
+}
+
+.holg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+}
+
+.holg-table th,
+.holg-table td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    vertical-align: middle;
+}
+
+.holg-table thead th {
+    padding: 0;
+    border-bottom-width: 2px;
+    white-space: nowrap;
+}
+
+.holg-table__user {
+    font-weight: 700;
+}
+
+/* The sortable headers get their padding from the inner sort button, so the
+   plain Actions header has to supply its own. */
+/*
+ * The Actions column is pinned to the right edge.
+ *
+ * With seven columns the table scrolls horizontally on normal laptop widths,
+ * and Impersonate - the only action on this screen - was being scrolled out
+ * of sight. Sticky positioning keeps it visible at every width. An opaque
+ * background and a left border are required so the scrolling cells pass
+ * underneath it rather than showing through.
+ */
+.holg-table thead th.holg-table__actions,
+.holg-table td.holg-table__actions {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    white-space: nowrap;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border-left: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+}
+
+.holg-table thead th.holg-table__actions {
+    padding: 8px 12px;
+    /* Above the sticky body cells when both are in the same scroll area. */
+    z-index: 2;
+}
+
+.holg-table tbody tr:hover td.holg-table__actions {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-table__hint {
+    margin: 0;
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.holg-sort__caret {
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    font-size: 13px;
+}
+
+.holg-sort--active .holg-sort__caret {
+    color: var(--holg-accent);
+}
+
+/* ---------- status chips ---------- */
+
+.holg-status {
+    display: inline-block;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+}
+
+.holg-status--complete {
+    border-color: var(--holg-series-pass);
+    color: var(--holg-series-pass);
+}
+
+/* ---------- progress ---------- */
+
+.holg-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 144px;
+}
+
+.holg-progress__track {
+    flex: 1 1 auto;
+    height: 8px;
+    min-width: 80px;
+    border-radius: 999px;
+    overflow: hidden;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-progress__fill {
+    height: 100%;
+    background-color: var(--holg-accent);
+}
+
+.holg-progress__value {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    min-width: 44px;
+    text-align: right;
+}
+
+/* ---------- bar charts ---------- */
+
+.holg-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    list-style: none;
+    margin: 0 0 12px 0;
+    padding: 0;
+    font-size: 14px;
+}
+
+.holg-legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.holg-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.holg-swatch--pass {
+    background-color: var(--holg-series-pass);
+}
+
+.holg-swatch--fail {
+    background-color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+.holg-swatch--open {
+    background-color: var(--holg-series-open);
+}
+
+.holg-bars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.holg-bars__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.holg-bars__label {
+    flex: 0 0 30%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 16px;
+}
+
+.holg-bars__svg {
+    flex: 1 1 auto;
+    min-width: 64px;
+    height: 14px;
+    display: block;
+}
+
+.holg-bars__counts {
+    flex: 0 0 auto;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    white-space: nowrap;
+}
+
+.holg-bar-track {
+    fill: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-bar--pass {
+    fill: var(--holg-series-pass);
+}
+
+.holg-bar--fail {
+    fill: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+.holg-bar--open {
+    fill: var(--holg-series-open);
+}
+
+.holg-bar--rate {
+    fill: var(--holg-accent);
+}
+
+/* Ungraded: outline only, so it can never read as a genuine 0%. */
+.holg-bar-ungraded {
+    fill: none;
+    stroke: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+}
+
+.holg-task-roster {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 16px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+/* ---------- recent feedback ---------- */
+
+.holg-feedback {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.holg-feedback__item {
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-left: 4px solid var(--holg-series-open);
+    border-radius: 4px;
+    padding: 12px;
+}
+
+/* Fail is marked by border + chip + glyph, never by colour alone. */
+.holg-feedback__item--fail {
+    border-left-color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+    background-color: rgb(var(--now-alert--critical--background-color, 249, 200, 206));
+}
+
+.holg-feedback__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.holg-feedback__task {
+    font-weight: 700;
+}
+
+.holg-feedback__user,
+.holg-feedback__time {
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-feedback__time {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.holg-feedback__body {
+    margin: 6px 0 0 0;
+    font-size: 16px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.holg-chip {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+}
+
+.holg-chip--pass {
+    color: var(--holg-series-pass);
+}
+
+.holg-chip--fail {
+    color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 767px) {
+    .holg-fac {
+        padding: 12px;
+    }
+
+    .holg-toolbar__actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .holg-field {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .holg-updated {
+        text-align: left;
+        min-width: 0;
+    }
+
+    .holg-bars__row {
+        flex-wrap: wrap;
+    }
+
+    .holg-bars__label {
+        flex: 1 1 100%;
+        white-space: normal;
+    }
+
+    .holg-feedback__time {
+        margin-left: 0;
+    }
+}

@@ -1,0 +1,79 @@
+/*
+ * Brand layer for the Hands-On Lab Guide portal.
+ *
+ * Palette and approach taken from the Fund Product Administration dashboard
+ * (x_snc_fund_produ_0_dashboard.do). Its own stylesheets were recovered from
+ * the bundle source map (src/client/styles/brand.css) rather than guessed, and
+ * this reuses the rationale that app documents:
+ *
+ *   Brand colours are deliberately literal hex rather than `--now-*` tokens.
+ *   A corporate palette must stay constant across instance themes, which is
+ *   exactly what a theme token is designed NOT to do. Structural chrome
+ *   (surfaces, body text, borders) still resolves from Horizon tokens, so
+ *   light/dark theming keeps working around the brand accents.
+ *
+ * Palette
+ *   Corporate Blue  #004668  (PMS 302 C) -- headings, accents, 8.9:1 on white
+ *   Accent Aqua     #00CFEC  (PMS 319 C) -- rules and fills, NEVER text on light
+ *
+ * Scoped to the three app roots rather than :root so nothing leaks into the
+ * surrounding Service Portal chrome.
+ */
+
+.holg-fac,
+.holg-lab,
+.holg-placeholder {
+    --holg-navy: #004668;
+    --holg-navy-deep: #00334d;
+    --holg-navy-soft: #0a5a80;
+    --holg-aqua: #00cfec;
+    --holg-aqua-deep: #00788f;
+    --holg-on-navy: #ffffff;
+    --holg-on-navy-muted: #c3dde8;
+
+    /* Primary interactive colour. Navy, not aqua: aqua fails contrast as text
+       on a light surface, which is why the reference app restricts it to rules
+       and fills. */
+    --holg-accent: #004668;
+
+    /* Categorical series, also from the reference palette. `fail` keeps a true
+       red instead of a reference hue, because a failure must read as a failure
+       and not merely as another category. */
+    --holg-series-pass: #00a37a;
+    --holg-series-fail: #b8192f;
+    --holg-series-open: #6e7b82;
+}
+
+/* Uppercase tracked eyebrow label, matching the reference's
+   institutional-report feel. Aqua-deep is used because plain aqua would not
+   pass contrast as text. */
+.holg-eyebrow {
+    display: block;
+    color: var(--holg-aqua-deep);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Thin aqua rule under panel titles, as the reference uses. */
+.holg-panel__title::after,
+.holg-feedbackPanel__title::after {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 2px;
+    margin-top: 8px;
+    background-color: var(--holg-aqua);
+}
+
+/* Headings and large figures pick up the corporate blue, as the reference
+   masthead and score tiles do. */
+.holg-fac__title,
+.holg-lab__title,
+.holg-card2__title,
+.holg-task__title,
+.holg-tile__value {
+    color: var(--holg-navy);
+    letter-spacing: -0.01em;
+}

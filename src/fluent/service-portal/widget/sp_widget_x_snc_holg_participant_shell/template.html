@@ -1,0 +1,12 @@
+<!--
+  Mount point for the participant React bundle (participant.jsdbx).
+
+  The inner id MUST remain exactly "react-root": the compiled participant entry
+  mounts with document.getElementById('react-root'), and this widget's client
+  script stamps the data-holg context attribute onto the same node via
+  $element[0].querySelector('#react-root'). Renaming that id would break the
+  app - the meaningful id therefore goes on the wrapper.
+-->
+<div id="holg-participant-shell" class="holg-participant-shell">
+  <div id="react-root"></div>
+</div>

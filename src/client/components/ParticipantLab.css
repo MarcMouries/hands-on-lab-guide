@@ -1,0 +1,607 @@
+/*
+ * Participant lab styling.
+ *
+ * SIZING: all lengths are px, never rem.
+ *
+ * Service Portal's Bootstrap sets `html { font-size: 62.5% }`, so the root
+ * font size there is 10px rather than 16px. Any rem length - including the
+ * values behind --now-static-space--* and --now-static-font-size--*, which are
+ * themselves rem - renders at ~62% of its intended size on the portal while
+ * looking correct on the standalone .do page.
+ *
+ * Colour tokens ARE used: they resolve to unitless "r, g, b" triplets and are
+ * unaffected by the root font size. The literal fallbacks matter because the
+ * portal injects this bundle without <sdk:now-ux-globals>.
+ */
+
+.holg-lab {
+    display: block;
+    font-family: var(--now-font-family, system-ui, sans-serif);
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    padding: 16px;
+    max-width: 1280px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.holg-lab *,
+.holg-lab *::before,
+.holg-lab *::after {
+    box-sizing: border-box;
+}
+
+/* ---------- header ---------- */
+
+.holg-lab__header {
+    margin-bottom: 16px;
+}
+
+.holg-lab__title {
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.holg-lab__lede {
+    margin: 0;
+    font-size: 16px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-link {
+    display: inline-block;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--holg-accent);
+    background: none;
+    border: 0;
+    padding: 0 0 8px 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* ---------- shared bits ---------- */
+
+.holg-alert {
+    margin: 0 0 16px 0;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid rgb(var(--now-alert--critical--border-color, 242, 145, 156));
+    border-left-width: 4px;
+    border-radius: 4px;
+    background-color: rgb(var(--now-alert--critical--background-color, 249, 200, 206));
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+}
+
+.holg-loading,
+.holg-empty {
+    margin: 0;
+    padding: 12px 0;
+    font-size: 16px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-note {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.holg-lab button:focus-visible,
+.holg-lab select:focus-visible,
+.holg-lab textarea:focus-visible {
+    outline: 2px solid var(--holg-accent);
+    outline-offset: 2px;
+}
+
+.holg-btn {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 8px 14px;
+    min-height: 36px;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+}
+
+.holg-btn:hover:not(:disabled) {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-btn:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.holg-btn--sm {
+    font-size: 13px;
+    padding: 4px 10px;
+    min-height: 28px;
+}
+
+.holg-btn--primary {
+    color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    background-color: var(--holg-accent);
+    border-color: var(--holg-accent);
+}
+
+.holg-btn--primary:hover:not(:disabled) {
+    opacity: 0.88;
+    background-color: var(--holg-accent);
+}
+
+.holg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+}
+
+.holg-field__label {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-select,
+.holg-textarea {
+    font-family: inherit;
+    font-size: 16px;
+    color: inherit;
+    padding: 8px;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    width: 100%;
+    max-width: 100%;
+}
+
+.holg-select {
+    min-height: 36px;
+}
+
+.holg-textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* ---------- progress bar ---------- */
+
+.holg-pb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.holg-pb__track {
+    flex: 1 1 auto;
+    height: 8px;
+    min-width: 80px;
+    border-radius: 999px;
+    overflow: hidden;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-pb--md .holg-pb__track {
+    height: 12px;
+}
+
+.holg-pb__fill {
+    height: 100%;
+    background-color: var(--holg-accent);
+}
+
+.holg-pb__value {
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 44px;
+    text-align: right;
+}
+
+/* ---------- plan cards ---------- */
+
+.holg-cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.holg-card2 {
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 16px;
+}
+
+.holg-card2__title {
+    font-size: 18px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0;
+}
+
+.holg-card2__desc {
+    margin: 8px 0 0 0;
+    font-size: 16px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    /* Long plan descriptions are clamped so cards stay comparable. */
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-wrap;
+}
+
+.holg-card2__actions {
+    margin-top: 16px;
+}
+
+/* ---------- plan split layout ---------- */
+
+.holg-split {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.holg-nav {
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 12px;
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+}
+
+/* The dropdown is the narrow-screen affordance only. */
+.holg-nav__compact {
+    display: none;
+}
+
+.holg-nav__count {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-nav__sections {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.holg-nav__section + .holg-nav__section {
+    margin-top: 12px;
+}
+
+.holg-nav__sectionTitle {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    margin: 0 0 4px 0;
+}
+
+.holg-nav__tasks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.holg-nav__task {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 14px;
+    color: inherit;
+    background: none;
+    border: 0;
+    border-radius: 4px;
+    padding: 6px 8px;
+    cursor: pointer;
+}
+
+.holg-nav__task:hover {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-nav__task--active {
+    font-weight: 700;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    box-shadow: inset 3px 0 0 0
+        var(--holg-accent);
+}
+
+.holg-nav__taskTitle {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.holg-icon {
+    flex: 0 0 auto;
+    width: 16px;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.holg-icon--not_started {
+    color: var(--holg-series-open);
+}
+
+.holg-icon--in_progress {
+    color: var(--holg-accent);
+}
+
+.holg-icon--passed {
+    color: var(--holg-series-pass);
+}
+
+.holg-icon--failed {
+    color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+/* ---------- main task panel ---------- */
+
+.holg-main {
+    min-width: 0;
+}
+
+.holg-task {
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 16px;
+}
+
+.holg-sectionOverview {
+    border-left: 4px solid
+        var(--holg-accent);
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    border-radius: 4px;
+}
+
+.holg-sectionOverview__title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 4px 0;
+}
+
+.holg-sectionOverview__text {
+    margin: 0;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.holg-task__title {
+    font-size: 20px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.holg-block {
+    margin-top: 16px;
+}
+
+.holg-block__label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    margin: 0 0 4px 0;
+}
+
+.holg-block__text {
+    margin: 0;
+    font-size: 16px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.holg-criteria {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 16px;
+}
+
+.holg-criteria li + li {
+    margin-top: 4px;
+}
+
+/* ---------- prompts ---------- */
+
+.holg-prompts {
+    margin-top: 16px;
+}
+
+.holg-prompt {
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.holg-prompt__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-prompt__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.holg-prompt__text {
+    margin: 0;
+    padding: 12px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+}
+
+/* ---------- feedback panel ---------- */
+
+.holg-feedbackPanel {
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: var(--now-container-card--border-radius, 8px);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.holg-feedbackPanel__title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+}
+
+.holg-feedbackPanel__sub {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    margin: 12px 0 4px 0;
+}
+
+.holg-verdict {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.holg-btn--toggle {
+    min-width: 104px;
+}
+
+.holg-btn--pass-on {
+    color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    background-color: var(--holg-series-pass);
+    border-color: var(--holg-series-pass);
+}
+
+.holg-btn--pass-on:hover:not(:disabled) {
+    background-color: var(--holg-series-pass);
+}
+
+.holg-btn--fail-on {
+    color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    background-color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+    border-color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+.holg-btn--fail-on:hover:not(:disabled) {
+    background-color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+.holg-submitted {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0;
+}
+
+.holg-submitted__when {
+    font-size: 14px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    font-variant-numeric: tabular-nums;
+}
+
+.holg-submitted__feedback {
+    margin: 0;
+    font-size: 16px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.holg-chip2 {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+}
+
+.holg-chip2--pass {
+    color: var(--holg-series-pass);
+}
+
+.holg-chip2--fail {
+    color: rgb(var(--now-indicator--primary_critical--background-color, 184, 25, 47));
+}
+
+/* ---------- single column below 900px ---------- */
+
+@media (max-width: 899px) {
+    .holg-lab {
+        padding: 12px;
+    }
+
+    .holg-split {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .holg-nav {
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    /* Swap the section tree for a dropdown. */
+    .holg-nav__compact {
+        display: block;
+    }
+
+    .holg-nav__sections {
+        display: none;
+    }
+}

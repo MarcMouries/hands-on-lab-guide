@@ -1,0 +1,147 @@
+/*
+ * Impersonation banner styling.
+ *
+ * SIZING: all lengths are px, never rem.
+ *
+ * Service Portal's Bootstrap sets `html { font-size: 62.5% }`, so the root
+ * font size there is 10px rather than 16px. Any rem length - including the
+ * values behind --now-static-space--* and --now-static-font-size--*, which are
+ * themselves rem - renders at ~62% of its intended size on the portal while
+ * looking correct on the standalone .do page.
+ *
+ * Colour tokens ARE used: they resolve to unitless "r, g, b" triplets and are
+ * unaffected by the root font size. The literal fallbacks matter because the
+ * portal injects this bundle without <sdk:now-ux-globals>.
+ *
+ * The state is signalled THREE ways, never by colour alone: the warning
+ * triangle, the word "Impersonating" in a tag, and the warning surface.
+ */
+
+.holg-imp {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 16px 0;
+    font-family: var(--now-font-family, system-ui, sans-serif);
+    font-size: 14px;
+    line-height: 1.5;
+    /* Dark text on the warning surface: well above 4.5:1 in both themes. */
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    background-color: rgb(var(--now-alert--warning--background-color, 239, 224, 176));
+    border-bottom: 2px solid rgb(var(--now-alert--warning--border-color, 221, 182, 101));
+}
+
+.holg-imp *,
+.holg-imp *::before,
+.holg-imp *::after {
+    box-sizing: border-box;
+}
+
+/* Inner wrapper keeps the text aligned with the page content while the
+   coloured surface itself spans the full width of the host. */
+.holg-imp__inner {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 16px;
+}
+
+.holg-imp__glyph {
+    flex: 0 0 auto;
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.holg-imp__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.holg-imp__title {
+    font-size: 14px;
+    font-weight: 700;
+    overflow-wrap: break-word;
+}
+
+.holg-imp__tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 7px;
+    margin-right: 6px;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.holg-imp__detail {
+    font-size: 13px;
+    overflow-wrap: break-word;
+}
+
+.holg-imp__error {
+    margin-top: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid rgb(var(--now-alert--critical--border-color, 242, 145, 156));
+    border-left-width: 4px;
+    border-radius: 4px;
+    background-color: rgb(var(--now-alert--critical--background-color, 249, 200, 206));
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    overflow-wrap: break-word;
+}
+
+.holg-imp__btn {
+    flex: 0 0 auto;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 14px;
+    min-height: 36px;
+    white-space: nowrap;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    border: 1px solid rgb(var(--now-color_text--primary, 16, 23, 26));
+    border-radius: 4px;
+}
+
+.holg-imp__btn:hover:not(:disabled) {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-imp__btn:active:not(:disabled) {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    transform: translateY(1px);
+}
+
+.holg-imp__btn:focus-visible {
+    outline: 2px solid rgb(var(--now-color_text--primary, 16, 23, 26));
+    outline-offset: 2px;
+}
+
+.holg-imp__btn:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+@media (max-width: 767px) {
+    .holg-imp__inner {
+        padding: 12px;
+    }
+
+    .holg-imp__btn {
+        width: 100%;
+    }
+}

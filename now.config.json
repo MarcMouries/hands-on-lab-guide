@@ -1,0 +1,11 @@
+{
+    "scope": "x_snc_holg",
+    "scopeId": "f989de442f201b10bec1567e8ea4e3a7",
+    "name": "Hands-On Lab Guide",
+    "packageSourceCodeOnInstance": true,
+    "licensing": {
+        "enforceLicense": "none"
+    },
+    "description": "Hands-On Lab Guide",
+    "ideCreated": "SNS"
+}

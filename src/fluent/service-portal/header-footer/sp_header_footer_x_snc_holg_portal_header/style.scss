@@ -1,0 +1,263 @@
+// HOLG Portal Header - styles.
+//
+// Base rules copied from the live OOTB "Stock Header" css field
+// (sp_header_footer bf5ec2f2cb10120000f8d856634c9c0c, queried with run_query),
+// then extended with the ServiceNow-branded bar.
+//
+// Theme-variable dependency: every $variable used here is defined in the
+// carried-over Coral variable block in the HOLG theme (sp-theme/holg-theme).
+// The OOTB `.navbar-brand img, .navbar-brand span { ... }` rule was dropped on
+// purpose - it depends on $sp-logo-max-height / $sp-logo-max-width /
+// $sp-logo-mobile-max-width (not present in the Coral record) and this header
+// renders an inline <svg>, not an <img>.
+//
+// NO position:fixed / navbar-fixed-top here - theme.fixedHeader (navbar_fixed)
+// makes the bar sticky through `body.fixed-header`.
+// NO !important on any background-color (would block ng-style avatar images).
+
+$snc-brand-bar-height: 64px !default;
+$snc-brand-bar-height-mobile: 56px !default;
+
+.navbar {
+    transition: 250ms opacity ease-in-out;
+    -webkit-transition: 250ms opacity ease-in-out;
+    border: 0;
+    border-bottom: $sp-navbar-bottom-width solid $sp-navbar-divider-color;
+}
+
+.navbar-fade {
+    opacity: 0.4;
+}
+
+.navbar-inverse .navbar-toggle {
+    border-color: $sp-navbar-toggle-border-color;
+}
+
+.snc-brand-nav {
+    background-color: $navbar-inverse-bg; // Coral: sp-rgb(--now-color_background--primary, #FFFFFF)
+    min-height: $snc-brand-bar-height;
+}
+
+header[role='banner'],
+.nav > li > a {
+    max-height: $snc-brand-bar-height;
+}
+
+.nav > li > a span.fa {
+    margin-left: 0.2rem;
+}
+
+.navbar-brand {
+    padding: 0;
+}
+
+.breadcrumb-container {
+    background-color: $panel-bg;
+}
+
+/* for mobile app - copied verbatim from the OOTB Stock Header css */
+.navbar-inverse.is-native {
+    background-color: #405060;
+}
+
+nav {
+    margin-bottom: 0px;
+    border-radius: 0px;
+
+    .toggle-dropdown {
+        height: $snc-brand-bar-height;
+    }
+}
+
+.navbar-right {
+    padding-right: 0px;
+    padding-left: 7px;
+}
+
+.navbar-nav {
+    margin: 0px;
+}
+
+// PRB711244: Dropdown menu is scrollable when too many items
+.scrollable-dropdown {
+    max-height: 80vh;
+    overflow: auto;
+    height: auto;
+}
+
+.is-native {
+    .scrollable-dropdown {
+        max-height: 100vh;
+        overflow: scroll;
+        height: auto;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* ServiceNow branding bar                                            */
+/* ------------------------------------------------------------------ */
+
+// Flexbox centering is applied to all three levels: container, left section,
+// and the logo link itself.
+.snc-brand-container {
+    display: flex;
+    align-items: center;
+    height: $snc-brand-bar-height;
+}
+
+.snc-brand-left {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.navbar-brand.snc-brand-link {
+    display: flex;
+    align-items: center;
+    float: none;
+    height: $snc-brand-bar-height;
+    max-height: $snc-brand-bar-height;
+    padding: 0 $sp-logo-margin-x; // Coral: 15px
+    text-decoration: none;
+}
+
+.navbar-brand.snc-brand-link:focus {
+    // Visible keyboard focus on the logo link.
+    outline: 2px solid $input-border-focus;
+    outline-offset: -2px;
+}
+
+.snc-brand-logo {
+    max-height: 2rem;
+    vertical-align: middle;
+}
+
+.snc-brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #293e40;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.snc-brand-tagline {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.75rem;
+    font-size: 13px;
+    font-weight: 500;
+    color: #293e40;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+// Keep the toggle (logged-in Profile/Logout panel on small screens) at the far
+// right of the flex row instead of relying on the Bootstrap float.
+.snc-brand-container .navbar-toggle {
+    float: none;
+    margin: 0 $sp-logo-margin-x 0 auto;
+}
+
+/* CRITICAL: media query fallbacks for responsive behaviour. */
+/* .responsive-desktop / .responsive-tablet are added by the client script, */
+/* but the media queries are REQUIRED or the right-hand controls get hidden. */
+@media (min-width: 993px) {
+    .navbar-right {
+        display: flex !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-header {
+        float: none;
+        width: 100%;
+    }
+    .navbar-left,
+    .navbar-right {
+        float: none !important;
+    }
+    .navbar-nav {
+        float: none !important;
+    }
+    .navbar-nav > li {
+        float: none;
+    }
+    .navbar-nav > li > a {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Mobile bar: 56px tall, secondary label hidden. */
+@media (max-width: 767px) {
+    .snc-brand-nav {
+        min-height: $snc-brand-bar-height-mobile;
+    }
+    .snc-brand-container {
+        height: $snc-brand-bar-height-mobile;
+    }
+    .navbar-brand.snc-brand-link {
+        height: $snc-brand-bar-height-mobile;
+        max-height: $snc-brand-bar-height-mobile;
+    }
+    .snc-brand-tagline {
+        display: none;
+    }
+    nav .toggle-dropdown {
+        height: $snc-brand-bar-height-mobile;
+    }
+}
+
+/* PRB923910: Fix for Service Portal - Header Poorly Aligned in Safari */
+.responsive-desktop {
+    .navbar-right {
+        display: flex !important;
+        height: auto !important;
+    }
+}
+
+.responsive-tablet {
+    .nav > li > a {
+        padding-right: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    .navbar-toggle {
+        display: block;
+    }
+    .navbar-header {
+        float: none;
+    }
+    .navbar-left,
+    .navbar-right {
+        float: none !important;
+    }
+    .navbar-nav {
+        float: none !important;
+    }
+    .navbar-nav > li {
+        float: none;
+    }
+    .navbar-nav > li > a {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+@media screen and (-ms-high-contrast: active), (forced-colors: active) {
+    .navbar-brand,
+    .navbar-nav > li > a,
+    .skip-link,
+    .btn.btn-primary,
+    .btn.btn-danger,
+    .navbar-inverse .navbar-toggle {
+        &:focus {
+            outline-offset: -4px !important;
+        }
+    }
+}
