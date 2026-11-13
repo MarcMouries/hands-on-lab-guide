@@ -1443,7 +1443,7 @@ LabApi.prototype = {
 
         // 2. A free user name, suffixed only when a DIFFERENT person holds it.
         var login = this._freeUserName(first, last)
-        var password = this._generatePassword()
+        var password = this._generatePassword(first, last)
 
         var userId = null
         try {
@@ -1588,23 +1588,61 @@ LabApi.prototype = {
     },
 
     /**
-     * A password a person can read off a screen and type without a mistake.
+     * A password a person can read off a screen and type without a mistake,
+     * which also satisfies the instance's password policy.
      *
-     * No l/1/I/0/O, and shaped word-digit-word so it survives being read aloud
-     * to a room. Long enough that guessing is not the attack worth worrying
-     * about here - the registration code is.
+     * Shaped `Quartz-47-Harbor`: two capitalised words around two digits. That
+     * is not decoration - each part is there to clear a rule:
+     *
+     *   Capitals        at least 1 uppercase
+     *   The words       at least 1 lowercase
+     *   The digits      at least 1 numeric
+     *   The hyphens     at least 1 special, and `-` is whitelisted by both
+     *                   policies on this instance (Medium allows `!@#$%&*?+-=`,
+     *                   Default Strong whitelists nothing, so permits all)
+     *   ~16 characters  past Medium's 12 as well as Default Strong's 8
+     *
+     * The first version was all lowercase - `quartz-47-harbor` - which failed
+     * the uppercase rule and nothing else. A password that violates policy is
+     * accepted at the point it is set and then forces a change at first login,
+     * so the participant was handed a password and immediately asked to pick a
+     * different one.
+     *
+     * `first` and `last` are used to honour "no user data": a word that appears
+     * in the person's own name is dropped from the pool, because a participant
+     * named Harbor would otherwise be handed a password containing it.
      */
-    _generatePassword: function () {
+    _generatePassword: function (first, last) {
         var words = [
-            'amber', 'basalt', 'cedar', 'delta', 'ember', 'flint', 'granite', 'harbor',
-            'indigo', 'juniper', 'kelvin', 'lantern', 'marble', 'nectar', 'onyx',
-            'quartz', 'ridge', 'summit', 'tundra', 'umber', 'vertex', 'walnut',
+            'Amber', 'Basalt', 'Cedar', 'Delta', 'Ember', 'Flint', 'Granite', 'Harbor',
+            'Indigo', 'Juniper', 'Kelvin', 'Lantern', 'Marble', 'Nectar', 'Onyx',
+            'Quartz', 'Ridge', 'Summit', 'Tundra', 'Umber', 'Vertex', 'Walnut',
         ]
+
+        var name = (this._str(first) + ' ' + this._str(last)).toLowerCase()
+        var usable = []
+        for (var i = 0; i < words.length; i++) {
+            if (name.indexOf(words[i].toLowerCase()) < 0) {
+                usable.push(words[i])
+            }
+        }
+        if (usable.length < 2) {
+            usable = words
+        }
+
         function pick(list) {
             return list[Math.floor(Math.random() * list.length)]
         }
+
+        var one = pick(usable)
+        var two = pick(usable)
+        // Two different words, so "no repetition" cannot be argued either way.
+        while (two === one && usable.length > 1) {
+            two = pick(usable)
+        }
+
         var digits = '' + (Math.floor(Math.random() * 90) + 10)
-        return pick(words) + '-' + digits + '-' + pick(words)
+        return one + '-' + digits + '-' + two
     },
 
     /**

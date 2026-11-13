@@ -26,7 +26,6 @@ One line each. The detail is in the numbered sections below.
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
 | **B13** | 🟠 | Email each registrant a link back to the lab | Nothing to build against; delivery depends on P6 | [5.4](#54-the-build-b6b12) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
-| **N2** | 🔵 | Stop the forced password change on a new lab account | Two leads, both cheap | [5.8](#58-n2--the-forced-password-change) |
 | **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **D1–D9** | ⚪ | Nine known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
 
@@ -624,38 +623,6 @@ the first public widget, not before it.
 **P2** — "create the remaining `now.assist.participantNN` accounts" — mostly
 goes away. Pre-made accounts stop being the mechanism; the event creates them.
 Keep a handful for testing.
-
-### 5.8 N2 — the forced password change
-
-A participant is handed a password on the page and then asked to change it on
-first login. Harmless in a training environment, and your call that it is not
-worth chasing now — written down so it is not investigated from nothing.
-
-**What is known.** The account is created and its password set in the same
-request, by `guest`. Then:
-
-| Attempt | Result |
-|---|---|
-| `password_needs_reset = false` in the same update as the password | Ignored — the row came out `1` |
-| The same, in a **separate** update straight after | Also ignored. `sys_mod_count = 2` proves both updates ran, and the flag is still `1` |
-| A business rule that sets it | None. No active rule on `sys_user` touches the field |
-| A property that forces it | `glide.user.password_needs_reset_on_create` and its two obvious siblings are unset |
-
-So the platform sets it during the password write and will not be talked out of
-it in that transaction.
-
-**Two leads, cheapest first:**
-
-1. **The `password_policy` table.** It exists on this instance and has not been
-   read. A policy forcing a reset on first login would explain all of the above
-   and would be configuration rather than code.
-2. **Clear it from the scheduled job.** `HOLG finish lab registrations` already
-   runs as the system user a minute later — a different transaction, and a
-   context the flag's guard may not apply to. Three lines in a method already
-   iterating exactly the right rows.
-
-Lead 2 is what to try if lead 1 comes back empty. Both are small; the only
-reason neither is done is that this does not matter much.
 
 ---
 
