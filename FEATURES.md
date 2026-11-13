@@ -180,6 +180,7 @@ values straight by hand. `/holg?id=authoring` is the portal surface for it.
 | **Reordering with up/down** | Built *(recent)* | Keyboard-reachable, works on touch, needs no drag library. Each move resequences the whole sibling list server-side |
 | **Delete guard on participant progress** | Built *(recent)* | Deleting a plan, section or task cascades to Task Results. The first attempt answers 409 with the count; the client asks, then repeats with `?confirm=true` |
 | **Per-field length counters** | Built *(recent)* | Mirrors the column lengths; the server refuses an over-long value with a message rather than truncating |
+| **Facilitator picker on the plan** | Built *(recent)* | `GET /authoring/facilitators` lists users holding `x_snc_holg.facilitator`; the editor shows it as a select, and the server re-checks the role on save rather than trusting the sys_id in the body. Empty clears it |
 | **Plan addressable by slug** | Built *(recent)* | `?id=authoring&plan_id=Now-Assist-for-Creator`, as the other two views are |
 | **The open node is in the URL** | Built *(recent)* | `&node_id=<sys_id>` names whatever is being edited, so a task, prompt or criterion can be linked and shared, and Back and Forward move between the nodes visited. One param rather than two: a sys_id identifies its level, so there is nothing to arrive contradicting itself. A `node_id` the plan does not hold is dropped |
 

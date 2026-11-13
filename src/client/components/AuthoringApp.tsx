@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './Authoring.css'
 import {
+    AuthorFacilitator,
     AuthorPlanSummary,
     AuthorTree,
     NodeFields,
@@ -9,6 +10,7 @@ import {
     deleteNode,
     fetchAuthorPlans,
     fetchAuthorTree,
+    fetchFacilitators,
     moveNode,
     patchNode,
 } from '../services/authoringApi'
@@ -113,6 +115,7 @@ function valuesFor(tree: AuthorTree | null, selection: Selection | null): NodeFi
 
 export default function AuthoringApp() {
     const [plans, setPlans] = useState<AuthorPlanSummary[]>([])
+    const [facilitators, setFacilitators] = useState<AuthorFacilitator[]>([])
     const [planId, setPlanId] = useState('')
     const [tree, setTree] = useState<AuthorTree | null>(null)
     const [selected, setSelected] = useState<Selection | null>(null)
@@ -191,6 +194,25 @@ export default function AuthoringApp() {
                     setError(toMessage(reason))
                     setLoading(false)
                 }
+            })
+        return () => {
+            live = false
+        }
+    }, [])
+
+    // The facilitator candidates, once for the view: the same list for every
+    // plan, and short. A failure here leaves the picker holding only whoever
+    // is already set, which is better than blocking the editor over one field.
+    useEffect(() => {
+        let live = true
+        fetchFacilitators()
+            .then((list) => {
+                if (live) {
+                    setFacilitators(list)
+                }
+            })
+            .catch(() => {
+                // Non-fatal, and the editor says so by having nothing to pick.
             })
         return () => {
             live = false
@@ -542,6 +564,8 @@ export default function AuthoringApp() {
                                 busy={busy}
                                 error={editorError}
                                 saved={saved}
+                                facilitators={facilitators}
+                                facilitatorName={tree.plan.facilitator_name}
                                 onChange={(field, value) =>
                                     setDraft((current) =>
                                         current ? { ...current, [field]: value } : current,

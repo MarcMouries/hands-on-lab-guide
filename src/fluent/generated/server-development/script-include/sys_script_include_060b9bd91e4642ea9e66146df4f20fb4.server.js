@@ -20,6 +20,8 @@ var LAB_T_PARTICIPANT = 'x_snc_holg_plan_participant'
 var LAB_T_RESULT = 'x_snc_holg_task_result'
 var LAB_T_CRITERION_RESPONSE = 'x_snc_holg_criterion_response'
 var LAB_T_USER = 'sys_user'
+var LAB_T_USER_ROLE = 'sys_user_role'
+var LAB_T_USER_HAS_ROLE = 'sys_user_has_role'
 
 // Roles
 var LAB_ROLE_FACILITATOR = 'x_snc_holg.facilitator'
@@ -56,9 +58,9 @@ var LAB_AUTHOR_TYPES = {
         table: LAB_T_PLAN,
         parent: '',
         ordered: false,
-        fields: ['name', 'description', 'status'],
+        fields: ['name', 'description', 'status', 'facilitator'],
         mandatory: ['name'],
-        limits: { name: 120, description: 4000 },
+        limits: { name: 120, description: 4000, facilitator: 32 },
     },
     section: {
         table: LAB_T_SECTION,
@@ -1555,6 +1557,15 @@ LabApi.prototype = {
             if (field === 'status' && value && LAB_PLAN_STATUSES.indexOf(value) < 0) {
                 return { error: 'status must be one of ' + LAB_PLAN_STATUSES.join(', ') }
             }
+            /*
+             * A reference field takes a sys_id, and a body can carry any
+             * sys_id at all, so the value is checked against the same list the
+             * picker is built from rather than trusted. Empty clears the field,
+             * which is how a plan goes back to having no facilitator.
+             */
+            if (field === 'facilitator' && value && !this._isFacilitator(value)) {
+                return { error: 'facilitator must be a user with the ' + LAB_ROLE_FACILITATOR + ' role' }
+            }
             values[field] = value
         }
 
@@ -1663,6 +1674,104 @@ LabApi.prototype = {
         }
 
         this._send(response, 200, { plans: plans })
+    },
+
+    /*
+     * Reads below use plain `GlideRecord` and never dot-walk.
+     *
+     * `GlideRecord` because an author is not guaranteed any access to the user
+     * and role tables, and because nothing read here reaches a caller beyond
+     * the facilitator list itself. No dot-walking - `addQuery('role.name')`,
+     * `has.user.getDisplayValue()` - because each one is a cross-scope join
+     * that works on this instance only by virtue of a privilege row probing
+     * created here, which the repo deliberately does not declare. Three plain
+     * queries work anywhere the app is installed.
+     */
+
+    /** The sys_id of the facilitator role, or '' when it is missing. */
+    _facilitatorRoleId: function () {
+        var role = new GlideRecord(LAB_T_USER_ROLE)
+        role.addQuery('name', LAB_ROLE_FACILITATOR)
+        role.setLimit(1)
+        role.query()
+        return role.next() ? role.getUniqueValue() + '' : ''
+    },
+
+    /** True when a sys_id belongs to a user holding the facilitator role. */
+    _isFacilitator: function (userId) {
+        var roleId = this._facilitatorRoleId()
+        if (!roleId) {
+            return false
+        }
+        var has = new GlideRecord(LAB_T_USER_HAS_ROLE)
+        has.addQuery('user', userId)
+        has.addQuery('role', roleId)
+        has.setLimit(1)
+        has.query()
+        return has.next()
+    },
+
+    /** One user's display name, through the same resolver the dashboard uses. */
+    _userName: function (userId) {
+        if (!userId) {
+            return ''
+        }
+        return this._str(this._userNames([userId])[userId])
+    },
+
+    /* ------------------------------------------------------------ *
+     * GET /authoring/facilitators
+     *
+     * The users a plan's facilitator may be set to: everyone holding
+     * x_snc_holg.facilitator. An author needs this to fill the picker, and
+     * nothing in it is sensitive - a name and a sys_id for a role the author
+     * can already see on every plan.
+     *
+     * `GlideRecord` on sys_user_has_role, like the participant-number read and
+     * for the same reason: an author is not guaranteed any access to the role
+     * tables, and the result never leaves this list.
+     * ------------------------------------------------------------ */
+    getAuthoringFacilitators: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var roleId = this._facilitatorRoleId()
+        if (!roleId) {
+            this._send(response, 200, { facilitators: [] })
+            return
+        }
+
+        var ids = []
+        var seen = {}
+        var has = new GlideRecord(LAB_T_USER_HAS_ROLE)
+        has.addQuery('role', roleId)
+        has.query()
+        while (has.next()) {
+            var id = this._str(has.getValue('user'))
+            if (id && !seen[id]) {
+                seen[id] = true
+                ids.push(id)
+            }
+        }
+
+        var people = []
+        if (ids.length) {
+            var user = new GlideRecord(LAB_T_USER)
+            user.addQuery('sys_id', 'IN', ids.join(','))
+            user.addQuery('active', true)
+            user.orderBy('name')
+            user.query()
+            while (user.next()) {
+                people.push({
+                    sys_id: user.getUniqueValue() + '',
+                    name: this._str(user.getValue('name')),
+                    user_name: this._str(user.getValue('user_name')),
+                })
+            }
+        }
+
+        this._send(response, 200, { facilitators: people })
     },
 
     /**
@@ -1780,6 +1889,8 @@ LabApi.prototype = {
                 name: this._str(plan.getValue('name')),
                 description: this._str(plan.getValue('description')),
                 status: this._str(plan.getValue('status')),
+                facilitator: this._str(plan.getValue('facilitator')),
+                facilitator_name: this._userName(this._str(plan.getValue('facilitator'))),
                 slug: this._slug(this._str(plan.getValue('name'))),
             },
             sections: sections,

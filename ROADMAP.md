@@ -16,8 +16,8 @@ One line each. The detail is in the numbered sections below.
 | **W2** | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
 | **W3** | 🔴 | Artifact tracker: decide when the scan runs | On demand, every 5 minutes, or both | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **B1** | 🟠 | Build the artifact tracker | Nothing but W3 | [2](#2--ready-to-build) |
-| **B3** | 🟠 | Let someone assign a plan's facilitator without admin | A decision between two approaches | [2](#2--ready-to-build) |
 | **P1** | ⚫ | Have a real participant open a plan and check the number they get | You — one login, then I check the row | [3.1](#31-check-a-real-participants-number-p1) |
+| **P8** | ⚫ | Grant `x_snc_holg.facilitator` to whoever runs the workshop | You — nobody holds it today, so the picker is empty | [3.2](#32-nobody-holds-the-facilitator-role-p8) |
 | **P2** | ⚫ | Create the remaining `now.assist.participantNN` accounts | You — stops at 3 today | [3](#3--workshop-prep--your-side) |
 | **P3** | ⚫ | Give each account app-creation and test rights | You | [3](#3--workshop-prep--your-side) |
 | **P4** | ⚫ | Turn on `sn_atf.enable` instance-wide | You | [3](#3--workshop-prep--your-side) |
@@ -109,7 +109,6 @@ Decided, unblocked, not started.
 | Item | Notes |
 |---|---|
 | **Artifact tracker** | Expectation and evidence tables, the `sys_update_xml` query, the REST endpoint, the dashboard column, `app_name` / `app_scope` on Plan Participant. Blocked only on 1.3 |
-| **Authoring: the plan facilitator field** | Left out of the authoring UI on purpose — a field-level ACL restricts `facilitator` to the facilitator role, and an author need not have it. Now that facilitator no longer has record-level write on the plan table, assigning a facilitator is an **admin** job in the platform UI. Options if that chafes: add `x_snc_holg.author` to the field ACL, or give the authoring editor a facilitator picker and let the server set it |
 
 ---
 
@@ -128,6 +127,23 @@ Decided, unblocked, not started.
   group managers.
 - **Stagger section 400** (Build an application) or run it facilitator-led — five
   chained Build Agent prompts, by far the heaviest on the instance.
+
+### 3.2 Nobody holds the facilitator role (P8)
+
+Not one user on this instance holds `x_snc_holg.facilitator`. The dashboard and
+the facilitator endpoints work for you only because `gs.hasRole` is true for an
+admin, and the new facilitator picker in the authoring UI is empty for the same
+reason — there is nobody to list.
+
+Grant it to whoever actually runs the workshop:
+
+```
+! npx now-sdk exec --scope global "var r=new GlideRecord('sys_user_role');r.get('name','x_snc_holg.facilitator');var u=new GlideRecord('sys_user');u.get('user_name','<their user name>');var g=new GlideRecord('sys_user_has_role');g.initialize();g.setValue('user',u.getUniqueValue());g.setValue('role',r.getUniqueValue());gs.info(g.insert())"
+```
+
+Worth doing before the day regardless: an admin passing every ACL hides whether
+the facilitator path actually works, which is how the participant-numbering bug
+survived testing.
 
 ### 3.1 Check a real participant's number (P1)
 

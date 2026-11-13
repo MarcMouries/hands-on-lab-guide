@@ -18,6 +18,15 @@ RestApi({
             shortDescription: 'Every Evaluation Plan an author may see, drafts and closed plans included.',
         },
         {
+            $id: Now.ID['da0b8e7d3f664d399000118355db0a2c'],
+            name: 'List facilitators for authoring',
+            consumes: 'application/json',
+            script: Now.include('../generated/integrations-inbound/scripted-rest-api/sys_ws_operation_da0b8e7d3f664d399000118355db0a2c.js'),
+            produces: 'application/json',
+            path: '/authoring/facilitators',
+            shortDescription: 'Users holding x_snc_holg.facilitator, to fill the facilitator picker.',
+        },
+        {
             $id: Now.ID['0c91be4cc71d4f2483e649e7da36e56f'],
             name: 'Get a plan for authoring',
             consumes: 'application/json',

@@ -18,6 +18,16 @@ export interface AuthorPlanSummary {
     description: string
     status: string
     slug: string
+    /** Only the tree read carries these; the plan list leaves them empty. */
+    facilitator: string
+    facilitator_name: string
+}
+
+/** A user who may be set as a plan's facilitator. */
+export interface AuthorFacilitator {
+    sys_id: string
+    name: string
+    user_name: string
 }
 
 export interface AuthorPrompt {
@@ -83,6 +93,8 @@ function mapPlanSummary(raw: Record<string, unknown>): AuthorPlanSummary {
         description: asString(raw.description),
         status: asString(raw.status),
         slug: asString(raw.slug),
+        facilitator: asString(raw.facilitator),
+        facilitator_name: asString(raw.facilitator_name),
     }
 }
 
@@ -96,6 +108,28 @@ export async function fetchAuthorPlans(): Promise<AuthorPlanSummary[]> {
     })
     const plans = Array.isArray(body.plans) ? (body.plans as Record<string, unknown>[]) : []
     return plans.map(mapPlanSummary)
+}
+
+/**
+ * The users a plan's facilitator may be set to.
+ *
+ * Read once when the view opens rather than per plan: the list is the same for
+ * every plan, and it is short.
+ */
+export async function fetchFacilitators(): Promise<AuthorFacilitator[]> {
+    const { body } = await requestLabJson(BASE + '/facilitators', {
+        notOkMessage: (status) =>
+            'Could not load the facilitator list (HTTP ' + status + ').',
+        isBareShape: (candidate) => Array.isArray(candidate.facilitators),
+    })
+    const rows = Array.isArray(body.facilitators)
+        ? (body.facilitators as Record<string, unknown>[])
+        : []
+    return rows.map((row) => ({
+        sys_id: asString(row.sys_id),
+        name: asString(row.name),
+        user_name: asString(row.user_name),
+    }))
 }
 
 export async function fetchAuthorTree(planId: string): Promise<AuthorTree> {

@@ -1,8 +1,8 @@
 import React from 'react'
-import { NodeFields, NodeType } from '../services/authoringApi'
+import { AuthorFacilitator, NodeFields, NodeType } from '../services/authoringApi'
 import { PromptMarkdown } from './PromptBox'
 
-type FieldKind = 'text' | 'area' | 'markdown' | 'status'
+type FieldKind = 'text' | 'area' | 'markdown' | 'status' | 'facilitator'
 
 interface FieldSpec {
     name: string
@@ -17,9 +17,6 @@ interface FieldSpec {
  * Mirrors LAB_AUTHOR_TYPES on the server, which is the authority: anything not
  * named there is ignored by a write, so a field added here alone would appear
  * to save and change nothing.
- *
- * `facilitator` is absent from the plan on purpose - a field-level ACL
- * restricts it to facilitators, and an author need not be one.
  */
 const FIELDS: Record<NodeType, FieldSpec[]> = {
     plan: [
@@ -31,6 +28,13 @@ const FIELDS: Record<NodeType, FieldSpec[]> = {
             kind: 'status',
             limit: 40,
             hint: 'Participants only ever see published plans.',
+        },
+        {
+            name: 'facilitator',
+            label: 'Facilitator',
+            kind: 'facilitator',
+            limit: 32,
+            hint: 'Who runs this plan. Only users with the facilitator role can be picked.',
         },
     ],
     section: [
@@ -101,6 +105,10 @@ interface Props {
     busy: boolean
     error: string
     saved: boolean
+    /** Candidates for the plan's facilitator field; empty until they load. */
+    facilitators: AuthorFacilitator[]
+    /** The saved facilitator's name, for showing one the list does not hold. */
+    facilitatorName: string
     onChange: (field: string, value: string) => void
     onSave: () => void
     onRevert: () => void
@@ -113,6 +121,8 @@ export function AuthoringEditor({
     busy,
     error,
     saved,
+    facilitators,
+    facilitatorName,
     onChange,
     onSave,
     onRevert,
@@ -168,7 +178,40 @@ export function AuthoringEditor({
                         </label>
                         {spec.hint ? <p className="holg-field2__hint">{spec.hint}</p> : null}
 
-                        {spec.kind === 'status' ? (
+                        {spec.kind === 'facilitator' ? (
+                            /*
+                             * A reference field as a plain select, because the
+                             * candidate list is every user holding the
+                             * facilitator role - short enough to show whole,
+                             * and the server checks the role again on save
+                             * rather than trusting whatever arrives.
+                             */
+                            <select
+                                id={id}
+                                className="holg-select"
+                                value={value}
+                                disabled={busy}
+                                onChange={(event) => onChange(spec.name, event.target.value)}
+                            >
+                                <option value="">{'\u2014 nobody yet \u2014'}</option>
+                                {/*
+                                  * A facilitator who has since lost the role,
+                                  * or who the list has not loaded yet, would
+                                  * otherwise vanish from the select and be
+                                  * cleared by the next save.
+                                  */}
+                                {value && !facilitators.some((p) => p.sys_id === value) ? (
+                                    <option value={value}>
+                                        {facilitatorName || 'Currently set'}
+                                    </option>
+                                ) : null}
+                                {facilitators.map((person) => (
+                                    <option value={person.sys_id} key={person.sys_id}>
+                                        {person.name + ' (' + person.user_name + ')'}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : spec.kind === 'status' ? (
                             <select
                                 id={id}
                                 className="holg-select"
@@ -225,9 +268,21 @@ export function AuthoringEditor({
                             />
                         )}
 
-                        <p className={'holg-field2__count' + (over ? ' holg-field2__count--over' : '')}>
-                            {value.length + ' / ' + spec.limit}
-                        </p>
+                        {/*
+                          * Only on the fields someone types into. A select
+                          * cannot exceed its limit, and a 32-character sys_id
+                          * reading "32 / 32" looks like a warning.
+                          */}
+                        {spec.kind === 'status' || spec.kind === 'facilitator' ? null : (
+                            <p
+                                className={
+                                    'holg-field2__count' +
+                                    (over ? ' holg-field2__count--over' : '')
+                                }
+                            >
+                                {value.length + ' / ' + spec.limit}
+                            </p>
+                        )}
                     </div>
                 )
             })}

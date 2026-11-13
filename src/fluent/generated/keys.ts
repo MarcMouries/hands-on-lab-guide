@@ -558,6 +558,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: 'd59a1bc42fe41b10bec1567e8ea4e323'
                     }
+                    da0b8e7d3f664d399000118355db0a2c: {
+                        table: 'sys_ws_operation'
+                        id: 'da0b8e7d3f664d399000118355db0a2c'
+                    }
                     dba2f8721a0a4e71929f61f4e378c1d4: {
                         table: 'sys_security_acl'
                         id: 'dba2f8721a0a4e71929f61f4e378c1d4'
@@ -2119,6 +2123,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '5853b8d42ff2446f82f9be35a20e22e0'
+                        key: {
+                            sys_security_acl: 'f33f5774ead6468fae29cea89786f722'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '58b06eac426d438383716f6de670a3de'
                         key: {
@@ -3348,6 +3365,19 @@ declare global {
                         id: 'a4e190a58df349a9868f0beced36bc9f'
                         key: {
                             name: 'x_snc_holg.facilitator'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'a5226ebef6ab4ddb8416ab7f0e84fc6e'
+                        key: {
+                            sys_security_acl: '0a462215a67f4f898a8003567926ddad'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
