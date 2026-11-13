@@ -12,7 +12,7 @@ One line each. The detail is in the numbered sections below.
 
 | ID | | Task | Waiting on | Detail |
 |---|---|---|---|---|
-| **W1** | 🔴 | Drop the ServiceNow jargon from prompt wording | Your call on the 4.1, 4.3 and 4.4 proposals | [1.1](#11-prompt-wording--drop-the-servicenow-jargon), [4](#4--prompt-wording) |
+| **W1** | 🔴 | Drop the ServiceNow jargon from prompt wording | Your call on 4.1 and 4.4; 4.2 and 4.3 are applied | [1.1](#11-prompt-wording--drop-the-servicenow-jargon), [4](#4--prompt-wording) |
 | **W2** | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
 | **W3** | 🔴 | Artifact tracker: add a scheduled baseline, or leave it on demand? | On demand is built; a 5-minute job is small from here | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **P1** | ⚫ | Have a real participant open a plan and check the number they get | You — one login, then I check the row | [3.1](#31-check-a-real-participants-number-p1) |
@@ -25,6 +25,7 @@ One line each. The detail is in the numbered sections below.
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
 | **B13** | 🟠 | Email each registrant a link back to the lab | Nothing to build against; delivery depends on P6 | [5.4](#54-the-build-b6b12) |
+| **B14** | 🟠 | Application menu links for Lab Events and Lab Registrations | Nothing | [5.4](#54-the-build-b6b12) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
 | **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **D1–D9** | ⚪ | Nine known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
@@ -56,8 +57,8 @@ Nothing below moves until you answer.
 > *"in the prompts we don't want servicenow technical jargon like 'Add UI
 > policies:'"*
 
-Proposals are in [section 4](#4--prompt-wording). The field types (4.2) are
-settled and applied; 4.1, 4.3 and 4.4 still need your call. These change what
+Proposals are in [section 4](#4--prompt-wording). The field types (4.2) and the artifact names (4.3)
+are settled and applied; 4.1 and 4.4 still need your call. These change what
 participants read, so they go in only with your approval, the way the
 `{{prefix}}` edits did.
 
@@ -187,7 +188,7 @@ prefix and scope match what the page said.
 
 ## 4. 🔴 Prompt wording
 
-4.2 is **done**. 4.1, 4.3 and 4.4 are still proposals awaiting your call —
+4.2 and 4.3 are **done**. 4.1 and 4.4 are still proposals awaiting your call —
 nothing in them is applied.
 
 The pattern throughout: the prompt body asks for an **outcome**, and the
@@ -222,17 +223,45 @@ Your call, applied to `a800764c…377` and `f000764c…3a1`.
 `(currency)` is already plain English. I had proposed `(a person)` and
 `(an amount of money)`; both rejected.
 
-### 4.3 Artifact names inside prompts
+### 4.3 🟢 Artifact names inside prompts — decided and applied
 
-| Record | Now | Suggested |
+Your call, 13 November 2026. Five applied, two rejected.
+
+| Record | Was | Now |
 |---|---|---|
 | `3800764c…3aa` | `Write a before insert and update business rule called "…" on the Incident table.` | `Add a rule called "…" that runs whenever an incident is created or updated.` |
 | `3800764c…3aa` | `abort the action and show the error message` | `block the save and show the message` |
-| `f000764c…3ad` | `Write an onChange client script called "…" on the Incident table for the Category field.` | `Add a rule to the incident form called "…" that runs when someone changes the Category.` |
-| `f000764c…3ad` | `make Subcategory mandatory` | `require a Subcategory` |
+| `f000764c…3ad` | `Write an onChange client script called "…" on the Incident table for the Category field.` | `Add a rule to the incident form called "…" that is executed when someone changes the Category.` |
 | `3000764c…3b7`, `3800764c…3b3` | `Create an ATF test called "…"` | `Create an automated test called "…"` |
-| `3000764c…3a2` | `Add a module for each table in the application menu.` | `Add a menu item for each one, so they appear in the navigator.` |
-| `f000764c…3a1` | `Create a Claim table with fields:` | `Create a Claim record with these details:` |
+| `3000764c…3a2` | `Add a module for each table in the application menu.` | `Add a menu item for each table, so they appear in the navigator.` — your point about naming the table, kept |
+
+**Rejected, and why:**
+
+| Record | Proposal | Your call |
+|---|---|---|
+| `f000764c…3ad` | `make Subcategory mandatory` → `require a Subcategory` | Keep `make Subcategory mandatory`. It is what the form does and what the participant will see |
+| `f000764c…3a1` | `Create a Claim table with fields:` → `Create a Claim record with these details:` | Keep. The task creates a **table**, not a row in one — the proposal changed the meaning, not the register |
+
+Nothing in any prompt body now says `ATF test`, `onChange client script` or
+`before insert and update`.
+
+**Your question — how does the business rule work and stay testable for a room
+of participants?** It already does, and the content says so:
+
+> If Priority is 1 - Critical, **the Short description starts with
+> `{{prefix}}`** and Assignment group is empty, block the save and show the
+> message …
+
+Each participant's rule only fires on incidents whose short description carries
+their own prefix, so one person's rule cannot block another person's save. The
+ATF test is written to match — it inserts `{{prefix}} missing group test` and
+`{{prefix}} with group test` — and both prompts carry a NOTE explaining why
+those strings are load-bearing rather than decorative.
+
+The client script is the exception, and its NOTE says so: a client script runs
+on the Incident form for everyone and cannot be narrowed the way a server-side
+rule can. That is why the setup task tells participants to create it inactive,
+switch it on only while testing, and switch it off afterwards.
 
 ### 4.4 Step titles in the setup task
 
@@ -479,6 +508,16 @@ actually work for a lab account, which is its own check.
 
 Delivery depends on **P6**: if the instance's mail is pointed at a sink, this
 sends nothing and the registrant never knows. Worth sending to yourself first.
+
+**B14 — menu links for the event tables.** Lab Event and Lab Registration have
+no way in from the application navigator: an event is created and opened by
+script today, which is fine for one workshop and wrong as a habit. Two modules
+under the existing application menu — Lab Events, and Lab Registrations filtered
+to the open events — make them ordinary records a facilitator can manage.
+
+Small, and worth doing before B9 rather than after: a list view is most of what
+a facilitator needs from the registration table, and it tells us what the purpose
+built view in B9 actually has to add.
 
 **B11 — the event's plan.** An event names one evaluation plan; provisioning
 enrols the new user into it, so they land on their tasks rather than an empty
