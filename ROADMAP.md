@@ -25,6 +25,7 @@ One line each. The detail is in the numbered sections below.
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
 | **B8** | 🟠 | The form creates an account, or enrols the signed-in user | **Written and deployed; one path needs you to test it** | [5.4](#54-the-build-b6b12) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
+| **B13** | 🟠 | Email each registrant a link back to the lab | Nothing to build against; delivery depends on P6 | [5.4](#54-the-build-b6b12) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
 | **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **D1–D9** | ⚪ | Nine known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
@@ -455,6 +456,30 @@ scoped API will accept on a password field is not something to assume.
 **B9 — the facilitator view.** Registrations for an event, with provisioning
 state, and a way to retry one that failed. A monitor and a repair tool, not an
 approval queue — nobody has to act for a registration to succeed.
+
+**B13 — a link back, by email.** Registering is the one moment the lab is in
+front of them; a week later it is a URL they no longer have. On a successful
+registration, email them a link to the lab, so coming back and resuming is one
+click from their inbox.
+
+What the email carries:
+
+- The lab link — `/holg`, which routes by role, plus the direct plan link so a
+  returning participant lands on their own tasks rather than a list of one.
+- The event's name and dates, because the link means nothing in six weeks
+  without them.
+- Their **user name**. Low risk, and without it a returning participant has a
+  link they cannot get through.
+- **Not the password.** It was shown once on screen (W5) and putting it in an
+  inbox is a different decision from showing it on a page the person asked for.
+
+Which leaves a real gap worth deciding when this is built: somebody who loses
+the password cannot come back at all. The platform's own password-reset flow is
+the answer, and the email is the natural place to point at it — but it has to
+actually work for a lab account, which is its own check.
+
+Delivery depends on **P6**: if the instance's mail is pointed at a sink, this
+sends nothing and the registrant never knows. Worth sending to yourself first.
 
 **B11 — the event's plan.** An event names one evaluation plan; provisioning
 enrols the new user into it, so they land on their tasks rather than an empty
