@@ -25,7 +25,7 @@ One line each. The detail is in the numbered sections below.
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
 | **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | Nothing | [5.4](#54-the-build-b6b11) |
 | **B7** | 🟠 | The public registration page and widget | Nothing | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | The form creates the account: user, password, roles, enrolment | Nothing — the probes passed | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | The form creates an account, or enrols the signed-in user | Nothing — the probes passed | [5.4](#54-the-build-b6b11) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b11) |
 | **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
@@ -337,16 +337,42 @@ log in. Nothing depends on outbound mail, which P6 leaves unanswered.
   rather than failing, and the unique index on `sys_user.user_name` is what makes
   a collision visible instead of silent.
 
-**Decided: an email that already belongs to a user reuses that account** and
-grants it the event's roles, rather than creating a second one.
+**Decided: an existing account is reused, and its password is never touched.**
 
-> **Open, and narrow:** reuse plus on-screen credentials together would mean the
-> form *resets an existing user's password* and shows it to whoever submitted it.
-> With the event code as the only gate, that is account takeover of any user on
-> the instance — including yours. Unless you say otherwise, B8 reuses the account
-> and grants the roles but **does not touch its password**, telling the
-> registrant to sign in with the credentials they already have. That keeps the
-> decision and removes the one way it bites.
+This is not an edge case. A lab run on a **customer's own instance** is the
+normal case for it: everyone already has an account, with a password that is
+theirs and must stay that way. Registration there is not registration at all —
+it is joining a workshop.
+
+So the form has two behaviours, and **the session decides which**, not a
+configuration someone can get wrong:
+
+| Who is asking | What happens |
+|---|---|
+| Nobody — the caller is `guest` | Create the account from first name, last name and email; grant the event's roles; show the username and password once. Our demo instance, people with no login |
+| A signed-in user | Create nothing. Grant the event's roles to **that** user, record the registration, enrol them in the event's plan, and say "you are in" — no password written, nothing shown. A customer instance |
+
+Two things follow, and both are improvements on what was planned before:
+
+- **The account-takeover hole closes rather than being mitigated.** Earlier this
+  section reused an account found *by email* from a public form, which meant the
+  form could reset any user's password and display it. Matching on the session
+  instead of on a submitted email means a public caller can never reach an
+  existing account at all. An email that already exists and no session is a
+  refusal with "you already have an account here — sign in and join from the
+  same link".
+- **`granted_roles` earns its place on the event.** On our instance an event
+  grants `admin` (5.5). On a customer's instance it should almost certainly
+  grant `x_snc_holg.participant` and nothing else — their security team decides
+  what else, not this app. One field per event, no code change, and an event
+  that grants nothing but the lab role is the sane default for anywhere that is
+  not ours.
+
+A customer-instance event also needs no public page: the participants are
+already logged in, so the page can sit behind authentication and ask for
+nothing but the event code. `public: true` is per page, so that is a second
+page rather than a compromise on the first — or the same page, since a signed-in
+caller never reaches the account-creation branch.
 
 ### 5.4 The build (B6–B11)
 
@@ -378,10 +404,13 @@ no public write path beyond the one widget. The page names the event
 ("Register for Customer Workshop November 13th 2026") from the event record, so
 one page serves every workshop via `?event=<code or slug>`.
 
-**B8 — creating the account.** Create the `sys_user` (user name derived so that
-the existing numbering lines up — see section 2), set a password, grant
-`x_snc_holg.participant` plus the event's `granted_roles`, link the row, stamp
-`created_on`. Runs as part of the registration, not after it — see 5.5 for the
+**B8 — creating *or* joining.** For a `guest` caller: create the `sys_user` with
+a user name from their first and last name, set the password with
+`setDisplayValue` (5.6 — `setValue` silently produces an account that cannot log
+in), grant `x_snc_holg.participant` plus the event's `granted_roles`, link the
+row, stamp `created_on`. For a signed-in caller: skip all of that, grant the
+roles to the session's own user, and write the registration. One endpoint, two
+branches, and the branch is chosen by who is asking. Runs as part of the registration, not after it — see 5.5 for the
 one probe that decides whether the form does it directly or hands it to a system
 context in the same breath.
 
