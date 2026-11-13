@@ -44,6 +44,19 @@ export function isSubmitted(result: TaskResult | null): boolean {
 }
 
 /** Every task across every section, in API order. */
+/**
+ * Whether anybody has touched this plan yet.
+ *
+ * A task result exists for every task from the moment of enrolment, so their
+ * presence proves nothing - only a status past `not_started` does. Used to
+ * decide whether to open a plan on its welcome page or on the work.
+ */
+export function anyTaskStarted(sections: LabSection[]): boolean {
+    return flattenTasks(sections).some(
+        (task) => !!task.result && task.result.status !== 'not_started',
+    )
+}
+
 export function flattenTasks(sections: LabSection[]): LabTask[] {
     const all: LabTask[] = []
     for (let s = 0; s < sections.length; s++) {

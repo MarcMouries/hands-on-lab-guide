@@ -5,7 +5,7 @@ import { toMessage } from '../services/labHttp'
 import { TASK_PARAM, goToPlans, readUrlParam, setUrlParams } from '../utils/navigate'
 import { planSlug } from '../utils/planSlug'
 import { promptTokensFor } from '../utils/promptTokens'
-import { firstOpenTaskId, flattenTasks, nextOpenTaskId } from '../utils/taskStatus'
+import { anyTaskStarted, firstOpenTaskId, flattenTasks, nextOpenTaskId } from '../utils/taskStatus'
 import { FeedbackPanel } from './FeedbackPanel'
 import { ProgressBar } from './ProgressBar'
 import { TaskNav } from './TaskNav'
@@ -74,6 +74,17 @@ export function PlanView({ planId }: { planId: string }) {
     const [submitBusy, setSubmitBusy] = useState(false)
     const [submitError, setSubmitError] = useState('')
 
+    /**
+     * Whether to open on the welcome page rather than on the first task.
+     *
+     * Shown on a first visit only: the plan's description explains how the
+     * whole thing is meant to be worked through, and dropping somebody
+     * straight into task one hides it behind a side nav they have no reason to
+     * read. Once any task has been started the plan opens on the work instead,
+     * because by then they know what this is.
+     */
+    const [showWelcome, setShowWelcome] = useState(false)
+
     /** Tasks already sent an in_progress PATCH, so it fires at most once each. */
     const opened = useRef<Record<string, boolean>>({})
 
@@ -101,6 +112,10 @@ export function PlanView({ planId }: { planId: string }) {
         setPercent(plan.percent_complete)
         setOverrides({})
         opened.current = {}
+
+        // A deep link to a task is a request for that task, not for the
+        // welcome page, so it wins.
+        setShowWelcome(!anyTaskStarted(plan.sections) && !readUrlParam(TASK_PARAM))
 
         const deepLinked = taskIdFromUrl(plan.sections)
         const taskId =
@@ -158,6 +173,15 @@ export function PlanView({ planId }: { planId: string }) {
         if (!selected || !selectedResult) {
             return
         }
+        /*
+         * Not while the welcome page is up. The task underneath is already
+         * selected so that dismissing the welcome is instant, but marking it
+         * in progress before they have agreed to begin would both overstate
+         * what they have done and hide the welcome page from them for ever.
+         */
+        if (showWelcome) {
+            return
+        }
         const taskId = selected.task.sys_id
         if (selectedResult.status !== 'not_started' || opened.current[taskId]) {
             return
@@ -184,7 +208,7 @@ export function PlanView({ planId }: { planId: string }) {
                 // Non-fatal: the task is still fully readable and submittable.
                 opened.current[taskId] = false
             })
-    }, [selected, selectedResult])
+    }, [selected, selectedResult, showWelcome])
 
     const onSelect = useCallback(
         (taskId: string) => {
@@ -259,7 +283,8 @@ export function PlanView({ planId }: { planId: string }) {
                 <h1 className="holg-lab__title" id="holg-plan-title">
                     {plan ? plan.name : 'Evaluation plan'}
                 </h1>
-                {plan ? (
+                {/* The welcome card carries its own, like the plans list. */}
+                {plan && !showWelcome ? (
                     <ProgressBar
                         percent={percent}
                         label={'Your progress through ' + plan.name}
@@ -284,7 +309,47 @@ export function PlanView({ planId }: { planId: string }) {
                 <p className="holg-empty">This plan has no sections yet.</p>
             ) : null}
 
-            {plan && sections.length ? (
+            {plan && sections.length && showWelcome ? (
+                <ul className="holg-cards">
+                    <li className="holg-card2">
+                        {/* No title: the page heading above already names the
+                          * plan, and repeating it is the sort of duplication
+                          * that reads as a mistake. */}
+                        {/*
+                          * Split on blank lines rather than dropped into one
+                          * paragraph: this description is several paragraphs of
+                          * how to work through the plan, and run together it is
+                          * a wall nobody reads.
+                          */}
+                        {plan.description
+                            .split(/\n\s*\n/)
+                            .map((para) => para.trim())
+                            .filter((para) => !!para)
+                            .map((para, index) => (
+                                <p className="holg-card2__desc" key={index}>
+                                    {para}
+                                </p>
+                            ))}
+
+                        <ProgressBar
+                            percent={percent}
+                            label={'Your progress through ' + plan.name}
+                        />
+
+                        <div className="holg-card2__actions">
+                            <button
+                                type="button"
+                                className="holg-btn holg-btn--primary"
+                                onClick={() => setShowWelcome(false)}
+                            >
+                                Start the lab
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            ) : null}
+
+            {plan && sections.length && !showWelcome ? (
                 <div className="holg-split">
                     <TaskNav
                         sections={sections}
