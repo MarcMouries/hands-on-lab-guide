@@ -1,0 +1,18 @@
+/* Page-scoped CSS for the registration page.
+ *
+ * Here and not in the widget stylesheet because the Service Portal's Sass
+ * compiler prefixes every widget selector with that widget's instance class,
+ * so a widget cannot style anything outside itself. The chat launcher is
+ * injected by the portal, beside the widget.
+ *
+ * Hidden on this page only. Someone arriving from an invitation has no account
+ * yet, so a support chat invites a question nobody can answer for them - and on
+ * a phone the launcher sits on top of the button.
+ */
+[aria-label='Agent Chat Window'],
+[aria-label='Agent Chat Window'] + div,
+#sn-chat-launcher,
+.sn-chat-launcher,
+sn-chat-launcher {
+    display: none !important;
+}

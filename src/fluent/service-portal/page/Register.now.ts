@@ -15,6 +15,17 @@ SPPage({
     shortDescription: 'Public self-registration for a lab event.',
     public: true,
     roles: [],
+    /*
+     * Page CSS, not widget CSS, and for a reason: the Service Portal's Sass
+     * compiler prefixes every selector in a widget stylesheet with that
+     * widget's instance class, so a widget cannot style anything outside
+     * itself. The chat launcher is injected by the portal, beside the widget.
+     *
+     * Hidden only on this page. Someone arriving from an invitation has no
+     * account yet, so a support chat is an invitation to ask a question nobody
+     * can answer for them - and it covers the button on a phone.
+     */
+    css: Now.include('./register/page.css'),
     containers: [
         {
             $id: '1bcf4096ebf84ae2a2e2a8a2898a7e6d',

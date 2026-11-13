@@ -99,6 +99,13 @@ the only undo.
   digest away, so the read returns the old value. Keep what you asked for in a
   ref and compare against that. Reading it back is what made every click in the
   authoring UI write the URL twice.
+- **A Fluent property takes a literal, not an expression.** `css: [...].join()`
+  or `'a' + 'b'` either fails the build or, worse, writes the string
+  `Symbol(CallExpressionShape)` into the field with a clean build and a clean
+  deploy. Use `Now.include('./file.css')` or one literal.
+- **A widget stylesheet cannot reach outside the widget.** The compiler prefixes
+  every selector with that widget's instance class, so page chrome needs the
+  page's own `css` (`SPPage({ css: Now.include(...) })`).
 - **The Service Portal's Sass compiler does not support `&__suffix`.** A rule
   nested as `&__hero` inside `.holg-reg` compiles to *nothing*, silently: the
   build passes, the deploy passes, and the page ships with the parent rule only
