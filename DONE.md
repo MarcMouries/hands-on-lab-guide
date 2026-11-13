@@ -15,6 +15,7 @@ Last updated 2026-11-13.
 
 | Item | Shipped |
 |---|---|
+| **B2 — shorter URL parameters** | `plan_id` → `plan`, `task_id` → `task`, `node_id` → `node`. The old names are still read, so every link already shared keeps working; writes emit only the new name and drop the old one in the same call, so the first write upgrades the URL it found. The REST path parameters are untouched — they are an API contract, not a reader's URL |
 | **Race-safe participant numbers** | Unique index on `(evaluation_plan, participant_number)`, the number set on the insert instead of written afterwards, and a refused insert retried against a fresh read. 10/10 against the live index |
 | **Every participant was being told they are number 1** | Found while checking the above. The read that picks the next free number used `GlideRecordSecure`, and a participant may read only their own row — so the "taken" list was one row long for everyone but a facilitator or an admin. Now a plain `GlideRecord`, the one deliberate exception in the server layer |
 | **Participant #2 backfilled** | Was `participant_number = 0` with no prefix since before numbering existed; now `2` / `p02` by the same rule the app uses |

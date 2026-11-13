@@ -13,20 +13,17 @@ import {
     patchNode,
 } from '../services/authoringApi'
 import { toMessage } from '../services/labHttp'
-import { readUrlParam, setUrlParams } from '../utils/navigate'
+import { NODE_PARAM, PLAN_PARAM, readUrlParam, setUrlParams } from '../utils/navigate'
 import { planSlug } from '../utils/planSlug'
 import { AuthoringEditor, blankFor, fieldsFor } from './AuthoringEditor'
 import { AuthoringTree, Selection } from './AuthoringTree'
 
-const PLAN_PARAM = 'plan_id'
-
-/**
- * URL param naming the node being edited, so a task (or a prompt, criterion or
- * section) can be linked and shared the way `task_id` works on the participant
+/*
+ * `node` names the node being edited, so a task (or a prompt, criterion or
+ * section) can be linked and shared the way `task` works on the participant
  * side. One param is enough because a sys_id identifies the level too, which is
  * one fewer thing that can arrive contradicting itself.
  */
-const NODE_PARAM = 'node_id'
 
 /**
  * The record id a selection refers to. The tree selects the plan row with an
@@ -130,7 +127,7 @@ export default function AuthoringApp() {
     const loadToken = useRef(0)
 
     /**
-     * What this app last set `node_id` to.
+     * What this app last set `node` to.
      *
      * On the portal the write goes through an Angular digest, so reading the
      * param back immediately afterwards still returns the previous value. The
@@ -141,7 +138,7 @@ export default function AuthoringApp() {
      */
     const urlNode = useRef(readUrlParam(NODE_PARAM))
 
-    /** The one place `node_id` is written, so the ref cannot drift from it. */
+    /** The one place `node` is written, so the ref cannot drift from it. */
     const writeNode = useCallback((sysId: string, replace?: boolean) => {
         if (urlNode.current === sysId) {
             return
@@ -244,7 +241,7 @@ export default function AuthoringApp() {
     // A selection already on screen wins, so reloading the tree after a save,
     // move or add does not reopen whatever the URL happened to name; otherwise
     // the URL decides, which is what makes a shared link open its node. A
-    // `node_id` the tree does not hold - a deleted node, or one from another
+    // a `node` the tree does not hold - a deleted node, or one from another
     // plan - is dropped rather than left pointing at nothing.
     useEffect(() => {
         if (!tree) {

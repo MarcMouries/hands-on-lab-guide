@@ -1,10 +1,34 @@
 /**
+ * The URL parameters this app owns.
+ *
+ * `plan_id` and `task_id` were named for sys_ids. The values are slugs now, so
+ * the `_id` says nothing and only makes a shared link longer:
+ * `?id=plan&plan=Now-Assist-for-Creator&task=Explain-existing-code`.
+ */
+export const PLAN_PARAM = 'plan'
+export const TASK_PARAM = 'task'
+export const NODE_PARAM = 'node'
+
+/**
+ * The name each parameter used to have.
+ *
+ * Reads accept either, so every link already pasted into a chat keeps working.
+ * Writes only ever emit the new name and drop the old one in the same call, so
+ * a URL never carries both and the first write upgrades what it finds.
+ */
+const LEGACY_PARAM: Record<string, string> = {
+    plan: 'plan_id',
+    task: 'task_id',
+    node: 'node_id',
+}
+
+/**
  * URL helpers that work on both surfaces that serve this bundle:
- *  - the Service Portal pages `?id=plans` and `?id=plan&plan_id=<sys_id>`
+ *  - the Service Portal pages `?id=plans` and `?id=plan&plan=<slug>`
  *  - the standalone UI page `x_snc_holg_participant.do`, which has no `id`
  *
  * The `id` parameter is only rewritten when it is already present, so the
- * standalone page keeps its own path and only gains or loses `plan_id`.
+ * standalone page keeps its own path and only gains or loses `plan`.
  */
 export function viewUrl(planId: string | null): string {
     const params = new URLSearchParams(window.location.search)
@@ -13,10 +37,11 @@ export function viewUrl(planId: string | null): string {
         params.set('id', planId ? 'plan' : 'plans')
     }
 
+    params.delete(LEGACY_PARAM[PLAN_PARAM])
     if (planId) {
-        params.set('plan_id', planId)
+        params.set(PLAN_PARAM, planId)
     } else {
-        params.delete('plan_id')
+        params.delete(PLAN_PARAM)
     }
 
     const query = params.toString()
@@ -36,14 +61,27 @@ export function viewUrl(planId: string | null): string {
  *    directly.
  * ------------------------------------------------------------------ */
 
-/** Reads a param from the live URL, falling back to the injected context. */
+/**
+ * Reads a param from the live URL, falling back to the injected context, and
+ * then to the name the param used to have.
+ */
 export function readUrlParam(key: string): string {
-    const fromUrl = new URLSearchParams(window.location.search).get(key)
-    if (fromUrl) {
-        return fromUrl
-    }
+    const search = new URLSearchParams(window.location.search)
     const injected = window.__X_SNC_HOLG__
-    return (injected && injected.params && injected.params[key]) || ''
+    const params = (injected && injected.params) || {}
+
+    const names = [key]
+    if (LEGACY_PARAM[key]) {
+        names.push(LEGACY_PARAM[key])
+    }
+
+    for (const name of names) {
+        const value = search.get(name) || params[name] || ''
+        if (value) {
+            return value
+        }
+    }
+    return ''
 }
 
 /**
@@ -68,6 +106,11 @@ export function setUrlParams(
     const params = new URLSearchParams(window.location.search)
     for (const key in patch) {
         const value = patch[key]
+        // Writing a param drops the name it used to have, so the two can never
+        // sit in one URL disagreeing about which the app should believe.
+        if (LEGACY_PARAM[key]) {
+            params.delete(LEGACY_PARAM[key])
+        }
         if (value) {
             params.set(key, value)
         } else {
@@ -140,11 +183,15 @@ function crossViewUrl(
         params.set('id', portalPageId)
     }
 
-    // {plan_id} accepts a sys_id or a slug, so whichever form the URL already
-    // carries is passed straight through rather than normalised.
-    const planId = keepPlan ? current.get('plan_id') : null
+    // The REST layer accepts a sys_id or a slug, so whichever form the URL
+    // already carries is passed straight through rather than normalised. Both
+    // the current and the former param name are read; only the current one is
+    // written.
+    const planId = keepPlan
+        ? current.get(PLAN_PARAM) || current.get(LEGACY_PARAM[PLAN_PARAM])
+        : null
     if (planId) {
-        params.set('plan_id', planId)
+        params.set(PLAN_PARAM, planId)
     }
 
     const path = onPortal ? window.location.pathname : swapStandalonePage(standalonePage)

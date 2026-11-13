@@ -26,6 +26,7 @@ you; this file tracks capability.
 | Multiple ordered Task Prompts per task | Built | Rendered as the numbered **Steps** of a task |
 | Success Criteria checklist per task | Built | Yes/no, the definition of "did this work?" |
 | Readable plan slugs in URLs | Built | `Now Assist for Creator` → `Now-Assist-for-Creator` |
+| Short URL parameter names | Built *(recent)* | `plan`, `task`, `node`. The former `plan_id` / `task_id` / `node_id` are still accepted on the way in and rewritten on the first write, so links already shared keep working |
 
 ### Current content — "Now Assist for Creator"
 
@@ -49,7 +50,7 @@ multi-participant workshop; 100–600 are the Now Assist for Creator exercises.
 | Feature | Status | Notes |
 |---|---|---|
 | Plan list with per-plan progress | Built | `/holg?id=plans` |
-| Plan view: task nav + task panel | Built | `/holg?id=plan&plan_id=<slug or sys_id>` |
+| Plan view: task nav + task panel | Built | `/holg?id=plan&plan=<slug or sys_id>` |
 | Automatic enrolment on first open | Built | `GET /plans/{id}` enrols and backfills Task Results |
 | Task Result backfilled for new tasks | Built | Adding a task mid-workshop needs no seeding; existing participants pick it up on next load |
 | Auto-mark `in_progress` on open | Built | Fires once per task per session |
@@ -59,7 +60,7 @@ multi-participant workshop; 100–600 are the Now Assist for Creator exercises.
 | "Next task" advance | Built | Jumps to the next unsubmitted task |
 | Copy prompt to clipboard | Built | Copies **raw** `prompt_text`, never rendered text |
 | **Markdown rendering of step content** | Built *(recent)* | `react-markdown` 10.1.0 — nested sub-steps, inline code chips, italic NOTE blockquote with accent border, inline screenshots |
-| **Deep-linkable task** | Built *(recent)* | `&task_id=Explain-existing-code` — the task's own slug, six words rather than a plan's four, since task titles are sentences. A sys_id still resolves and is rewritten to the slug on load; where two titles slug alike both fall back to sys_ids. Back/forward works; unknown ids are dropped with `replaceState` |
+| **Deep-linkable task** | Built *(recent)* | `&task=Explain-existing-code` — the task's own slug, six words rather than a plan's four, since task titles are sentences. A sys_id still resolves and is rewritten to the slug on load; where two titles slug alike both fall back to sys_ids. Back/forward works; unknown ids are dropped with `replaceState` |
 | **"Steps" heading** | Built *(recent)* | Replaced the "Prompt"/"Prompts" singular-plural switch |
 | **Participant number and prefix** | Built *(recent)* | Assigned on enrolment, lowest free number first. Prefix is **initials + number**: `Participant #7` → `p07` → scope `x_snc_p07`; `Marc Mouries` as the fourth person → `mm04` → `x_snc_mm04`. See [Participant numbering](#participant-numbering--how-a-number-is-chosen) |
 | **A whole task as one stepped Markdown document** | Built *(recent)* | The outermost ordered list renders as a numbered timeline — badge, connector line, body — so all of a task's steps can live in one `prompt_text`. Numbers come from a CSS counter, so nothing authored or in JS keeps count |

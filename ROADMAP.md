@@ -16,7 +16,6 @@ One line each. The detail is in the numbered sections below.
 | **W2** | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
 | **W3** | 🔴 | Artifact tracker: decide when the scan runs | On demand, every 5 minutes, or both | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **B1** | 🟠 | Build the artifact tracker | Nothing but W3 | [2](#2--ready-to-build) |
-| **B2** | 🟠 | Shorten the URL parameters: `plan_id` → `plan`, `task_id` → `task` | Nothing | [2.1](#21-url-parameter-names-b2) |
 | **B3** | 🟠 | Let someone assign a plan's facilitator without admin | A decision between two approaches | [2](#2--ready-to-build) |
 | **B4** | 🟠 | Reword the claims task description | Needs drafting, not substitution | [2](#2--ready-to-build) |
 | **B5** | 🟠 | Replace the per-step labels that still read "Prompt" | A data edit, best bundled with W1 | [2](#2--ready-to-build) |
@@ -113,43 +112,8 @@ Decided, unblocked, not started.
 |---|---|
 | **Artifact tracker** | Expectation and evidence tables, the `sys_update_xml` query, the REST endpoint, the dashboard column, `app_name` / `app_scope` on Plan Participant. Blocked only on 1.3 |
 | **Authoring: the plan facilitator field** | Left out of the authoring UI on purpose — a field-level ACL restricts `facilitator` to the facilitator role, and an author need not have it. Now that facilitator no longer has record-level write on the plan table, assigning a facilitator is an **admin** job in the platform UI. Options if that chafes: add `x_snc_holg.author` to the field ACL, or give the authoring editor a facilitator picker and let the server set it |
-| **URL parameter names** | `plan_id` → `plan`, `task_id` → `task`. Detail in 2.1 |
 | **Claims task description** | `Build a claims exception tracking application with…` is the one task that never said "Use Now Assist to", so the rename skipped it. Needs new wording, not a substitution — I can draft it |
 | **Per-step labels still read "Prompt"** | `Prompt`, `Prompt 1 – application and data model`. These come from the `label` field on each Task Prompt record, not from code. A data edit, bundled naturally with 1.1 |
-
-### 2.1 URL parameter names (B2)
-
-From:
-
-```
-/holg?id=plan&plan_id=Now-Assist-for-Creator&task_id=Generate-catalog-item-variables-UI-policies
-```
-
-to:
-
-```
-/holg?id=plan&plan=Now-Assist-for-Creator&task=Generate-catalog-item-variables-UI-policies
-```
-
-`_id` says nothing once the value is a slug rather than a sys_id — the shorter
-names read better in a URL a facilitator pastes into chat.
-
-What it touches: `navigate.ts` (8 references), `FacilitatorDashboard.tsx` (6),
-`PlanView.tsx`, `AuthoringApp.tsx`, and the cross-view allowlist in
-`crossViewUrl`, which names the params it is allowed to carry over.
-
-Three things I would do unless you say otherwise:
-
-- **Keep reading the old names.** Links you have already shared, and the ones
-  in `DONE.md` and `FEATURES.md`, should keep working. Reads accept either,
-  writes only ever emit the new ones, and a URL arriving with an old name is
-  rewritten in place with `replaceState` — the same upgrade a `task_id` holding
-  a sys_id already gets.
-- **Rename `node_id` → `node`** in the authoring view too, for one rule rather
-  than two.
-- **Leave the REST paths alone.** `/plans/{plan_id}` and
-  `/authoring/plans/{plan_id}` are path parameters in the API contract, not
-  browser URL params; renaming them would break callers for no reader benefit.
 
 ---
 

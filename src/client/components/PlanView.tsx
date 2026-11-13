@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlanDetail } from '../hooks/usePlanDetail'
 import { LabSection, LabTask, TaskResult, patchResult } from '../services/participantApi'
 import { toMessage } from '../services/labHttp'
-import { goToPlans, readUrlParam, setUrlParams } from '../utils/navigate'
+import { TASK_PARAM, goToPlans, readUrlParam, setUrlParams } from '../utils/navigate'
 import { planSlug } from '../utils/planSlug'
 import { promptTokensFor } from '../utils/promptTokens'
 import { firstOpenTaskId, flattenTasks, nextOpenTaskId } from '../utils/taskStatus'
@@ -11,12 +11,9 @@ import { ProgressBar } from './ProgressBar'
 import { TaskNav } from './TaskNav'
 import { TaskPanel } from './TaskPanel'
 
-/** URL param carrying the open task, so a task view can be linked and shared. */
-const TASK_PARAM = 'task_id'
-
 /**
- * How a task is named in the URL: the same readable slug `plan_id` uses, so a
- * shared link reads `?plan_id=Now-Assist-for-Creator&task_id=Explain-existing-code`
+ * How a task is named in the URL: the same readable slug `plan` uses, so a
+ * shared link reads `?plan=Now-Assist-for-Creator&task=Explain-existing-code`
  * rather than carrying a sys_id nobody can check at a glance.
  *
  * Resolution is purely client-side, against the plan already loaded, so no
@@ -44,7 +41,7 @@ function taskParamFor(sections: LabSection[], sysId: string): string {
     return sharing.length === 1 ? slug : sysId
 }
 
-/** The task a `task_id` names, accepting either the slug or a sys_id. */
+/** The task a `task` names, accepting either the slug or a sys_id. */
 function taskIdFor(sections: LabSection[], param: string): string {
     if (!param) {
         return ''
@@ -90,12 +87,12 @@ export function PlanView({ planId }: { planId: string }) {
         [overrides],
     )
 
-    /** The task_id in the URL, but only when it names a task in this plan. */
+    /** The task in the URL, but only when it names a task in this plan. */
     const taskIdFromUrl = useCallback((sectionList: LabSection[]): string => {
         return taskIdFor(sectionList, readUrlParam(TASK_PARAM))
     }, [])
 
-    // Seed progress and the open task once the plan arrives. A task_id in the
+    // Seed progress and the open task once the plan arrives. A task in the
     // URL wins, so a deep link opens that task instead of the first open one.
     useEffect(() => {
         if (!plan) {
@@ -111,7 +108,7 @@ export function PlanView({ planId }: { planId: string }) {
         setSelectedTaskId(taskId)
 
         // Reflect the resolved task without adding a Back step for a link that
-        // did not name one, drop a task_id that is not in this plan, and
+        // did not name one, drop a task that is not in this plan, and
         // upgrade an older link that still carries a sys_id to the slug.
         const param = taskId ? taskParamFor(plan.sections, taskId) : ''
         if (param !== readUrlParam(TASK_PARAM)) {

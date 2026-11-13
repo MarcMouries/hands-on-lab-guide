@@ -4,7 +4,7 @@ import { useMe } from '../hooks/useMe'
 import { usePlans } from '../hooks/usePlans'
 import { useFacilitatorSummary } from '../hooks/useFacilitatorSummary'
 import { formatClockTime } from '../utils/format'
-import { setUrlParams } from '../utils/navigate'
+import { PLAN_PARAM, readUrlParam, setUrlParams } from '../utils/navigate'
 import { planSlug } from '../utils/planSlug'
 import { EmptyState, Panel } from './Panel'
 import { ParticipantTable } from './ParticipantTable'
@@ -36,10 +36,10 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
      *
      * Matches a sys_id OR a slug, because that is what the REST layer accepts
      * for {plan_id} and what the participant views link with. Matching only on
-     * sys_id made `?id=facilitator&plan_id=Now-Assist-for-Creator` fall back to
+     * sys_id made `?id=facilitator&plan=Now-Assist-for-Creator` fall back to
      * the first plan without saying why.
      */
-    const requested = params.plan_id || ''
+    const requested = readUrlParam(PLAN_PARAM)
     const resolved = useMemo(() => {
         if (!plansState.plans.length) {
             return ''
@@ -71,11 +71,11 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
         }
         setPlanId(resolved)
         // Make the view linkable straight away, including when it landed here
-        // with no plan_id at all and fell back to the first plan. Replaced,
+        // with no plan at all and fell back to the first plan. Replaced,
         // not pushed: arriving is not a navigation step worth going Back to.
         const slug = slugFor(resolved)
         if (slug && slug.toLowerCase() !== requested.toLowerCase()) {
-            setUrlParams({ plan_id: slug }, true)
+            setUrlParams({ [PLAN_PARAM]: slug }, true)
         }
     }, [resolved, planId, requested, slugFor])
 
@@ -83,7 +83,7 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
         (sysId: string) => {
             setPlanId(sysId)
             // Pushed, so Back returns to the plan that was open before.
-            setUrlParams({ plan_id: slugFor(sysId) || sysId })
+            setUrlParams({ [PLAN_PARAM]: slugFor(sysId) || sysId })
         },
         [slugFor],
     )

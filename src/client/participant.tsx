@@ -5,18 +5,19 @@ import './components/ParticipantLab.css'
 import { ImpersonationBar } from './components/ImpersonationBar'
 import { PlansView } from './components/PlansView'
 import { PlanView } from './components/PlanView'
-import { readLabPageContext } from './utils/context'
 import { mountLabApp } from './utils/mountRoot'
+import { PLAN_PARAM, readUrlParam } from './utils/navigate'
 
 mountLabApp((mount) => {
-    const context = readLabPageContext(mount)
-
     /*
-     * Routing is driven by the presence of `plan_id`, not by `id`, so the same
+     * Routing is driven by the presence of `plan`, not by `id`, so the same
      * bundle works on the Service Portal pages (?id=plans / ?id=plan) and on
      * the standalone x_snc_holg_participant.do page, which has no `id` param.
+     *
+     * Read through readUrlParam rather than off the context directly, so a
+     * link still carrying the older `plan_id` opens the plan it names.
      */
-    const planId = context.params.plan_id || ''
+    const planId = readUrlParam(PLAN_PARAM)
 
     ReactDOM.createRoot(mount).render(
         <>
