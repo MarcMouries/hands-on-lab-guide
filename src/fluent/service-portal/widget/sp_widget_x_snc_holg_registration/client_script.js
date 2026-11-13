@@ -31,6 +31,44 @@ api.controller = function () {
             : !!(c.form.first_name && c.form.last_name && c.form.email);
     };
 
+    c.copied = false;
+
+    /*
+     * Copies both, labelled, because a password on its own is half of what they
+     * need and they have one chance to keep it.
+     *
+     * The async clipboard API needs a secure context, which the portal is, but
+     * it is refused outright in some embedded browsers - so a hidden textarea
+     * and execCommand remain as the fallback rather than leaving the button
+     * silently doing nothing.
+     */
+    c.copy = function () {
+        var result = c.data.result || {};
+        var text = 'User name: ' + result.user_name + '\nPassword: ' + result.password;
+
+        if (window.navigator && window.navigator.clipboard) {
+            window.navigator.clipboard.writeText(text).then(function () {
+                c.copied = true;
+            });
+            return;
+        }
+
+        var box = document.createElement('textarea');
+        box.value = text;
+        box.setAttribute('readonly', '');
+        box.style.position = 'fixed';
+        box.style.opacity = '0';
+        document.body.appendChild(box);
+        box.select();
+        try {
+            document.execCommand('copy');
+            c.copied = true;
+        } catch (e) {
+            c.copied = false;
+        }
+        document.body.removeChild(box);
+    };
+
     c.submit = function () {
         if (!c.canSubmit()) {
             return;

@@ -1405,25 +1405,29 @@ LabApi.prototype = {
                 granted_roles: '',
             })
             /*
-             * Sent on to the lab rather than left on a dead end. `redirect` is
-             * acted on by the client and set for this outcome only: an account
-             * that was just created has to stay on the page long enough for its
-             * password to be read off the screen.
+             * Sent back to THIS page, not to the lab.
              *
-             * Signing in is still required - the lab asks - and the
-             * registration stays `awaiting_sign_in` until they come back here
-             * with a session, which is when the roles are actually granted.
+             * Sending them to the lab was tried and it 404s: the plan page
+             * requires x_snc_holg.participant, and this branch grants nothing -
+             * it cannot, because an email nobody has verified is not proof of
+             * anything. So they go to the lab with no role and the portal
+             * refuses them, which looks broken and is unexplainable.
+             *
+             * Coming back here is the shape that works. Signing in satisfies
+             * the one thing missing, the signed-in branch grants the roles, and
+             * the page then offers the lab. The URL is passed through the login
+             * redirect, so one sign-in lands them straight back on it.
              */
-            var toLab = this._labUrl(eventGr)
+            var backHere = this._registrationUrl(eventGr)
             return {
                 ok: true,
                 heading: 'You already have an account here',
                 message:
-                    'Taking you to the lab. Sign in with the credentials you already use, then open this link again to join the workshop.',
+                    'Signing you in. Use the credentials you already have, and you will come straight back here to join the workshop.',
                 user_name: '',
                 password: '',
-                lab_url: toLab,
-                redirect: toLab,
+                lab_url: '',
+                redirect: '/login.do?sysparm_url=' + encodeURIComponent(backHere),
             }
         }
 
@@ -1454,8 +1458,22 @@ LabApi.prototype = {
                 var fresh = new GlideRecord(LAB_T_USER)
                 fresh.get(userId)
                 fresh.user_password.setDisplayValue(password)
-                fresh.setValue('password_needs_reset', false)
                 fresh.update()
+
+                /*
+                 * Cleared in a SEPARATE update, after the password write.
+                 * Setting it in the same update does not stick - the platform
+                 * turns it back on when the password changes, and the first
+                 * live registration proved it: the row came out with
+                 * password_needs_reset = 1 and the participant was asked to
+                 * change a password they had just been handed.
+                 *
+                 * A training account for one workshop does not need rotating.
+                 */
+                var settle = new GlideRecord(LAB_T_USER)
+                settle.get(userId)
+                settle.setValue('password_needs_reset', false)
+                settle.update()
             }
         } catch (e) {
             userId = null
@@ -1658,6 +1676,12 @@ LabApi.prototype = {
         } catch (e) {
             // Enrolment also happens when they first open the plan.
         }
+    },
+
+    /** This registration page, for an event. */
+    _registrationUrl: function (eventGr) {
+        var slug = this._eventSlugDated(eventGr) || this._eventSlug(this._str(eventGr.getValue('name')))
+        return '/holg?id=register&event=' + encodeURIComponent(slug)
     },
 
     /** Where to send them next. */

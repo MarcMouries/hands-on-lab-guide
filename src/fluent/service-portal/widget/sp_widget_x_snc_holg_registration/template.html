@@ -36,8 +36,13 @@
             <dd ng-if="c.data.result.password"><code>{{c.data.result.password}}</code></dd>
           </dl>
 
+          <button type="button" class="holg-reg__copy" ng-if="c.data.result.password"
+                  ng-click="c.copy()">
+            {{c.copied ? 'Copied' : 'Copy user name and password'}}
+          </button>
+
           <p class="holg-reg__warn" ng-if="c.data.result.password" role="status">
-            Write this down now &mdash; it is shown once and cannot be shown again.
+            Save these now &mdash; they are shown once and cannot be shown again.
           </p>
 
           <a class="holg-reg__go" ng-if="c.data.result.lab_url" ng-href="{{c.data.result.lab_url}}">
