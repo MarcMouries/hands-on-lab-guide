@@ -475,13 +475,14 @@
     font-weight: 700;
 }
 
+/* Surface only. prompt_text is Markdown now, so the monospace face and
+   `white-space: pre-wrap` this rule carried as a <pre> are gone - block
+   layout and inline <code> are handled in PromptBox.css. */
 .holg-prompt__text {
     margin: 0;
     padding: 12px;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 14px;
     line-height: 1.5;
-    white-space: pre-wrap;
     overflow-wrap: break-word;
     background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
 }

@@ -1,0 +1,225 @@
+/*
+ * Markdown rendering for task_prompt.prompt_text (see PromptBox.tsx).
+ *
+ * SIZING: all lengths are px, never rem - see the note at the top of
+ * ParticipantLab.css for why rem is unusable on the portal.
+ *
+ * WHY A SEPARATE FILE: the SDK inlines each stylesheet into the bundle only
+ * while that file stays under ~14KB; past it the file is emitted as a
+ * standalone components/*.css that nothing loads, leaving the lab unstyled.
+ * ParticipantLab.css is already ~13.2KB, so these rules ship beside the
+ * component instead - which also puts them after ParticipantLab.css in
+ * injection order, so same-specificity overrides below land.
+ */
+
+/*
+ * The container keeps .holg-prompt__text (padding, surface, the portal
+ * widget's type scale) and adds --md. It is a <div>, not the old <pre>, so
+ * `white-space: pre-wrap` and the monospace face are gone - both wreck
+ * Markdown block layout. Inline <code> brings monospace back where it belongs.
+ */
+.holg-prompt__text--md {
+    white-space: normal;
+    font-family: inherit;
+}
+
+.holg-prompt__text--md > *:first-child {
+    margin-top: 0;
+}
+
+.holg-prompt__text--md > *:last-child {
+    margin-bottom: 0;
+}
+
+.holg-prompt__text--md p {
+    margin: 0 0 12px 0;
+}
+
+/*
+ * Native <ol> numbering, not CSS counters: react-markdown emits a `start`
+ * attribute for lists that do not begin at 1, and counters would ignore it.
+ */
+.holg-prompt__text--md ol,
+.holg-prompt__text--md ul {
+    margin: 0 0 12px 0;
+    padding-left: 24px;
+}
+
+/* Sub-steps sit tight under their parent item rather than opening a gap. */
+.holg-prompt__text--md ol ol,
+.holg-prompt__text--md ol ul,
+.holg-prompt__text--md ul ol,
+.holg-prompt__text--md ul ul {
+    margin: 4px 0 0 0;
+}
+
+.holg-prompt__text--md li {
+    margin: 0 0 4px 0;
+}
+
+/* A list with blank lines between its items is "loose": CommonMark wraps each
+   item's text in a <p>, whose bottom margin would otherwise stack on top of
+   the item's. Blank-line-separated bullets are a common authoring habit. */
+.holg-prompt__text--md li > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Inline chip, e.g. `ServiceNow Studio`. */
+.holg-prompt__text--md code {
+    padding: 1px 5px;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 3px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    overflow-wrap: break-word;
+}
+
+/* Fenced block: the <pre> renderer in PromptBox, not a bare element selector,
+   because the container itself is no longer a <pre>. */
+.holg-prompt__code {
+    margin: 0 0 12px 0;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-prompt__code code {
+    padding: 0;
+    border: 0;
+    font-size: 13px;
+    background: none;
+}
+
+/* NOTE callout. */
+.holg-prompt__text--md blockquote {
+    margin: 0 0 12px 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--holg-aqua, #00cfec);
+    font-style: italic;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-prompt__text--md blockquote > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Screenshots: never wider than the column, and never upscaled. */
+.holg-prompt__img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    /* Symmetric and small: images render inside a <p>, so this collapses with
+       the paragraph's 12px bottom margin instead of adding to it, while still
+       separating two screenshots stacked in one paragraph. */
+    margin: 4px 0;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+}
+
+.holg-prompt__link {
+    color: var(--holg-accent, #004668);
+    overflow-wrap: break-word;
+}
+
+.holg-prompt__link:focus-visible {
+    outline: 2px solid rgb(var(--now-color_text--primary, 16, 23, 26));
+    outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Step timeline
+ *
+ * A whole task can be authored as ONE Markdown document whose top-level
+ * ordered list is the set of steps. The outermost <ol> becomes the timeline;
+ * the number in each badge comes from a CSS counter, so nothing in the content
+ * or in JS has to keep count.
+ * ------------------------------------------------------------------ */
+
+.holg-prompt__text--md .holg-steps {
+    counter-reset: holg-step;
+    list-style: none;
+    margin: 4px 0 0 0;
+    padding: 0;
+}
+
+.holg-prompt__text--md .holg-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+.holg-prompt__text--md .holg-step:last-child {
+    padding-bottom: 0;
+}
+
+/* Connector runs from just under one badge to the top of the next. */
+.holg-prompt__text--md .holg-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 32px;
+    bottom: 0;
+    width: 2px;
+    background-color: rgb(var(--now-container-card--border-color, 207, 213, 215));
+}
+
+.holg-prompt__text--md .holg-step__num {
+    counter-increment: holg-step;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    color: #ffffff;
+    /* Darker green on purpose: white on the lighter brand green (#00a37a)
+       fails WCAG AA. */
+    background-color: #00785a;
+}
+
+.holg-prompt__text--md .holg-step__num::before {
+    content: counter(holg-step);
+}
+
+.holg-prompt__text--md .holg-step__body {
+    min-width: 0;
+}
+
+/* The gutter carries the spacing, so the body must not add its own at the
+   ends - otherwise every step sits low against its badge. */
+.holg-prompt__text--md .holg-step__body > *:first-child {
+    margin-top: 0;
+}
+
+.holg-prompt__text--md .holg-step__body > *:last-child {
+    margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * Fenced block with its own Copy button
+ * ------------------------------------------------------------------ */
+
+.holg-prompt__text--md .holg-code {
+    position: relative;
+    margin: 8px 0;
+}
+
+.holg-prompt__text--md .holg-code .holg-prompt__code {
+    margin: 0;
+    /* Keeps wrapped code clear of the button instead of running under it. */
+    padding-right: 76px;
+}
+
+.holg-prompt__text--md .holg-code__copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}

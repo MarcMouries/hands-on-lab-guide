@@ -1,4 +1,11 @@
-import { ChoiceColumn, DateTimeColumn, IntegerColumn, ReferenceColumn, Table } from '@servicenow/sdk/core'
+import {
+    ChoiceColumn,
+    DateTimeColumn,
+    IntegerColumn,
+    ReferenceColumn,
+    StringColumn,
+    Table,
+} from '@servicenow/sdk/core'
 
 export const x_snc_holg_plan_participant = Table({
     actions: {
@@ -28,10 +35,18 @@ export const x_snc_holg_plan_participant = Table({
             maxLength: 32,
             referenceTable: 'x_snc_holg_evaluation_plan',
         }),
+        participant_number: IntegerColumn({
+            default: '0',
+            label: 'Participant number',
+            maxLength: 0,
+        }),
         percent_complete: IntegerColumn({
             default: '0',
             label: 'Percent complete',
             maxLength: 0,
+        }),
+        prefix: StringColumn({
+            maxLength: 20,
         }),
         started_on: DateTimeColumn({
             label: 'Started on',

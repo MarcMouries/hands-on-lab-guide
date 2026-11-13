@@ -1,6 +1,12 @@
 export interface LabPageContext {
     page: string
     params: Record<string, string>
+    /**
+     * Portal only: writes params into the URL through AngularJS `$location`.
+     * Published by the shell widget's client script, so it is absent on the
+     * standalone `.do` page and dropped by JSON.stringify for `data-holg`.
+     */
+    setParams?: (patch: Record<string, string | null>, replace: boolean) => void
 }
 
 declare global {

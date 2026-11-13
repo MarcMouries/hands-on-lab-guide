@@ -51,6 +51,12 @@ export interface LabSection {
 export interface PlanParticipant {
     sys_id: string
     status: string
+    /** Display name of the signed-in user this participation belongs to. */
+    user_display_name: string
+    /** Assigned on enrolment. 0 when it could not be assigned. */
+    participant_number: number
+    /** Derived from the number, e.g. `p07`. Empty when unassigned. */
+    prefix: string
     percent_complete: number
     started_on: string | null
     completed_on: string | null
@@ -145,6 +151,9 @@ function readParticipant(value: unknown): PlanParticipant | null {
     return {
         sys_id: id,
         status: text(row.status),
+        user_display_name: text(row.user_display_name),
+        participant_number: count(row.participant_number),
+        prefix: text(row.prefix),
         percent_complete: count(row.percent_complete),
         started_on: nullableText(row.started_on),
         completed_on: nullableText(row.completed_on),

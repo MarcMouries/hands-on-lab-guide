@@ -23,6 +23,67 @@ export function viewUrl(planId: string | null): string {
     return window.location.pathname + (query ? '?' + query : '')
 }
 
+/* ------------------------------------------------------------------ *
+ * In-page URL state (the selected task)
+ *
+ * Selecting a task must not reload the document, so this writes the param in
+ * place. The two surfaces need different mechanics:
+ *  - on the Service Portal AngularJS owns the URL. A bare history.pushState
+ *    leaves $location out of sync and the next digest reverts it, so the shell
+ *    widget publishes `setParams` on window.__X_SNC_HOLG__ and the update goes
+ *    through $location instead.
+ *  - on the standalone `.do` page there is no Angular, so History is used
+ *    directly.
+ * ------------------------------------------------------------------ */
+
+/** Reads a param from the live URL, falling back to the injected context. */
+export function readUrlParam(key: string): string {
+    const fromUrl = new URLSearchParams(window.location.search).get(key)
+    if (fromUrl) {
+        return fromUrl
+    }
+    const injected = window.__X_SNC_HOLG__
+    return (injected && injected.params && injected.params[key]) || ''
+}
+
+/**
+ * Writes params into the current URL without navigating. A null value removes
+ * the param. `replace` overwrites the current history entry instead of adding
+ * one, so an initial redirect does not leave a dead Back step.
+ */
+export function setUrlParams(
+    patch: Record<string, string | null>,
+    replace?: boolean,
+): void {
+    const injected = window.__X_SNC_HOLG__
+    if (injected && typeof injected.setParams === 'function') {
+        injected.setParams(patch, !!replace)
+        return
+    }
+
+    if (!window.history || !window.history.pushState) {
+        return
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    for (const key in patch) {
+        const value = patch[key]
+        if (value) {
+            params.set(key, value)
+        } else {
+            params.delete(key)
+        }
+    }
+
+    const query = params.toString()
+    const url = window.location.pathname + (query ? '?' + query : '')
+    if (replace) {
+        window.history.replaceState(window.history.state, '', url)
+    } else {
+        window.history.pushState(window.history.state, '', url)
+    }
+}
+
 export function goToPlan(planId: string): void {
     window.location.assign(viewUrl(planId))
 }
@@ -51,28 +112,54 @@ function swapStandalonePage(page: string): string {
     return /[^/]*\.do$/.test(path) ? path.replace(/[^/]*\.do$/, page) : path
 }
 
-function crossViewUrl(portalPageId: string, standalonePage: string): string {
-    const params = new URLSearchParams(window.location.search)
+/**
+ * Builds the destination query as an ALLOWLIST, not by deleting what we do not
+ * want.
+ *
+ * The earlier version deleted `plan_id` and kept everything else, so every
+ * param added afterwards rode along into the new view: ending an
+ * impersonation from a task landed the facilitator on
+ * `?id=facilitator&task=...&task_id=...`, pointing the new view at a task
+ * belonging to the identity that just ended. A stray `task` param this app
+ * does not even write came along too. Anything not named here is dropped.
+ *
+ * `keepPlan` carries the plan over, because a facilitator returning from an
+ * impersonation wants the dashboard for the plan they were just watching.
+ * Going the other way starts at the participant's own plan list instead.
+ */
+function crossViewUrl(
+    portalPageId: string,
+    standalonePage: string,
+    keepPlan: boolean,
+): string {
+    const current = new URLSearchParams(window.location.search)
+    const onPortal = current.has('id')
 
-    // A plan from the previous identity must never leak into the new view.
-    params.delete('plan_id')
+    const params = new URLSearchParams()
+    if (onPortal) {
+        params.set('id', portalPageId)
+    }
 
-    const path = params.has('id')
-        ? (params.set('id', portalPageId), window.location.pathname)
-        : swapStandalonePage(standalonePage)
+    // {plan_id} accepts a sys_id or a slug, so whichever form the URL already
+    // carries is passed straight through rather than normalised.
+    const planId = keepPlan ? current.get('plan_id') : null
+    if (planId) {
+        params.set('plan_id', planId)
+    }
 
+    const path = onPortal ? window.location.pathname : swapStandalonePage(standalonePage)
     const query = params.toString()
     return path + (query ? '?' + query : '')
 }
 
 /** The participant plans list: `?id=plans` on the portal, the participant `.do` otherwise. */
 export function participantPlansUrl(): string {
-    return crossViewUrl('plans', PARTICIPANT_PAGE)
+    return crossViewUrl('plans', PARTICIPANT_PAGE, false)
 }
 
 /** The facilitator dashboard: `?id=facilitator` on the portal, the facilitator `.do` otherwise. */
 export function facilitatorUrl(): string {
-    return crossViewUrl('facilitator', FACILITATOR_PAGE)
+    return crossViewUrl('facilitator', FACILITATOR_PAGE, true)
 }
 
 /**

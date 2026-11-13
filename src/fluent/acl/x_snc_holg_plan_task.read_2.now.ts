@@ -6,6 +6,6 @@ Acl({
     localOrExisting: 'Existing',
     type: 'record',
     operation: 'read',
-    roles: ['x_snc_holg.facilitator'],
+    roles: ['x_snc_holg.facilitator', 'x_snc_holg.author'],
     table: 'x_snc_holg_plan_task',
 })

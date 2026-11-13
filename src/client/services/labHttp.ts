@@ -12,6 +12,8 @@ export interface LabJsonResult {
     payload: unknown
     /** The unwrapped handler object. */
     body: Record<string, unknown>
+    /** The HTTP status, for callers that tolerate one (see allowStatuses). */
+    status: number
 }
 
 export interface LabRequestOptions {
@@ -20,9 +22,16 @@ export interface LabRequestOptions {
     /** True when the parsed root is already the handler object (not `result`-wrapped). */
     isBareShape: (candidate: Record<string, unknown>) => boolean
     /** Defaults to GET so existing GET callers are unaffected. */
-    method?: 'GET' | 'POST' | 'PATCH'
+    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
     /** Serialised as JSON when present. Omitted entirely for plain GETs. */
     body?: unknown
+    /**
+     * Statuses to return instead of throwing, for a response whose body is
+     * the answer. Authoring's delete uses it: a 409 carries the number of
+     * Task Results the delete would take with it, which the caller shows the
+     * author before asking again with confirm.
+     */
+    allowStatuses?: number[]
 }
 
 /** Shortened, safe preview of an unexpected payload for an error message. */
@@ -94,18 +103,23 @@ export async function requestLabJson(path: string, options: LabRequestOptions): 
         throw new Error('The lab API reported an error: ' + (errorEnvelope.message || errorEnvelope.detail))
     }
 
-    if (!response.ok) {
+    const tolerated = (options.allowStatuses || []).indexOf(response.status) >= 0
+    if (!response.ok && !tolerated) {
         throw new Error(options.notOkMessage(response.status))
     }
 
     if (options.isBareShape(envelope)) {
-        return { payload: payload, body: envelope }
+        return { payload: payload, body: envelope, status: response.status }
     }
 
     const nested = envelope.result
     if (nested && typeof nested === 'object') {
-        return { payload: payload, body: nested as Record<string, unknown> }
+        return {
+            payload: payload,
+            body: nested as Record<string, unknown>,
+            status: response.status,
+        }
     }
 
-    return { payload: payload, body: envelope }
+    return { payload: payload, body: envelope, status: response.status }
 }

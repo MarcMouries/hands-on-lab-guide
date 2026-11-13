@@ -13,9 +13,17 @@ declare global {
                         table: 'sys_script_include'
                         id: '060b9bd91e4642ea9e66146df4f20fb4'
                     }
+                    '083aed45cfa09f10f492f48d5d851c61': {
+                        table: 'sys_scope_privilege'
+                        id: '083aed45cfa09f10f492f48d5d851c61'
+                    }
                     '0a462215a67f4f898a8003567926ddad': {
                         table: 'sys_security_acl'
                         id: '0a462215a67f4f898a8003567926ddad'
+                    }
+                    '0c91be4cc71d4f2483e649e7da36e56f': {
+                        table: 'sys_ws_operation'
+                        id: '0c91be4cc71d4f2483e649e7da36e56f'
                     }
                     '0c9308f564ce4a9c8d0aceb42617618b': {
                         table: 'sp_portal'
@@ -32,6 +40,10 @@ declare global {
                     '0e6ce7b53a5e4918b7f19956812bb4ad': {
                         table: 'sys_ws_operation'
                         id: '0e6ce7b53a5e4918b7f19956812bb4ad'
+                    }
+                    '0e9de48f0e9646f29da61edf9c94e733': {
+                        table: 'sys_ws_operation'
+                        id: '0e9de48f0e9646f29da61edf9c94e733'
                     }
                     '10bf6105febe4f15acddcb3ef789f885': {
                         table: 'sp_column'
@@ -65,6 +77,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '1a2a07882f641b10bec1567e8ea4e373'
                     }
+                    '1e216ce9f5f249938fa1a59dafcbbca3': {
+                        table: 'sp_instance'
+                        id: '1e216ce9f5f249938fa1a59dafcbbca3'
+                    }
                     '20aa90025cd546cebc1823650912a4ef': {
                         table: 'sys_security_acl'
                         id: '20aa90025cd546cebc1823650912a4ef'
@@ -76,6 +92,10 @@ declare global {
                     '2671982625954baa82bf4315b0e42c48': {
                         table: 'sys_app_module'
                         id: '2671982625954baa82bf4315b0e42c48'
+                    }
+                    '26bffeced7be4aab8c348178e46283ff': {
+                        table: 'sp_widget'
+                        id: '26bffeced7be4aab8c348178e46283ff'
                     }
                     '2800364c2fa01b10bec1567e8ea4e369': {
                         table: 'sys_scope_privilege'
@@ -116,6 +136,10 @@ declare global {
                     '3144315507c546d4bb6db865ec4ff429': {
                         table: 'sys_ws_operation'
                         id: '3144315507c546d4bb6db865ec4ff429'
+                    }
+                    '332aed45cfa09f10f492f48d5d851c58': {
+                        table: 'sys_scope_privilege'
+                        id: '332aed45cfa09f10f492f48d5d851c58'
                     }
                     '33690d1709e84ca693f2319edb826567': {
                         table: 'sp_widget'
@@ -253,6 +277,10 @@ declare global {
                         table: 'sys_app_module'
                         id: '5e77830045ad4fe4b3d3074f00488d58'
                     }
+                    '5fbef8f76d1c460bbfea194a4afc59c4': {
+                        table: 'sys_ws_operation'
+                        id: '5fbef8f76d1c460bbfea194a4afc59c4'
+                    }
                     '60614d53ec814a4293cf8403462c75dd': {
                         table: 'sys_ui_related_list_entry'
                         id: '60614d53ec814a4293cf8403462c75dd'
@@ -261,9 +289,17 @@ declare global {
                         table: 'sys_security_acl'
                         id: '60f49ad0b0fb4b938ed2d3ffe86773e2'
                     }
+                    '628629121f36417eb0e057cee9382f09': {
+                        table: 'sp_container'
+                        id: '628629121f36417eb0e057cee9382f09'
+                    }
                     '65692bf6f82a4a5faeae70611a3a336a': {
                         table: 'sys_security_acl'
                         id: '65692bf6f82a4a5faeae70611a3a336a'
+                    }
+                    '663122e3c04446e192ca979d8ac91e17': {
+                        table: 'sp_column'
+                        id: '663122e3c04446e192ca979d8ac91e17'
                     }
                     '680245c05ea34488bdca208a3f9da8be': {
                         table: 'sys_security_acl'
@@ -281,9 +317,21 @@ declare global {
                         table: 'sys_security_acl'
                         id: '6d1069bd310744bc81446f750a9dd839'
                     }
+                    '732aed45cfa09f10f492f48d5d851c45': {
+                        table: 'sys_scope_privilege'
+                        id: '732aed45cfa09f10f492f48d5d851c45'
+                    }
                     '74cd3af7913144689fb270cade17bd30': {
                         table: 'sys_security_acl'
                         id: '74cd3af7913144689fb270cade17bd30'
+                    }
+                    '772aed45cfa09f10f492f48d5d851c53': {
+                        table: 'sys_scope_privilege'
+                        id: '772aed45cfa09f10f492f48d5d851c53'
+                    }
+                    '7b2aed45cfa09f10f492f48d5d851c5c': {
+                        table: 'sys_scope_privilege'
+                        id: '7b2aed45cfa09f10f492f48d5d851c5c'
                     }
                     '7b6e57542fa09b10bec1567e8ea4e323': {
                         table: 'sys_restricted_caller_access'
@@ -301,9 +349,17 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '81bf36082f241b10bec1567e8ea4e3ae'
                     }
+                    '843aed45cfa09f10f492f48d5d851c6b': {
+                        table: 'sys_scope_privilege'
+                        id: '843aed45cfa09f10f492f48d5d851c6b'
+                    }
                     '843f67042fa81b10bec1567e8ea4e3a5': {
                         table: 'sys_scope_privilege'
                         id: '843f67042fa81b10bec1567e8ea4e3a5'
+                    }
+                    '85ee7e1889074856b7edbd65a07459a4': {
+                        table: 'sys_ws_operation'
+                        id: '85ee7e1889074856b7edbd65a07459a4'
                     }
                     '86045587082e4d65b760c9730c420bcf': {
                         table: 'sys_security_acl'
@@ -361,6 +417,10 @@ declare global {
                         table: 'sys_app_module'
                         id: '944550d7f8a74983a96faf37ef57657a'
                     }
+                    '9457abe829eb439abe4e0b61bdc70f62': {
+                        table: 'sys_ws_operation'
+                        id: '9457abe829eb439abe4e0b61bdc70f62'
+                    }
                     '9695d9e510bc46d59f87987bd84f1458': {
                         table: 'sys_security_acl'
                         id: '9695d9e510bc46d59f87987bd84f1458'
@@ -397,6 +457,10 @@ declare global {
                         table: 'sys_app_module'
                         id: 'ace82bf3a17844678ba4d0cf2881f76a'
                     }
+                    ad433905cfe09f10f492f48d5d851c59: {
+                        table: 'sys_scope_privilege'
+                        id: 'ad433905cfe09f10f492f48d5d851c59'
+                    }
                     b210cbab2f8349289ebc46f9c4633666: {
                         table: 'sp_container'
                         id: 'b210cbab2f8349289ebc46f9c4633666'
@@ -429,6 +493,10 @@ declare global {
                         table: 'sys_security_acl'
                         id: 'b99ae1fa294f47798ff10e28ec4358a5'
                     }
+                    bb2aed45cfa09f10f492f48d5d851c49: {
+                        table: 'sys_scope_privilege'
+                        id: 'bb2aed45cfa09f10f492f48d5d851c49'
+                    }
                     be1a51e156194512b5a8381597a4651e: {
                         table: 'sp_column'
                         id: 'be1a51e156194512b5a8381597a4651e'
@@ -436,6 +504,10 @@ declare global {
                     bom_json: {
                         table: 'sys_module'
                         id: '66b46fa686414295b9beac7e984d78e9'
+                    }
+                    c43aed45cfa09f10f492f48d5d851c66: {
+                        table: 'sys_scope_privilege'
+                        id: 'c43aed45cfa09f10f492f48d5d851c66'
                     }
                     c4a7dff3159a4acc821391f86e20f4c8: {
                         table: 'sys_security_acl'
@@ -468,6 +540,7 @@ declare global {
                     'components/ParticipantLab.css': {
                         table: 'sys_ux_theme_asset'
                         id: 'c86b93fc51714539997c0f4a0346afa0'
+                        deleted: true
                     }
                     d22a47442f641b10bec1567e8ea4e3fd: {
                         table: 'sys_scope_privilege'
@@ -505,6 +578,10 @@ declare global {
                         table: 'sys_restricted_caller_access'
                         id: 'e1250f182fec5b10bec1567e8ea4e394'
                     }
+                    e1b6ba2025d24b2ab61beb58e2f03929: {
+                        table: 'sp_row'
+                        id: 'e1b6ba2025d24b2ab61beb58e2f03929'
+                    }
                     e2ae80dabda640ca97a138bb0f4a52c2: {
                         table: 'sys_security_acl'
                         id: 'e2ae80dabda640ca97a138bb0f4a52c2'
@@ -536,6 +613,18 @@ declare global {
                     f6400746adbb405d9228761214942995: {
                         table: 'sp_column'
                         id: 'f6400746adbb405d9228761214942995'
+                    }
+                    f72aed45cfa09f10f492f48d5d851c4e: {
+                        table: 'sys_scope_privilege'
+                        id: 'f72aed45cfa09f10f492f48d5d851c4e'
+                    }
+                    fb2aed45cfa09f10f492f48d5d851c3b: {
+                        table: 'sys_scope_privilege'
+                        id: 'fb2aed45cfa09f10f492f48d5d851c3b'
+                    }
+                    fdcb1a6e6ac1409ea7fb7c8ca8e71295: {
+                        table: 'sys_ws_operation'
+                        id: 'fdcb1a6e6ac1409ea7fb7c8ca8e71295'
                     }
                     fee25fd0827940908c783ca84c88926d: {
                         table: 'sys_ws_operation'
@@ -601,6 +690,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '024411fc0c714777bdf90f1e806606d1'
+                        key: {
+                            sys_security_acl: 'dc78e856d00c4f9d96b5a7cc55924338'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '0253acbfc81349948be6a99fb52f9083'
                         key: {
@@ -652,6 +754,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '05d99f957767477f9fd23283c993ec56'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'participant_number'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '061fd90f9d1945549544fd3b45836cd1'
                         key: {
                             name: 'x_snc_holg_plan_task'
@@ -666,6 +777,19 @@ declare global {
                             name: 'x_snc_holg_task_result'
                             element: 'status'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '0803574e914444e29783f379fa2f8058'
+                        key: {
+                            sys_security_acl: '5e64164b294d418c9168c76009c36c72'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -1021,6 +1145,27 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '16d1cbd6f9974688ab86721bf40206cb'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'participant_number'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '16ed7b3701a5488f8e9bfdceb7a6455d'
+                        key: {
+                            sys_security_acl: '74cd3af7913144689fb270cade17bd30'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '187c5681c22c4c27a4bf50e09c52d656'
                         key: {
@@ -1079,6 +1224,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '19a80c935799406092fafbf73c41add1'
+                        key: {
+                            sys_security_acl: '20aa90025cd546cebc1823650912a4ef'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ui_list_element'
                         id: '19d27a802fe01b10bec1567e8ea4e3af'
                         key: {
@@ -1117,6 +1275,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '1a3ab4bd91b045d2b071cfad99bc4f45'
+                        deleted: true
                         key: {
                             sys_security_acl: '74cd3af7913144689fb270cade17bd30'
                             sys_user_role: {
@@ -1150,6 +1309,13 @@ declare global {
                         key: {
                             name: 'x_snc_holg_plan_section'
                             element: 'overview'
+                        }
+                    },
+                    {
+                        table: 'sn_glider_source_artifact'
+                        id: '1f11b6f99f0b438f8ffacdf8ddc2e963'
+                        key: {
+                            name: 'x_snc_holg_authoring.do - BYOUI Files'
                         }
                     },
                     {
@@ -1336,6 +1502,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '2f9ef383fb244061aabd882207cdea04'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'prefix'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '304319358d16499795809321b37c8957'
                         key: {
                             name: 'x_snc_holg_plan_section'
@@ -1346,6 +1521,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '31428029bab44902802bd79a4babdd43'
+                        deleted: true
                         key: {
                             sys_security_acl: 'b99ae1fa294f47798ff10e28ec4358a5'
                             sys_user_role: {
@@ -1430,6 +1606,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '375b73a29f5e4142883b233613acc749'
+                        deleted: true
                         key: {
                             sys_security_acl: 'b89ef4f5dd9e434ba7afb4bed20b4d21'
                             sys_user_role: {
@@ -1500,8 +1677,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_glider_source_artifact_m2m'
+                        id: '38e42e2c1c974766a89b8cde446d0464'
+                        key: {
+                            application_file: 'c0ef0bb198654e1883b2ab7bb564edd6'
+                            source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '398485b5f0c94cbeb3f815cc81777d32'
+                        deleted: true
                         key: {
                             sys_security_acl: '4ac11e6c66ed40568488016480de3e55'
                             sys_user_role: {
@@ -1653,6 +1839,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_glider_source_artifact_m2m'
+                        id: '471a66bf406e40e59b3c97bf2318b445'
+                        key: {
+                            application_file: '4abe8679fcf84257adf24effb94155e4'
+                            source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '4734d6b1372f497fa36367158c426300'
                         key: {
@@ -1670,10 +1864,30 @@ declare global {
                         }
                     },
                     {
+                        table: 'sp_page'
+                        id: '477f30ccff0f49a9942a6ed21a63068d'
+                        key: {
+                            id: 'authoring'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '484b56482f201b10bec1567e8ea4e32b'
                         key: {
                             name: 'x_snc_holg_plan_task'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '487e2b997c754663b50c11b16c98f30c'
+                        key: {
+                            sys_security_acl: 'b89ef4f5dd9e434ba7afb4bed20b4d21'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -1718,6 +1932,13 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_ux_lib_asset'
+                        id: '4abe8679fcf84257adf24effb94155e4'
+                        key: {
+                            name: 'x_snc_holg/authoring'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '4b0bc6917a724e0ebc4b91f2dd78728d'
                         key: {
@@ -1739,6 +1960,19 @@ declare global {
                             name: 'x_snc_holg_task_prompt'
                             element: 'prompt_text'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '4eba18cdbd604752b0777e27d65038d4'
+                        key: {
+                            sys_security_acl: '4ac11e6c66ed40568488016480de3e55'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -1791,6 +2025,14 @@ declare global {
                         id: '51eeafd4cf649b106223b6914d851c57'
                         key: {
                             name: 'x_snc_holg_criterion_response'
+                        }
+                    },
+                    {
+                        table: 'sn_glider_source_artifact_m2m'
+                        id: '531b3a70b482409aaca9afb41fe83786'
+                        key: {
+                            application_file: '13dabf0c56d342a6b5e2c02472dcbdc2'
+                            source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
                         }
                     },
                     {
@@ -2015,6 +2257,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: '5e02a4a8032b476ea17ec682e10eb459'
+                        deleted: true
                         key: {
                             sys_security_acl: 'b2d0b79311ff46f19ed7a095616954ae'
                             sys_user_role: {
@@ -2138,6 +2381,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '62ef5c13a9304d2394a31df5c7eb1a3f'
+                        key: {
+                            sys_security_acl: '3d24b5efe35b44a894c3a278a3de19d3'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '6356b3b868bb4c6bbb1e0105e357313b'
                         key: {
@@ -2226,6 +2482,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sn_glider_source_artifact_m2m'
+                        id: '6a42172632d44222a5961249a4ae6ee9'
+                        key: {
+                            application_file: 'd0abbb710c68415aa9d8bfd58b76f6b9'
+                            source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '6b2867af3b624694bb8ec1b4ec12068e'
                         key: {
@@ -2296,6 +2560,19 @@ declare global {
                         id: '6fa4d82cb1c3451589fcf62d9d691b7f'
                         key: {
                             name: 'x_snc_holg/vendor-react-dom--b0167c2c'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '6fab6f8f2a1f4cb48a873bc1d69ced64'
+                        key: {
+                            sys_security_acl: '29a32680c97f43058df92b905a7afee5'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -2394,6 +2671,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: '760f908d726645ffa85a7bd0def86351'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'prefix'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: '77008b2109444c0cb23d607bf42e47ba'
                         key: {
                             name: 'x_snc_holg_plan_participant'
@@ -2428,6 +2713,19 @@ declare global {
                         id: '791c4c7b0dbd4541980a838b4f12316c'
                         key: {
                             name: 'x_snc_holg_task_prompt'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '7bd54d400ec94cc885201b60b73f390b'
+                        key: {
+                            sys_security_acl: 'dba2f8721a0a4e71929f61f4e378c1d4'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -2767,6 +3065,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '95585618858748098bdbc6752b51c393'
+                        key: {
+                            sys_security_acl: '596594696f704a979f80376d621a2516'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '956dcc42984a40f88ac319882a336f63'
                         key: {
@@ -2857,6 +3168,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '9f6e0ff6f0004743919b23b9d5b74701'
+                        key: {
+                            sys_security_acl: '60f49ad0b0fb4b938ed2d3ffe86773e2'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '9ff1909ed07c4238977a172c5ee353f5'
                         key: {
@@ -2940,6 +3264,14 @@ declare global {
                         key: {
                             logical_table_name: 'x_snc_holg_task_result'
                             col_name_string: 'plan_participant'
+                        }
+                    },
+                    {
+                        table: 'sn_glider_source_artifact_m2m'
+                        id: 'a2f2390e75434d439e0e526b7a8eb6c2'
+                        key: {
+                            application_file: 'a86da023b30248018106603f4dc6c171'
+                            source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
                         }
                     },
                     {
@@ -3089,8 +3421,16 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_ui_page'
+                        id: 'a86da023b30248018106603f4dc6c171'
+                        key: {
+                            endpoint: 'x_snc_holg_authoring.do'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'a87999dcf716400189fb8759094a61f9'
+                        deleted: true
                         key: {
                             sys_security_acl: 'dba2f8721a0a4e71929f61f4e378c1d4'
                             sys_user_role: {
@@ -3226,6 +3566,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'ae55a4d07fab4b3c94d15f9465146bdc'
+                        deleted: true
                         key: {
                             sys_security_acl: '65692bf6f82a4a5faeae70611a3a336a'
                             sys_user_role: {
@@ -3301,6 +3642,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'b3ea9f2e63cc4fa4a47dfb9470dd3925'
+                        key: {
+                            sys_security_acl: '6b4f57630b5540fe9e48c668b06e81a9'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sp_page_route_map'
                         id: 'b438c5f1adf54e78ab5d32025fe81239'
                         key: {
@@ -3314,6 +3668,13 @@ declare global {
                         key: {
                             name: 'x_snc_holg_task_prompt'
                             element: 'label'
+                        }
+                    },
+                    {
+                        table: 'sys_user_role'
+                        id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                        key: {
+                            name: 'x_snc_holg.author'
                         }
                     },
                     {
@@ -3356,6 +3717,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'b7cae4f7cc9547abbdebd68b3a93784d'
+                        key: {
+                            sys_security_acl: '65692bf6f82a4a5faeae70611a3a336a'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'b7f828c9f4e049d1ada2d8bfcd871690'
                         key: {
@@ -3391,6 +3765,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'ba2b690759964b5ebfe300533e0198fc'
+                        deleted: true
                         key: {
                             sys_security_acl: 'dc78e856d00c4f9d96b5a7cc55924338'
                             sys_user_role: {
@@ -3430,6 +3805,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'bd9674ef8d374537824bf043d6728388'
+                        key: {
+                            sys_security_acl: 'ea7ee063062f43088027da21b833455c'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'beb53718697c443e9667dfe785e3d266'
                         key: {
@@ -3458,6 +3846,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'c0e3d69109814da9ba60d3b63137f93c'
+                        deleted: true
                         key: {
                             sys_security_acl: 'ea7ee063062f43088027da21b833455c'
                             sys_user_role: {
@@ -3513,6 +3902,19 @@ declare global {
                         key: {
                             name: 'x_snc_holg_task_result'
                             element: 'feedback'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'c61efd6da40c4f51bbb9c1a651a96a1d'
+                        key: {
+                            sys_security_acl: '2abfea47ff5249ff8934bf28c1abf675'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -3630,7 +4032,21 @@ declare global {
                     },
                     {
                         table: 'sys_security_acl_role'
+                        id: 'cde05a4ac3814d4e91e7416201c9ae26'
+                        key: {
+                            sys_security_acl: 'c4a7dff3159a4acc821391f86e20f4c8'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
                         id: 'ce7e035343d7474990634fa2f5eb350e'
+                        deleted: true
                         key: {
                             sys_security_acl: '2abfea47ff5249ff8934bf28c1abf675'
                             sys_user_role: {
@@ -3671,6 +4087,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'cf2812c7fa814246baaa7d96d911adee'
+                        key: {
+                            sys_security_acl: 'b99ae1fa294f47798ff10e28ec4358a5'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_choice'
                         id: 'd02992e14bab4e8886b7ab3b520708cf'
                         key: {
@@ -3679,6 +4108,13 @@ declare global {
                             value: 'closed'
                             language: 'en'
                             dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_ux_lib_asset'
+                        id: 'd0abbb710c68415aa9d8bfd58b76f6b9'
+                        key: {
+                            name: 'x_snc_holg/authoring.js.map'
                         }
                     },
                     {
@@ -3804,6 +4240,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'd94b1867b2b346c1803156bb363677e9'
+                        key: {
+                            sys_security_acl: 'b2d0b79311ff46f19ed7a095616954ae'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ui_list_element'
                         id: 'd9e03e8c2fa01b10bec1567e8ea4e343'
                         key: {
@@ -3920,6 +4369,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'dca0fc02f709461bb774e0b33eab250a'
+                        deleted: true
                         key: {
                             sys_security_acl: '60f49ad0b0fb4b938ed2d3ffe86773e2'
                             sys_user_role: {
@@ -3999,6 +4449,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e2287d5d375c4403a6552bdd95410fef'
+                        deleted: true
                         key: {
                             sys_security_acl: '29a32680c97f43058df92b905a7afee5'
                             sys_user_role: {
@@ -4035,6 +4486,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e410bb5a2b9d456eaaa84c447a3b0570'
+                        deleted: true
                         key: {
                             sys_security_acl: '596594696f704a979f80376d621a2516'
                             sys_user_role: {
@@ -4056,6 +4508,7 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e6335eb6932344e3afb8bb2bf20b3938'
+                        deleted: true
                         key: {
                             sys_security_acl: '20aa90025cd546cebc1823650912a4ef'
                             sys_user_role: {
@@ -4179,12 +4632,26 @@ declare global {
                     {
                         table: 'sys_security_acl_role'
                         id: 'e9f5e1c3856f4caf90a865df2df0078a'
+                        deleted: true
                         key: {
                             sys_security_acl: 'e2ae80dabda640ca97a138bb0f4a52c2'
                             sys_user_role: {
                                 id: 'a4e190a58df349a9868f0beced36bc9f'
                                 key: {
                                     name: 'x_snc_holg.facilitator'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'eac20eab8dac42a2b122672a94602d1a'
+                        key: {
+                            sys_security_acl: 'b8e0174a59c3433480230105755cfe56'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
                                 }
                             }
                         }
@@ -4249,6 +4716,19 @@ declare global {
                                 }
                             }
                             sys_domain: 'global'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'ee426c11bca145eeab211299c39f5518'
+                        key: {
+                            sys_security_acl: 'e2ae80dabda640ca97a138bb0f4a52c2'
+                            sys_user_role: {
+                                id: '3cefae96cd894705bf0a74cd68752de6'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {

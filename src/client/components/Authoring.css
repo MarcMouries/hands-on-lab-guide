@@ -1,0 +1,326 @@
+/*
+ * Plan authoring surface.
+ *
+ * Only what this view adds: buttons, fields, selects, alerts and the Markdown
+ * block styles all come from ParticipantLab.css and PromptBox.css, which the
+ * entry imports so the preview is styled by the same rules as the page it
+ * previews. Colours resolve from `--now-*` Horizon tokens with literal
+ * fallbacks, so this follows the instance theme light and dark.
+ */
+
+.holg-author,
+.holg-author *,
+.holg-author *::before,
+.holg-author *::after {
+    box-sizing: border-box;
+}
+
+.holg-author {
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    padding: 12px 16px 16px;
+}
+
+/*
+ * The Service Portal wraps every widget in container / row / column, each with
+ * its own Bootstrap gutter: about 45px a side before this app's own padding,
+ * which a two-column workspace would rather spend on content. These rules are
+ * in the app's stylesheet rather than the widget's because the bundle injects
+ * it into the document, so it can reach the wrappers above the mount point.
+ *
+ * Matched by what they contain, not by the container's sys_id, so re-laying out
+ * the page in Service Portal Designer cannot leave a stale selector behind. On
+ * the standalone `.do` page nothing matches and nothing changes.
+ */
+#sp-main-wrapper .container-fluid:has(.holg-authoring-shell),
+#sp-main-wrapper [class*='col-']:has(.holg-authoring-shell) {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#sp-main-wrapper .row:has(.holg-authoring-shell) {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.holg-author__header {
+    margin-bottom: 12px;
+}
+
+.holg-author__title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--holg-navy);
+}
+
+.holg-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.holg-toolbar__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.holg-input {
+    font-family: inherit;
+    font-size: 16px;
+    color: inherit;
+    padding: 8px;
+    min-height: 36px;
+    width: 100%;
+    max-width: 100%;
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+}
+
+/* Tree beside editor on a desktop, stacked on a phone. */
+.holg-author__split {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 860px) {
+    .holg-author__split {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ---------- tree ---------- */
+
+.holg-tree {
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    padding: 4px 0;
+    overflow: hidden;
+}
+
+.holg-tree__row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-right: 4px;
+    min-height: 32px;
+}
+
+.holg-tree__row:hover {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}
+
+.holg-tree__row--on {
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    box-shadow: inset 3px 0 0 0 var(--holg-accent);
+}
+
+.holg-tree__pick {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: inherit;
+}
+
+.holg-tree__kind {
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-tree__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.holg-tree__tools {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 2px;
+}
+
+.holg-tree__adds {
+    display: flex;
+    gap: 6px;
+    padding-top: 4px;
+    padding-bottom: 8px;
+}
+
+.holg-iconbtn {
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    /* 28px keeps the target reachable on a touch screen. */
+    width: 28px;
+    height: 28px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.holg-iconbtn:hover:not(:disabled) {
+    border-color: rgb(var(--now-container-card--border-color, 207, 213, 215));
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+}
+
+.holg-iconbtn:disabled {
+    cursor: default;
+    opacity: 0.3;
+}
+
+.holg-iconbtn--danger:hover:not(:disabled) {
+    /* 4.6:1 on white, so the glyph still passes as text. */
+    color: #b8002e;
+    border-color: #b8002e;
+}
+
+/* ---------- editor ---------- */
+
+.holg-editor {
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    padding: 12px 16px 16px;
+}
+
+.holg-editor__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+}
+
+.holg-editor__title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.holg-editor__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.holg-editor__dirty,
+.holg-editor__saved {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.holg-editor__dirty {
+    color: #8a5300;
+}
+
+.holg-editor__saved {
+    color: #00604a;
+}
+
+.holg-field2 {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+.holg-field2__label {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-field2__hint {
+    font-size: 14px;
+    margin: 0;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-field2__count {
+    font-size: 13px;
+    text-align: right;
+    margin: 0;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
+.holg-field2__count--over {
+    font-weight: 700;
+    color: #b8002e;
+}
+
+.holg-field2 .holg-textarea {
+    min-height: 90px;
+}
+
+/* ---------- Markdown editor and preview ---------- */
+
+/*
+ * The two columns stretch to the row height instead of each sizing to its own
+ * content, so the textarea is always as tall as the preview beside it. A
+ * textarea's rows-based height is a content size rather than a definite one,
+ * which is what lets `stretch` override it; dragging the resize handle sets an
+ * inline height that wins until the page is reloaded.
+ */
+.holg-md {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+@media (max-width: 1100px) {
+    .holg-md {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.holg-textarea--md {
+    min-height: 320px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 15px;
+}
+
+.holg-md__preview {
+    border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+    border-radius: 4px;
+    background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    overflow: hidden;
+}
+
+.holg-md__previewLabel {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 6px 8px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+}

@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import './FacilitatorDashboard.css'
 import { useMe } from '../hooks/useMe'
 import { usePlans } from '../hooks/usePlans'
 import { useFacilitatorSummary } from '../hooks/useFacilitatorSummary'
 import { formatClockTime } from '../utils/format'
+import { setUrlParams } from '../utils/navigate'
+import { planSlug } from '../utils/planSlug'
 import { EmptyState, Panel } from './Panel'
 import { ParticipantTable } from './ParticipantTable'
 import { RecentFeedback } from './RecentFeedback'
@@ -29,21 +31,62 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
     const meState = useMe()
     const canImpersonate = !!meState.me && meState.me.isAdmin
 
-    // Pick the requested plan when it exists, otherwise the first one.
+    /*
+     * Pick the requested plan when it exists, otherwise the first one.
+     *
+     * Matches a sys_id OR a slug, because that is what the REST layer accepts
+     * for {plan_id} and what the participant views link with. Matching only on
+     * sys_id made `?id=facilitator&plan_id=Now-Assist-for-Creator` fall back to
+     * the first plan without saying why.
+     */
     const requested = params.plan_id || ''
     const resolved = useMemo(() => {
         if (!plansState.plans.length) {
             return ''
         }
-        const match = plansState.plans.filter((plan) => plan.sys_id === requested)
+        const wanted = requested.toLowerCase()
+        if (!wanted) {
+            return plansState.plans[0].sys_id
+        }
+        const match = plansState.plans.filter(
+            (plan) =>
+                plan.sys_id.toLowerCase() === wanted ||
+                planSlug(plan.name).toLowerCase() === wanted,
+        )
         return match.length ? match[0].sys_id : plansState.plans[0].sys_id
     }, [plansState.plans, requested])
 
+    /** The slug a plan should appear as in the URL, by sys_id. */
+    const slugFor = useCallback(
+        (sysId: string): string => {
+            const match = plansState.plans.filter((plan) => plan.sys_id === sysId)
+            return match.length ? planSlug(match[0].name) : ''
+        },
+        [plansState.plans],
+    )
+
     useEffect(() => {
-        if (resolved && !planId) {
-            setPlanId(resolved)
+        if (!resolved || planId) {
+            return
         }
-    }, [resolved, planId])
+        setPlanId(resolved)
+        // Make the view linkable straight away, including when it landed here
+        // with no plan_id at all and fell back to the first plan. Replaced,
+        // not pushed: arriving is not a navigation step worth going Back to.
+        const slug = slugFor(resolved)
+        if (slug && slug.toLowerCase() !== requested.toLowerCase()) {
+            setUrlParams({ plan_id: slug }, true)
+        }
+    }, [resolved, planId, requested, slugFor])
+
+    const onPlanChange = useCallback(
+        (sysId: string) => {
+            setPlanId(sysId)
+            // Pushed, so Back returns to the plan that was open before.
+            setUrlParams({ plan_id: slugFor(sysId) || sysId })
+        },
+        [slugFor],
+    )
 
     const summaryState = useFacilitatorSummary(planId)
     const summary = summaryState.summary
@@ -64,7 +107,7 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
                             className="holg-select"
                             value={planId}
                             disabled={plansState.loading || !plansState.plans.length}
-                            onChange={(event) => setPlanId(event.target.value)}
+                            onChange={(event) => onPlanChange(event.target.value)}
                         >
                             {plansState.plans.map((plan) => (
                                 <option value={plan.sys_id} key={plan.sys_id}>

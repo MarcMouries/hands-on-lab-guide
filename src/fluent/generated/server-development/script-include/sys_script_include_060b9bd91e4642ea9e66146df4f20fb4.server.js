@@ -24,6 +24,7 @@ var LAB_T_USER = 'sys_user'
 // Roles
 var LAB_ROLE_FACILITATOR = 'x_snc_holg.facilitator'
 var LAB_ROLE_PARTICIPANT = 'x_snc_holg.participant'
+var LAB_ROLE_AUTHOR = 'x_snc_holg.author'
 
 // Stored choice values, exactly as defined on the tables
 var LAB_PLAN_PUBLISHED = 'published'
@@ -36,6 +37,70 @@ var LAB_RESULT_PASS = 'pass'
 var LAB_RESULT_FAIL = 'fail'
 var LAB_ANSWER_YES = 'yes'
 var LAB_ANSWER_NO = 'no'
+
+/* The authoring tree, one entry per editable level.
+ *
+ * `fields` is the allowlist a request body may write - anything else in a body
+ * is ignored, so `order` and the parent reference can only be changed through
+ * the move endpoint and a create. `limits` mirrors the column lengths in
+ * src/fluent/table, so an over-long value is refused with a message instead of
+ * being silently truncated by the platform.
+ *
+ * A plan has no `order` column: plans are listed by name, so `ordered` is
+ * false and the move endpoint refuses it. `facilitator` is deliberately absent
+ * from the plan's fields - a field-level ACL restricts it to facilitators, and
+ * an author may not be one.
+ */
+var LAB_AUTHOR_TYPES = {
+    plan: {
+        table: LAB_T_PLAN,
+        parent: '',
+        ordered: false,
+        fields: ['name', 'description', 'status'],
+        mandatory: ['name'],
+        limits: { name: 120, description: 4000 },
+    },
+    section: {
+        table: LAB_T_SECTION,
+        parent: 'evaluation_plan',
+        ordered: true,
+        fields: ['title', 'overview'],
+        mandatory: ['title'],
+        limits: { title: 120, overview: 4000 },
+    },
+    task: {
+        table: LAB_T_TASK,
+        parent: 'plan_section',
+        ordered: true,
+        fields: ['title', 'description', 'scenario', 'how_to_test', 'dependency_note'],
+        mandatory: ['title'],
+        limits: {
+            title: 120,
+            description: 4000,
+            scenario: 4000,
+            how_to_test: 4000,
+            dependency_note: 4000,
+        },
+    },
+    prompt: {
+        table: LAB_T_PROMPT,
+        parent: 'plan_task',
+        ordered: true,
+        fields: ['label', 'prompt_text'],
+        mandatory: [],
+        limits: { label: 120, prompt_text: 8000 },
+    },
+    criterion: {
+        table: LAB_T_CRITERION,
+        parent: 'plan_task',
+        ordered: true,
+        fields: ['criterion'],
+        mandatory: [],
+        limits: { criterion: 4000 },
+    },
+}
+
+var LAB_PLAN_STATUSES = ['draft', 'published', 'closed']
 
 // Words dropped when building a plan slug, compared case-insensitively.
 // 'for' is deliberately NOT a stop-word.
@@ -125,11 +190,19 @@ LabApi.prototype = {
         return taskIds
     },
 
+    /*
+     * Only ever called with the CALLER'S OWN participant record - getPlans,
+     * startPlan and getPlan all resolve by user=gs.getUserID() - which is why
+     * the display name can come from the session instead of a sys_user read.
+     */
     _serializeParticipant: function (gr) {
         return {
             sys_id: gr.getUniqueValue() + '',
             evaluation_plan: this._str(gr.getValue('evaluation_plan')),
             user: this._str(gr.getValue('user')),
+            user_display_name: gs.getUserDisplayName() + '',
+            participant_number: this._toInt(gr.getValue('participant_number')),
+            prefix: this._str(gr.getValue('prefix')),
             status: this._str(gr.getValue('status')),
             percent_complete: this._toInt(gr.getValue('percent_complete')),
             started_on: this._str(gr.getValue('started_on')) || null,
@@ -301,9 +374,122 @@ LabApi.prototype = {
      * GlideRecordSecure on the row, or null when the fresh row cannot be
      * re-read by the caller.
      */
+    /* ------------------------------------------------------------ *
+     * Participant number and prefix
+     *
+     * The number is what the workshop uses to keep dozens of participants
+     * off each other's toes: it drives the prefix (p07), which drives the
+     * application name and the 18-character scope (x_snc_p07).
+     *
+     * Numbers are handed out from one place and stay small, because a
+     * facilitator reads them out loud: the lowest number not already taken in
+     * this plan. A lab account whose user name carries a number
+     * (now.assist.participant7 -> 7) keeps that number whenever it is still
+     * free, so a pre-named roster lines up with itself.
+     *
+     * Both paths read the plan's rows and then write, so two people opening
+     * the plan in the same instant can land on the same number. That is
+     * cosmetic: the number only has to be unique alongside the initials it is
+     * joined to, and the facilitator sees two rows rather than a silent
+     * failure. Making it race-proof needs the unique index tracked in ROADMAP.md.
+     * ------------------------------------------------------------ */
+
+    /** The trailing digits of the caller's user name, or 0 if it has none. */
+    _numberFromUserName: function () {
+        var match = /(\d+)\s*$/.exec(gs.getUserName() + '')
+        return match ? parseInt(match[1], 10) : 0
+    },
+
+    /** The numbers already handed out in a plan, as a lookup by number. */
+    _takenNumbers: function (planId) {
+        var taken = {}
+        var pp = new GlideRecordSecure(LAB_T_PARTICIPANT)
+        pp.addQuery('evaluation_plan', planId)
+        pp.addQuery('participant_number', '>', 0)
+        pp.query()
+        while (pp.next()) {
+            taken[this._toInt(pp.getValue('participant_number'))] = true
+        }
+        return taken
+    },
+
+    /**
+     * The lowest number not in `taken`, counting from 1.
+     *
+     * Lowest free rather than max + 1 so that a plan whose roster has churned
+     * keeps reusing small numbers instead of drifting upwards.
+     */
+    _lowestFreeNumber: function (taken) {
+        var number = 1
+        while (taken[number]) {
+            number++
+        }
+        return number
+    },
+
+    /**
+     * Initials from the caller's display name, lowercased, at most three.
+     *
+     * Only name words that actually START with a letter contribute, which is
+     * what keeps the lab accounts sane: "Participant #1" yields 'p', because
+     * '#1' has no leading letter to take. Falls back to 'p' for a name with no
+     * usable letter at all, so a prefix is never empty.
+     */
+    _initialsFor: function () {
+        var words = (gs.getUserDisplayName() + '').split(/[^A-Za-z0-9]+/)
+        var letters = ''
+        for (var i = 0; i < words.length && letters.length < 3; i++) {
+            if (words[i] && /^[A-Za-z]/.test(words[i])) {
+                letters += words[i].charAt(0).toLowerCase()
+            }
+        }
+        return letters || 'p'
+    },
+
+    /**
+     * Initials plus the number: p01, mm04, mm07. Zero-padded to two digits so
+     * prefixes sort readably.
+     *
+     * The number is what makes this unique - two people with the same initials
+     * get different numbers - and the initials are what make a scope
+     * recognisable to its owner at a glance. Worst case this is 3 letters plus
+     * 3 digits, so `x_snc_` + prefix stays inside the 18-character cap on
+     * sys_scope.scope.
+     */
+    _prefixFor: function (number, initials) {
+        return initials + (number < 10 ? '0' + number : '' + number)
+    },
+
+    /**
+     * Give a participant their number and prefix if they do not have one.
+     *
+     * Safe to call on every enrolment check: it writes only when the number
+     * is still missing, so a number never moves once assigned. A refused
+     * write is swallowed, because the caller is a read that must succeed.
+     */
+    _ensureParticipantNumber: function (planId, gr) {
+        if (!gr || this._toInt(gr.getValue('participant_number')) > 0) {
+            return
+        }
+        var taken = this._takenNumbers(planId)
+        var number = this._numberFromUserName()
+        if (!number || taken[number]) {
+            number = this._lowestFreeNumber(taken)
+        }
+        gr.setValue('participant_number', number)
+        gr.setValue('prefix', this._prefixFor(number, this._initialsFor()))
+        try {
+            gr.update()
+        } catch (e) {
+            // Leaves the number at 0; the client shows it as unassigned.
+        }
+    },
+
     _ensureParticipant: function (planId) {
         var existing = this._findParticipant(planId)
         if (existing) {
+            // Backfills participants enrolled before numbers existed.
+            this._ensureParticipantNumber(planId, existing)
             return {
                 sys_id: existing.getUniqueValue() + '',
                 created: false,
@@ -325,10 +511,14 @@ LabApi.prototype = {
         }
 
         var created = new GlideRecordSecure(LAB_T_PARTICIPANT)
+        if (!created.get(newId + '')) {
+            return { sys_id: newId + '', created: true, participant: null }
+        }
+        this._ensureParticipantNumber(planId, created)
         return {
             sys_id: newId + '',
             created: true,
-            participant: created.get(newId + '') ? created : null,
+            participant: created,
         }
     },
 
@@ -1231,6 +1421,514 @@ LabApi.prototype = {
             task_result: resultSysId,
             answer: answer,
         })
+    },
+
+    /* ------------------------------------------------------------ *
+     * Authoring
+     *
+     * Backs the portal authoring UI (?id=authoring). Every write goes
+     * through GlideRecordSecure, so the x_snc_holg ACLs still decide what
+     * lands - the role check here only keeps the endpoints off the dashboard
+     * audience, who can watch a workshop but should not be able to edit the
+     * plan it is running from.
+     *
+     * One generic node endpoint per verb rather than five sets of CRUD
+     * routes: the five authoring tables differ only in their table name,
+     * their parent reference and which fields may be written, so that
+     * difference lives in LAB_AUTHOR_TYPES and the routes stay flat.
+     * ------------------------------------------------------------ */
+
+    /** The type config for a node type, or null when the type is unknown. */
+    _authorType: function (type) {
+        return Object.prototype.hasOwnProperty.call(LAB_AUTHOR_TYPES, type)
+            ? LAB_AUTHOR_TYPES[type]
+            : null
+    },
+
+    /** 403s unless the caller may author. Returns true when they may. */
+    _authorGate: function (response) {
+        if (gs.hasRole(LAB_ROLE_AUTHOR)) {
+            return true
+        }
+        this._send(response, 403, {
+            error: 'Requires the ' + LAB_ROLE_AUTHOR + ' role',
+        })
+        return false
+    },
+
+    /**
+     * Reads the writable fields out of a request body.
+     *
+     * Returns { values } or { error }. Only fields named in the type config
+     * are read, so a body cannot reach `order`, a parent reference or any
+     * other column - those move through their own endpoints.
+     */
+    _authorValues: function (cfg, body, requireMandatory) {
+        var values = {}
+        var i
+        for (i = 0; i < cfg.fields.length; i++) {
+            var field = cfg.fields[i]
+            if (!Object.prototype.hasOwnProperty.call(body, field)) {
+                continue
+            }
+            var value = this._str(body[field])
+            var limit = cfg.limits[field] || 0
+            if (limit && value.length > limit) {
+                return {
+                    error: field + ' is longer than ' + limit + ' characters',
+                }
+            }
+            if (field === 'status' && value && LAB_PLAN_STATUSES.indexOf(value) < 0) {
+                return { error: 'status must be one of ' + LAB_PLAN_STATUSES.join(', ') }
+            }
+            values[field] = value
+        }
+
+        if (requireMandatory) {
+            for (i = 0; i < cfg.mandatory.length; i++) {
+                var name = cfg.mandatory[i]
+                if (!this._str(values[name])) {
+                    return { error: name + ' is required' }
+                }
+            }
+        }
+
+        return { values: values }
+    },
+
+    /** Sibling sys_ids under one parent, in the order they render. */
+    _authorSiblings: function (cfg, parentId) {
+        var ids = []
+        var gr = new GlideRecordSecure(cfg.table)
+        if (cfg.parent) {
+            gr.addQuery(cfg.parent, parentId)
+        }
+        gr.orderBy('order')
+        gr.orderBy('sys_created_on')
+        gr.query()
+        while (gr.next()) {
+            ids.push(gr.getUniqueValue() + '')
+        }
+        return ids
+    },
+
+    /**
+     * Writes 100, 200, 300 ... onto a list of siblings in the given order.
+     *
+     * Every move rewrites the whole sibling list rather than swapping two
+     * values. Swapping looks cheaper but does nothing at all when two rows
+     * share an order - which authored-by-hand data does - and a list is only
+     * ever a handful of rows.
+     */
+    _authorResequence: function (cfg, ids) {
+        var written = 0
+        for (var i = 0; i < ids.length; i++) {
+            var gr = new GlideRecordSecure(cfg.table)
+            if (!gr.get(ids[i])) {
+                continue
+            }
+            var wanted = (i + 1) * 100
+            if (this._toInt(gr.getValue('order')) === wanted) {
+                continue
+            }
+            gr.setValue('order', wanted)
+            if (gr.update()) {
+                written++
+            }
+        }
+        return written
+    },
+
+    /** Task Results that a delete would take with it, for the confirm step. */
+    _authorResultCount: function (type, sysId) {
+        var taskIds = []
+        var gr
+
+        if (type === 'task') {
+            taskIds.push(sysId)
+        } else if (type === 'section') {
+            gr = new GlideRecordSecure(LAB_T_TASK)
+            gr.addQuery('plan_section', sysId)
+            gr.query()
+            while (gr.next()) {
+                taskIds.push(gr.getUniqueValue() + '')
+            }
+        } else if (type === 'plan') {
+            taskIds = this._planTaskIds(sysId)
+        }
+
+        if (!taskIds.length) {
+            return 0
+        }
+
+        var count = new GlideAggregate(LAB_T_RESULT)
+        count.addQuery('plan_task', 'IN', taskIds.join(','))
+        count.addAggregate('COUNT')
+        count.query()
+        return count.next() ? this._toInt(count.getAggregate('COUNT')) : 0
+    },
+
+    /** Every plan an author may see, drafts and closed ones included. */
+    getAuthoringPlans: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var plans = []
+        var gr = new GlideRecordSecure(LAB_T_PLAN)
+        gr.orderBy('name')
+        gr.query()
+        while (gr.next()) {
+            plans.push({
+                sys_id: gr.getUniqueValue() + '',
+                name: this._str(gr.getValue('name')),
+                description: this._str(gr.getValue('description')),
+                status: this._str(gr.getValue('status')),
+                slug: this._slug(this._str(gr.getValue('name'))),
+            })
+        }
+
+        this._send(response, 200, { plans: plans })
+    },
+
+    /**
+     * One plan as the whole authoring tree.
+     *
+     * Deliberately not getPlan: that one is written for a participant and
+     * hides anything unpublished, carries their results and backfills rows on
+     * read. An author needs the draft, and needs it to stay read-only.
+     */
+    getAuthoringPlan: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var planId = this._pathParam(request, 'plan_id')
+        if (!planId) {
+            this._send(response, 400, { error: 'plan_id is required' })
+            return
+        }
+
+        var plan = this._resolvePlan(planId)
+        if (!plan) {
+            this._send(response, 404, { error: 'Evaluation Plan not found or not accessible' })
+            return
+        }
+        var planSysId = plan.getUniqueValue() + ''
+
+        var sections = []
+        var sectionById = {}
+        var sg = new GlideRecordSecure(LAB_T_SECTION)
+        sg.addQuery('evaluation_plan', planSysId)
+        sg.orderBy('order')
+        sg.orderBy('sys_created_on')
+        sg.query()
+        while (sg.next()) {
+            var section = {
+                sys_id: sg.getUniqueValue() + '',
+                title: this._str(sg.getValue('title')),
+                overview: this._str(sg.getValue('overview')),
+                order: this._toInt(sg.getValue('order')),
+                tasks: [],
+            }
+            sectionById[section.sys_id] = section
+            sections.push(section)
+        }
+
+        var taskById = {}
+        if (sections.length) {
+            var tg = new GlideRecordSecure(LAB_T_TASK)
+            tg.addQuery('plan_section', 'IN', Object.keys(sectionById).join(','))
+            tg.orderBy('order')
+            tg.orderBy('sys_created_on')
+            tg.query()
+            while (tg.next()) {
+                var task = {
+                    sys_id: tg.getUniqueValue() + '',
+                    plan_section: this._str(tg.getValue('plan_section')),
+                    title: this._str(tg.getValue('title')),
+                    description: this._str(tg.getValue('description')),
+                    scenario: this._str(tg.getValue('scenario')),
+                    how_to_test: this._str(tg.getValue('how_to_test')),
+                    dependency_note: this._str(tg.getValue('dependency_note')),
+                    order: this._toInt(tg.getValue('order')),
+                    prompts: [],
+                    criteria: [],
+                }
+                taskById[task.sys_id] = task
+                if (sectionById[task.plan_section]) {
+                    sectionById[task.plan_section].tasks.push(task)
+                }
+            }
+        }
+
+        var taskIds = Object.keys(taskById)
+        if (taskIds.length) {
+            var pg = new GlideRecordSecure(LAB_T_PROMPT)
+            pg.addQuery('plan_task', 'IN', taskIds.join(','))
+            pg.orderBy('order')
+            pg.orderBy('sys_created_on')
+            pg.query()
+            while (pg.next()) {
+                var promptTask = this._str(pg.getValue('plan_task'))
+                if (taskById[promptTask]) {
+                    taskById[promptTask].prompts.push({
+                        sys_id: pg.getUniqueValue() + '',
+                        plan_task: promptTask,
+                        label: this._str(pg.getValue('label')),
+                        prompt_text: this._str(pg.getValue('prompt_text')),
+                        order: this._toInt(pg.getValue('order')),
+                    })
+                }
+            }
+
+            var cg = new GlideRecordSecure(LAB_T_CRITERION)
+            cg.addQuery('plan_task', 'IN', taskIds.join(','))
+            cg.orderBy('order')
+            cg.orderBy('sys_created_on')
+            cg.query()
+            while (cg.next()) {
+                var criterionTask = this._str(cg.getValue('plan_task'))
+                if (taskById[criterionTask]) {
+                    taskById[criterionTask].criteria.push({
+                        sys_id: cg.getUniqueValue() + '',
+                        plan_task: criterionTask,
+                        criterion: this._str(cg.getValue('criterion')),
+                        order: this._toInt(cg.getValue('order')),
+                    })
+                }
+            }
+        }
+
+        this._send(response, 200, {
+            plan: {
+                sys_id: planSysId,
+                name: this._str(plan.getValue('name')),
+                description: this._str(plan.getValue('description')),
+                status: this._str(plan.getValue('status')),
+                slug: this._slug(this._str(plan.getValue('name'))),
+            },
+            sections: sections,
+        })
+    },
+
+    /** POST /authoring/{type}: create a node under a parent. */
+    createNode: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var type = this._pathParam(request, 'type')
+        var cfg = this._authorType(type)
+        if (!cfg) {
+            this._send(response, 400, { error: 'Unknown node type: ' + type })
+            return
+        }
+
+        var body = this._parseBody(request)
+        if (body === null) {
+            this._send(response, 400, { error: 'Body is not valid JSON' })
+            return
+        }
+
+        var parentId = this._str(body.parent_id)
+        if (cfg.parent && !parentId) {
+            this._send(response, 400, { error: 'parent_id is required for a ' + type })
+            return
+        }
+
+        var read = this._authorValues(cfg, body, true)
+        if (read.error) {
+            this._send(response, 400, { error: read.error })
+            return
+        }
+
+        var gr = new GlideRecordSecure(cfg.table)
+        gr.initialize()
+        if (cfg.parent) {
+            gr.setValue(cfg.parent, parentId)
+        }
+        for (var field in read.values) {
+            if (Object.prototype.hasOwnProperty.call(read.values, field)) {
+                gr.setValue(field, read.values[field])
+            }
+        }
+        // Last in its list. The resequence below gives it a tidy order value.
+        if (cfg.ordered) {
+            gr.setValue('order', 100000)
+        }
+
+        var newId = gr.insert()
+        if (!newId) {
+            this._send(response, 403, { error: 'Not permitted to create a ' + type })
+            return
+        }
+        newId = newId + ''
+
+        if (cfg.ordered) {
+            this._authorResequence(cfg, this._authorSiblings(cfg, parentId))
+        }
+
+        this._send(response, 200, { sys_id: newId, type: type })
+    },
+
+    /** PATCH /authoring/{type}/{sys_id}: change a node's own fields. */
+    patchNode: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var type = this._pathParam(request, 'type')
+        var cfg = this._authorType(type)
+        if (!cfg) {
+            this._send(response, 400, { error: 'Unknown node type: ' + type })
+            return
+        }
+
+        var sysId = this._pathParam(request, 'sys_id')
+        var body = this._parseBody(request)
+        if (body === null) {
+            this._send(response, 400, { error: 'Body is not valid JSON' })
+            return
+        }
+
+        var read = this._authorValues(cfg, body, false)
+        if (read.error) {
+            this._send(response, 400, { error: read.error })
+            return
+        }
+
+        var gr = new GlideRecordSecure(cfg.table)
+        if (!gr.get(sysId)) {
+            this._send(response, 404, { error: type + ' not found or not accessible' })
+            return
+        }
+
+        var touched = 0
+        for (var field in read.values) {
+            if (Object.prototype.hasOwnProperty.call(read.values, field)) {
+                gr.setValue(field, read.values[field])
+                touched++
+            }
+        }
+        if (!touched) {
+            this._send(response, 400, { error: 'No writable field in the body' })
+            return
+        }
+
+        if (!gr.update()) {
+            this._send(response, 403, { error: 'Not permitted to change this ' + type })
+            return
+        }
+
+        this._send(response, 200, { sys_id: sysId, type: type })
+    },
+
+    /**
+     * DELETE /authoring/{type}/{sys_id}
+     *
+     * Deleting a plan, a section or a task cascades to the Task Results
+     * underneath it, which is a participant's progress. So the first attempt
+     * reports how much would go and refuses; the client repeats it with
+     * ?confirm=true once the author has seen the number.
+     */
+    deleteNode: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var type = this._pathParam(request, 'type')
+        var cfg = this._authorType(type)
+        if (!cfg) {
+            this._send(response, 400, { error: 'Unknown node type: ' + type })
+            return
+        }
+
+        var sysId = this._pathParam(request, 'sys_id')
+        var gr = new GlideRecordSecure(cfg.table)
+        if (!gr.get(sysId)) {
+            this._send(response, 404, { error: type + ' not found or not accessible' })
+            return
+        }
+
+        var parentId = cfg.parent ? this._str(gr.getValue(cfg.parent)) : ''
+        var confirmed = this._str(request.queryParams ? request.queryParams.confirm : '') === 'true'
+
+        if (!confirmed) {
+            var results = this._authorResultCount(type, sysId)
+            if (results > 0) {
+                this._send(response, 409, {
+                    error: 'Deleting this ' + type + ' also deletes participant progress',
+                    requires_confirm: true,
+                    task_results: results,
+                })
+                return
+            }
+        }
+
+        if (!gr.deleteRecord()) {
+            this._send(response, 403, { error: 'Not permitted to delete this ' + type })
+            return
+        }
+
+        if (cfg.ordered) {
+            this._authorResequence(cfg, this._authorSiblings(cfg, parentId))
+        }
+
+        this._send(response, 200, { sys_id: sysId, type: type, deleted: true })
+    },
+
+    /** POST /authoring/{type}/{sys_id}/move with {"direction":"up"|"down"}. */
+    moveNode: function (request, response) {
+        if (!this._authorGate(response)) {
+            return
+        }
+
+        var type = this._pathParam(request, 'type')
+        var cfg = this._authorType(type)
+        if (!cfg) {
+            this._send(response, 400, { error: 'Unknown node type: ' + type })
+            return
+        }
+        if (!cfg.ordered) {
+            this._send(response, 400, { error: 'A ' + type + ' has no order to change' })
+            return
+        }
+
+        var body = this._parseBody(request)
+        if (body === null) {
+            this._send(response, 400, { error: 'Body is not valid JSON' })
+            return
+        }
+        var direction = this._str(body.direction)
+        if (direction !== 'up' && direction !== 'down') {
+            this._send(response, 400, { error: 'direction must be up or down' })
+            return
+        }
+
+        var sysId = this._pathParam(request, 'sys_id')
+        var gr = new GlideRecordSecure(cfg.table)
+        if (!gr.get(sysId)) {
+            this._send(response, 404, { error: type + ' not found or not accessible' })
+            return
+        }
+
+        var parentId = this._str(gr.getValue(cfg.parent))
+        var ids = this._authorSiblings(cfg, parentId)
+        var at = ids.indexOf(sysId)
+        var to = direction === 'up' ? at - 1 : at + 1
+
+        if (at < 0 || to < 0 || to >= ids.length) {
+            // Already at the end it was asked to move towards.
+            this._send(response, 200, { sys_id: sysId, type: type, moved: false })
+            return
+        }
+
+        ids[at] = ids[to]
+        ids[to] = sysId
+        this._authorResequence(cfg, ids)
+
+        this._send(response, 200, { sys_id: sysId, type: type, moved: true })
     },
 
     type: 'LabApi',

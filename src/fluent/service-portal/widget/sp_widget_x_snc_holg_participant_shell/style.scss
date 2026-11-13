@@ -3,27 +3,31 @@
 // The participant React bundle injects its own stylesheet at runtime
 // (ParticipantLab.css -> .holg-prompt__text), and that injected <style> lands
 // after the portal CSS. These rules therefore use a higher-specificity
-// selector (.holg-prompt pre.holg-prompt__text) so they win regardless of
+// selector (.holg-prompt .holg-prompt__text--md) so they win regardless of
 // style insertion order, instead of relying on !important.
 //
 // Goal: prompt text that breathes - body font instead of monospace, larger
-// type, generous line-height, and visible spacing between the paragraphs /
-// bullet lines stored in task_prompt.prompt_text (which already render because
-// the <pre> keeps white-space: pre-wrap).
+// type and generous line-height.
+//
+// The container is a <div class="holg-prompt__text holg-prompt__text--md">,
+// not the old <pre>: prompt_text is rendered as Markdown by react-markdown
+// (PromptBox.tsx + PromptBox.css). The selectors below are qualified by that
+// --md modifier rather than by `pre`, which no longer matches anything, and
+// the line-break handling has moved to the Markdown block rules.
 
 .holg-prompt {
     margin-bottom: 16px;
 }
 
-.holg-prompt pre.holg-prompt__text {
+.holg-prompt .holg-prompt__text--md {
     // Body font: prompts are natural language, not code.
     font-family: inherit;
     font-size: 15px;
     line-height: 1.7;
     padding: 20px 24px;
 
-    // Keep the stored line breaks and blank lines.
-    white-space: pre-wrap;
+    // Markdown supplies the block structure; pre-wrap would wreck it.
+    white-space: normal;
     overflow-wrap: break-word;
 
     // Fill the full width of the parent .holg-prompt card. border-box keeps the
@@ -37,7 +41,7 @@
 }
 
 @media (max-width: 767px) {
-    .holg-prompt pre.holg-prompt__text {
+    .holg-prompt .holg-prompt__text--md {
         padding: 16px;
     }
 }
@@ -112,80 +116,10 @@
 }
 
 // ---------------------------------------------------------------------------
-// Steps: numbered badge in a left gutter, joined by a vertical connector.
+// Step timeline and per-block Copy buttons are NOT here.
 //
-// Replaces the old bordered prompt cards. The <ol> carries the ordering
-// semantics; the badge is decorative (aria-hidden in PromptBox), so the number
-// is never announced twice.
-//
-// Lives here, not in ParticipantLab.css, for the 14KB inlining reason above.
+// They live in src/client/components/PromptBox.css, which the bundle injects on
+// this portal page as well as on the .do page, so one definition covers both
+// surfaces. Duplicating them here would only create two sources of truth for
+// the same markup.
 // ---------------------------------------------------------------------------
-
-.holg-steps {
-    list-style: none;
-    margin: 8px 0 0 0;
-    padding: 0;
-}
-
-.holg-step {
-    position: relative;
-    display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 12px;
-    padding-bottom: 20px;
-}
-
-.holg-step:last-child {
-    padding-bottom: 0;
-}
-
-// Connector runs from just under one badge to the top of the next.
-.holg-step:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    left: 13px;
-    top: 32px;
-    bottom: 0;
-    width: 2px;
-    background-color: rgb(var(--now-container-card--border-color, 207, 213, 215));
-}
-
-.holg-step__num {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1;
-    color: #ffffff;
-    // Same darker green as the selected Yes toggle: white text on the lighter
-    // brand green (#00a37a) fails WCAG AA.
-    background-color: #00785a;
-}
-
-.holg-step__body {
-    min-width: 0;
-}
-
-// Strip the old card chrome - the step gutter now carries the structure.
-.holg-step .holg-prompt {
-    margin-bottom: 0;
-    border: 0;
-    border-radius: 0;
-    overflow: visible;
-}
-
-// Compact, transparent header so the label and Copy sit above the text
-// without reintroducing a banded card look.
-.holg-step .holg-prompt__head {
-    padding: 0 0 4px 0;
-    background-color: transparent;
-}
-
-.holg-step .holg-prompt pre.holg-prompt__text {
-    padding: 0;
-    background-color: transparent;
-}

@@ -6,9 +6,9 @@ import { ImpersonationBar } from './components/ImpersonationBar'
 import { PlansView } from './components/PlansView'
 import { PlanView } from './components/PlanView'
 import { readLabPageContext } from './utils/context'
+import { mountLabApp } from './utils/mountRoot'
 
-const mount = document.getElementById('react-root')
-if (mount) {
+mountLabApp((mount) => {
     const context = readLabPageContext(mount)
 
     /*
@@ -25,4 +25,4 @@ if (mount) {
             {planId ? <PlanView planId={planId} /> : <PlansView />}
         </>,
     )
-}
+})

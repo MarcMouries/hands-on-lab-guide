@@ -2,12 +2,67 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlanDetail } from '../hooks/usePlanDetail'
 import { LabSection, LabTask, TaskResult, patchResult } from '../services/participantApi'
 import { toMessage } from '../services/labHttp'
-import { goToPlans } from '../utils/navigate'
-import { firstOpenTaskId, nextOpenTaskId } from '../utils/taskStatus'
+import { goToPlans, readUrlParam, setUrlParams } from '../utils/navigate'
+import { planSlug } from '../utils/planSlug'
+import { promptTokensFor } from '../utils/promptTokens'
+import { firstOpenTaskId, flattenTasks, nextOpenTaskId } from '../utils/taskStatus'
 import { FeedbackPanel } from './FeedbackPanel'
 import { ProgressBar } from './ProgressBar'
 import { TaskNav } from './TaskNav'
 import { TaskPanel } from './TaskPanel'
+
+/** URL param carrying the open task, so a task view can be linked and shared. */
+const TASK_PARAM = 'task_id'
+
+/**
+ * How a task is named in the URL: the same readable slug `plan_id` uses, so a
+ * shared link reads `?plan_id=Now-Assist-for-Creator&task_id=Explain-existing-code`
+ * rather than carrying a sys_id nobody can check at a glance.
+ *
+ * Resolution is purely client-side, against the plan already loaded, so no
+ * server round trip and no stored slug column. Where two titles slug to the
+ * same thing the sys_id is used for both, because a link that opens the wrong
+ * task is worse than an ugly one.
+ *
+ * Six words rather than the four a plan gets: there is no server rule to match
+ * here, and task titles are sentences, so four of them read as a cut-off
+ * fragment.
+ */
+const TASK_SLUG_WORDS = 6
+
+function taskParamFor(sections: LabSection[], sysId: string): string {
+    const tasks = flattenTasks(sections)
+    const wanted = tasks.filter((task) => task.sys_id === sysId)
+    const slug = wanted.length ? planSlug(wanted[0].title, TASK_SLUG_WORDS) : ''
+    if (!slug) {
+        return sysId
+    }
+    const sharing = tasks.filter(
+        (task) =>
+            planSlug(task.title, TASK_SLUG_WORDS).toLowerCase() === slug.toLowerCase(),
+    )
+    return sharing.length === 1 ? slug : sysId
+}
+
+/** The task a `task_id` names, accepting either the slug or a sys_id. */
+function taskIdFor(sections: LabSection[], param: string): string {
+    if (!param) {
+        return ''
+    }
+    const needle = param.toLowerCase()
+    const tasks = flattenTasks(sections)
+    for (const task of tasks) {
+        if (task.sys_id.toLowerCase() === needle) {
+            return task.sys_id
+        }
+    }
+    for (const task of tasks) {
+        if (planSlug(task.title, TASK_SLUG_WORDS).toLowerCase() === needle) {
+            return task.sys_id
+        }
+    }
+    return ''
+}
 
 export function PlanView({ planId }: { planId: string }) {
     const { plan, error, loading } = usePlanDetail(planId)
@@ -35,7 +90,13 @@ export function PlanView({ planId }: { planId: string }) {
         [overrides],
     )
 
-    // Seed progress and the default open task once the plan arrives.
+    /** The task_id in the URL, but only when it names a task in this plan. */
+    const taskIdFromUrl = useCallback((sectionList: LabSection[]): string => {
+        return taskIdFor(sectionList, readUrlParam(TASK_PARAM))
+    }, [])
+
+    // Seed progress and the open task once the plan arrives. A task_id in the
+    // URL wins, so a deep link opens that task instead of the first open one.
     useEffect(() => {
         if (!plan) {
             return
@@ -43,8 +104,36 @@ export function PlanView({ planId }: { planId: string }) {
         setPercent(plan.percent_complete)
         setOverrides({})
         opened.current = {}
-        setSelectedTaskId(firstOpenTaskId(plan.sections, (task) => task.result))
-    }, [plan])
+
+        const deepLinked = taskIdFromUrl(plan.sections)
+        const taskId =
+            deepLinked || firstOpenTaskId(plan.sections, (task) => task.result)
+        setSelectedTaskId(taskId)
+
+        // Reflect the resolved task without adding a Back step for a link that
+        // did not name one, drop a task_id that is not in this plan, and
+        // upgrade an older link that still carries a sys_id to the slug.
+        const param = taskId ? taskParamFor(plan.sections, taskId) : ''
+        if (param !== readUrlParam(TASK_PARAM)) {
+            setUrlParams({ [TASK_PARAM]: param || null }, true)
+        }
+    }, [plan, taskIdFromUrl])
+
+    // Back/forward move between tasks, since selecting one pushes an entry.
+    useEffect(() => {
+        if (!plan) {
+            return
+        }
+        const onPopState = () => {
+            const taskId = taskIdFromUrl(plan.sections)
+            if (taskId) {
+                setSubmitError('')
+                setSelectedTaskId(taskId)
+            }
+        }
+        window.addEventListener('popstate', onPopState)
+        return () => window.removeEventListener('popstate', onPopState)
+    }, [plan, taskIdFromUrl])
 
     const selected = useMemo(() => {
         for (let s = 0; s < sections.length; s++) {
@@ -59,6 +148,13 @@ export function PlanView({ planId }: { planId: string }) {
     }, [sections, selectedTaskId])
 
     const selectedResult = selected ? resultFor(selected.task) : null
+
+    // Participant number and prefix, for the `{{token}}` placeholders in step
+    // content. Enrolment assigns them, so they arrive with the plan.
+    const promptTokens = useMemo(
+        () => promptTokensFor(plan ? plan.participant : null),
+        [plan],
+    )
 
     // Opening a not_started task marks it in progress.
     useEffect(() => {
@@ -93,10 +189,17 @@ export function PlanView({ planId }: { planId: string }) {
             })
     }, [selected, selectedResult])
 
-    const onSelect = useCallback((taskId: string) => {
-        setSubmitError('')
-        setSelectedTaskId(taskId)
-    }, [])
+    const onSelect = useCallback(
+        (taskId: string) => {
+            setSubmitError('')
+            setSelectedTaskId(taskId)
+            // Pushed, not replaced, so Back returns to the previous task.
+            setUrlParams({
+                [TASK_PARAM]: plan ? taskParamFor(plan.sections, taskId) : taskId,
+            })
+        },
+        [plan],
+    )
 
     const onSubmit = useCallback(
         (verdict: 'pass' | 'fail', feedback: string) => {
@@ -196,7 +299,11 @@ export function PlanView({ planId }: { planId: string }) {
                     <div className="holg-main">
                         {selected ? (
                             <>
-                                <TaskPanel section={selected.section} task={selected.task} />
+                                <TaskPanel
+                                    section={selected.section}
+                                    task={selected.task}
+                                    tokens={promptTokens}
+                                />
                                 <FeedbackPanel
                                     taskId={selected.task.sys_id}
                                     result={selectedResult}

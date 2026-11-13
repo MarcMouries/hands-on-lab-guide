@@ -1,6 +1,25 @@
 import { servicenowFrontEndPlugins, rollup, glob } from '@servicenow/isomorphic-rollup'
 
 /**
+ * vfile - pulled in by react-markdown via unified - reaches its platform shims
+ * through Node `imports` subpath specifiers (#minpath / #minproc / #minurl,
+ * declared in vfile's own package.json). The SDK's resolver does not read that
+ * field: it looks for them next to the project root, logs a TS213 warning, and
+ * then leaves them in the output as bare external imports. The build still
+ * reports success, but the browser cannot resolve `#minpath`, so loading
+ * participant.jsdbx throws and the lab renders nothing.
+ *
+ * Map them to vfile's browser shims, which is what the `default` condition in
+ * that imports field selects. Keyed by exact specifier so nothing else is
+ * caught; if react-markdown is removed, these resolve nothing and are inert.
+ */
+const VFILE_BROWSER_SHIMS = {
+    '#minpath': 'vfile/lib/minpath.browser.js',
+    '#minproc': 'vfile/lib/minproc.browser.js',
+    '#minurl': 'vfile/lib/minurl.browser.js',
+}
+
+/**
  * Prebuild script for building the client assets of the application before running the rest of the build.
  * Export an async function that accepts useful modules for building the application as arguments.
  * This function returns a Promise that resolves when the build is complete.
@@ -31,6 +50,13 @@ export default async ({ rootDir, config, fs, path, logger, registerExplicitId })
         // Use the default set of ServiceNow plugins for Rollup
         // configured for the scope name and root directory
         plugins: [
+            {
+                name: 'holg-vfile-browser-imports',
+                resolveId(source) {
+                    const shim = VFILE_BROWSER_SHIMS[source]
+                    return shim ? path.join(rootDir, 'node_modules', shim) : null
+                },
+            },
             servicenowFrontEndPlugins({
                 scope: config.scope,
                 rootDir: clientDir,

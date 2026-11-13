@@ -4,9 +4,9 @@ import './components/brand.css'
 import FacilitatorDashboard from './components/FacilitatorDashboard'
 import { ImpersonationBar } from './components/ImpersonationBar'
 import { readLabPageContext } from './utils/context'
+import { mountLabApp } from './utils/mountRoot'
 
-const mount = document.getElementById('react-root')
-if (mount) {
+mountLabApp((mount) => {
     const context = readLabPageContext(mount)
     ReactDOM.createRoot(mount).render(
         <>
@@ -15,4 +15,4 @@ if (mount) {
             <FacilitatorDashboard pageName={context.page} params={context.params} />
         </>,
     )
-}
+})

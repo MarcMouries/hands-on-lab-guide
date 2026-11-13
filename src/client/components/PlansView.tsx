@@ -3,6 +3,7 @@ import { useParticipantPlans } from '../hooks/useParticipantPlans'
 import { startPlan } from '../services/participantApi'
 import { toMessage } from '../services/labHttp'
 import { goToPlan } from '../utils/navigate'
+import { planSlug } from '../utils/planSlug'
 import { ProgressBar } from './ProgressBar'
 
 export function PlansView() {
@@ -10,13 +11,15 @@ export function PlansView() {
     const [busyPlanId, setBusyPlanId] = useState('')
     const [actionError, setActionError] = useState('')
 
-    const onStart = useCallback((planId: string) => {
+    // Takes the sys_id for the busy flag and the slug for the URL: the busy
+    // state is keyed by sys_id, but links should read as the plan's name.
+    const onStart = useCallback((planId: string, slug: string) => {
         setActionError('')
         setBusyPlanId(planId)
         startPlan(planId)
             .then(() => {
                 // Navigating away, so no need to clear the busy flag.
-                goToPlan(planId)
+                goToPlan(slug || planId)
             })
             .catch((reason: unknown) => {
                 setActionError(toMessage(reason))
@@ -84,7 +87,7 @@ export function PlansView() {
                                     <button
                                         type="button"
                                         className="holg-btn holg-btn--primary"
-                                        onClick={() => goToPlan(plan.sys_id)}
+                                        onClick={() => goToPlan(planSlug(plan.name) || plan.sys_id)}
                                     >
                                         Continue
                                     </button>
@@ -93,7 +96,7 @@ export function PlansView() {
                                         type="button"
                                         className="holg-btn holg-btn--primary"
                                         disabled={busy}
-                                        onClick={() => onStart(plan.sys_id)}
+                                        onClick={() => onStart(plan.sys_id, planSlug(plan.name))}
                                     >
                                         {busy ? 'Starting\u2026' : 'Start'}
                                     </button>

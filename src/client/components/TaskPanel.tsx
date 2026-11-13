@@ -1,5 +1,6 @@
 import React from 'react'
 import { LabSection, LabTask } from '../services/participantApi'
+import { PromptTokens } from '../utils/promptTokens'
 import { PromptBox } from './PromptBox'
 
 /** A labelled text block, rendered only when the value is non-empty. */
@@ -18,9 +19,10 @@ function Block({ label, value }: { label: string; value: string }) {
 interface Props {
     section: LabSection
     task: LabTask
+    tokens: PromptTokens
 }
 
-export function TaskPanel({ section, task }: Props) {
+export function TaskPanel({ section, task, tokens }: Props) {
     return (
         <article className="holg-task">
             {section.overview ? (
@@ -41,12 +43,10 @@ export function TaskPanel({ section, task }: Props) {
 
             {task.prompts.length ? (
                 <div className="holg-prompts">
-                    <h3 className="holg-block__label">
-                        {task.prompts.length === 1 ? 'Prompt' : 'Prompts'}
-                    </h3>
+                    <h3 className="holg-block__label">Steps</h3>
                     {task.prompts.map((prompt, index) => (
                         <React.Fragment key={prompt.sys_id}>
-                            <PromptBox prompt={prompt} index={index} />
+                            <PromptBox prompt={prompt} index={index} tokens={tokens} />
                         </React.Fragment>
                     ))}
                 </div>
