@@ -470,7 +470,42 @@ facilitator or an author here. That is deliberate, and it means an admin
 participant can build their lab app without being able to edit the plan or read
 the dashboard.
 
-### 5.6 What this replaces
+### 5.6 What the probes found (13 November 2026)
+
+Run against `marco1creator` before writing any of it.
+
+**Confirmed:**
+
+| Check | Result |
+|---|---|
+| Cross-scope privileges the plan needs | All six declared and `allowed`: `sys_user` read/write/create, `sys_user_has_role` read/create, `sys_user_role` read |
+| `sys_user.user_password` | Type `password`, `read_only = 0`, max length 100 — writable in principle by a script |
+| Public portal pages work on this instance | 19 public `sp_page` and 122 public `sp_widget` records already exist |
+| A public page really does serve anonymously | `/api/now/sp/page?id=landing` returns full containers and widgets with no session |
+| The lab's own pages do **not** | `?id=home`, `?id=plans`, `?id=authoring` all return an empty page (565 bytes, `containers: []`) to an anonymous caller. The portal enforces it at the page API, not only in the browser |
+| Fluent can declare both | `SPPage({ public: true })` and `Widget({ public: true })` are in the SDK API, so the public surface is declared in the repo rather than clicked on |
+| `guest` | Exists, active, holds **zero** roles |
+
+**Still unverified, and needs a decision from you to proceed** — all three are
+the same class of action, creating an account and granting it a role, and the
+permission layer in this session refuses them:
+
+1. Can a scoped app insert a `sys_user` row?
+2. Can it write `user_password` such that the account can actually log in?
+3. Can it insert `sys_user_has_role` for `admin`?
+
+The privileges are declared and nothing in the dictionary or the 21 business
+rules on `sys_user_has_role` suggests a block, so the expected answer is yes to
+all three — but expected is not tested, and B8 is exactly the task that depends
+on it. The probe is: create one throwaway account (`zz.holg.probe.<stamp>`), set
+a password, grant a role, authenticate as it over REST to prove the password
+works, then delete both rows. Minutes, and fully reversible.
+
+What is *not* yet testable at all: whether the insert works **from a guest
+session**, which only a real public widget can answer. That is the one finding
+that would change B8's shape, and it comes out of B7 rather than before it.
+
+### 5.7 What this replaces
 
 **P2** — "create the remaining `now.assist.participantNN` accounts" — mostly
 goes away. Pre-made accounts stop being the mechanism; the event creates them.
