@@ -314,13 +314,35 @@ human**. In practice that is one click for the whole room: the facilitator opens
 the registration list at the start of the session and provisions everyone who
 has signed up.
 
+**Registering is always open; approval is not about the form.** Anyone can fill
+it in at any hour, as long as the event is open, inside its window and under its
+cap. `x_snc_holg_registration.status` describes where that person's *account*
+is — `pending` means registered with no account yet, `provisioned` means created
+and granted — and nothing about approval gates the form itself.
+
+**Approval belongs to the event, not to each person.** Asking a facilitator to
+click through registrants one at a time makes them the bottleneck exactly when
+the room is waiting, and it means somebody who signs up at 11pm cannot log in
+until morning. So the event carries `provisioning` with two modes:
+
+| Mode | Behaviour |
+|---|---|
+| `automatic` *(the default)* | A facilitator opens the event for provisioning once. From then on registrations provision as they arrive, at any hour, with no further human involvement |
+| `manual` | Each registration waits for a facilitator action. For an event where the roles granted warrant a look at every name |
+
+Either way the human decision is real — somebody with the facilitator role had
+to open this event for provisioning, and an event sitting in `draft` provisions
+nobody no matter how many people register. What changes is whether that decision
+is made once per event or once per person.
+
 What this settles in the build:
 
-- `x_snc_holg_registration.status` starts at `pending` and only a facilitator
-  action moves it to `provisioned`. Nothing the public form writes can create a
-  user, which is also what the guest identity forces (5.5).
-- B9, the facilitator view, is no longer only a monitor — it is where approval
-  happens, so it carries the provision action, a bulk provision, and a retry.
+- Nothing the public form writes can create a user. That is what the guest
+  identity forces (5.5), and it holds in both modes: the form writes a
+  registration, a privileged context provisions it.
+- B9, the facilitator view, is where provisioning is opened, and in `manual`
+  mode where each approval happens — so it carries the provision action, a bulk
+  provision, and a retry.
 - Email verification stays available later as a token column, for an event that
   ever runs without a facilitator in the room.
 
@@ -345,7 +367,8 @@ This is really a question about whether outbound email works on
 
 `x_snc_holg_event`: `name` ("Customer Workshop November 13th 2026"), `starts_on`,
 `ends_on` (both optional — an event with no end date stays open until closed by
-hand), `status` (draft / open / closed), `registration_code`, `capacity`,
+hand), `status` (draft / open / closed), `provisioning` (automatic / manual, see
+5.2), `registration_code`, `capacity`,
 `evaluation_plan` (which plan registrants are enrolled into), `facilitator`,
 `granted_roles` (what provisioning grants — see 5.5), `roles_revoked_on`.
 Registration is accepted only while `status = open` and the clock is inside the
