@@ -102,6 +102,30 @@ when the row has no number yet, so a number never moves once assigned:
    than `max + 1`, so a plan whose roster churns keeps reusing small numbers
    instead of drifting upwards.
 
+**Allocation is race-safe**, in three parts that only work together:
+
+- a **unique index** on `(evaluation_plan, participant_number)`, so the database
+  refuses a duplicate rather than accepting one;
+- the number is set **on the insert**, not written afterwards, so there is no
+  window in which a row exists without one;
+- a refused insert is **retried** — the next pass re-reads what is taken, sees
+  the winner's row and picks the next free number. Five attempts, which only a
+  genuine collision consumes.
+
+Two people opening a plan in the same instant therefore get two different
+numbers. Verified against the live index: a second row with a number already
+used in that plan is refused, the same number in a *different* plan is accepted,
+and enrolling against a number taken a moment earlier still succeeds on another
+number.
+
+**The read that picks the number uses `GlideRecord`, not `GlideRecordSecure`** —
+the one deliberate exception in the server layer. A participant may read only
+their own Plan Participant row, so a secure read returns a single row and every
+participant is told they are number 1. That is what the code did until it was
+found: it looked right only because a facilitator, and the admin who tested it,
+can read every row. The exception is narrow — one integer column, used to pick
+a number, never returned to a caller.
+
 The initials come from the display name, taking the first letter of each word
 that *starts* with a letter, at most three — so `Marc Mouries` → `mm`, and
 `Participant #1` → `p`, because `#1` contributes nothing. The number is
@@ -278,7 +302,6 @@ Known constraints for the design:
 | Item | Notes |
 |---|---|
 | Existing prompts assume a single namespace | 5 edits needed for multi-participant use: section 400 prompt 1 creates a *second* scoped app; section 400 prompt 2 creates duplicate global roles; the section 100 catalog item name collides; the section 200 ATF test resolves that item **by name**; sections 500/600 artifact names collide. Not yet applied — awaiting content approval. |
-| Number allocation is not race-safe | Both paths read the plan's rows and then write, so two people opening the plan in the same instant can take the same number. Cosmetic — the number is always paired with initials — and visible to the facilitator rather than silent. Race-proofing needs the unique index tracked in `ROADMAP.md`. |
 | A late-joining named account may not get its matching number | `now.assist.participant5` only keeps `5` while `5` is free. If someone numberless took it first, the named account falls back to the lowest free number and its prefix stops matching its account name. |
 | Prompt label field carries "Prompt" wording | Per-box labels come from the `label` field on each Task Prompt record, not from code. The code fallback is still `Prompt N`, used only when `label` is empty. |
 | Setup steps are instructions, not prompts | The Copy button on the setup task copies Markdown instructions rather than something to paste into Now Assist. Harmless, slightly odd. |

@@ -16,7 +16,6 @@ One line each. The detail is in the numbered sections below.
 | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
 | 🔴 | Artifact tracker: decide when the scan runs | On demand, every 5 minutes, or both | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | 🟠 | Build the artifact tracker | Nothing but 1.3 | [2](#2--ready-to-build) |
-| 🟠 | Make participant numbers race-safe | A data backfill: Participant #2 still has number 0 | [2](#2--ready-to-build) |
 | 🟠 | Let someone assign a plan's facilitator without admin | A decision between two approaches | [2](#2--ready-to-build) |
 | 🟠 | Reword the claims task description | Needs drafting, not substitution | [2](#2--ready-to-build) |
 | 🟠 | Replace the per-step labels that still read "Prompt" | A data edit, best bundled with 1.1 | [2](#2--ready-to-build) |
@@ -107,7 +106,6 @@ Decided, unblocked, not started.
 | Item | Notes |
 |---|---|
 | **Artifact tracker** | Expectation and evidence tables, the `sys_update_xml` query, the REST endpoint, the dashboard column, `app_name` / `app_scope` on Plan Participant. Blocked only on 1.3 |
-| **Race-safe participant numbers** | Unique index on `(evaluation_plan, participant_number)` plus insert-retry. Blocked on data, not on you: Participant #2 still has `participant_number = 0`, and the index cannot go on while rows share 0. Backfill first, or make the index partial |
 | **Authoring: the plan facilitator field** | Left out of the authoring UI on purpose — a field-level ACL restricts `facilitator` to the facilitator role, and an author need not have it. Now that facilitator no longer has record-level write on the plan table, assigning a facilitator is an **admin** job in the platform UI. Options if that chafes: add `x_snc_holg.author` to the field ACL, or give the authoring editor a facilitator picker and let the server set it |
 | **Claims task description** | `Build a claims exception tracking application with…` is the one task that never said "Use Now Assist to", so the rename skipped it. Needs new wording, not a substitution — I can draft it |
 | **Per-step labels still read "Prompt"** | `Prompt`, `Prompt 1 – application and data model`. These come from the `label` field on each Task Prompt record, not from code. A data edit, bundled naturally with 1.1 |
@@ -206,5 +204,5 @@ Critical`, `dashboard`, `ServiceNow Studio`, and the role names in section 400.
 | Copy is no longer byte-identical to `prompt_text` | Token substitution runs on the Markdown source, so Copy hands over filled-in text. Deliberate — copying `{{prefix}}` would defeat the token — but it is a change to the original constraint |
 | Setup steps have no Copy button | Since Copy moved to code blocks and those five records are prose. Arguably correct: they are instructions to follow, not text to paste. Say if you want one back |
 | Deployed bundle cannot be verified independently | The `.jsdbx` files are not in `sys_ux_theme_asset` and are not attachments; the backing table for `/uxasset/externals/x_snc_holg/` was never located. Verification is by fetching the served URL and grepping it |
-| Number allocation is not race-safe | Two people opening a plan in the same instant can take the same number. Cosmetic — the number is always paired with initials — and visible to the facilitator rather than silent. See section 2 |
 | A late-joining named account may not get its matching number | `now.assist.participant5` keeps `5` only while `5` is free |
+| Numbers are not reclaimed | Deleting a participant frees their number for the next enrolment, which is usually right, but it means a number is not permanently tied to a person |

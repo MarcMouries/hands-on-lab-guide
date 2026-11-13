@@ -89,6 +89,15 @@ export const x_snc_holg_plan_participant = Table({
             unique: false,
             element: 'user',
         },
+        // Unique, and the whole point of it: it is what makes two people
+        // enrolling in the same instant get two different numbers. LabApi sets
+        // the number on the insert and retries a refusal against a fresh read,
+        // which only works because the database says no here.
+        {
+            name: 'index3',
+            unique: true,
+            element: ['evaluation_plan', 'participant_number'],
+        },
     ],
     dbObjectId: true,
 })

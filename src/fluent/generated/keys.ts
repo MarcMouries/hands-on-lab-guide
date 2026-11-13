@@ -2662,6 +2662,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_index'
+                        id: '7254d7cf45de4394a5adc8910c418261'
+                        key: {
+                            logical_table_name: 'x_snc_holg_plan_participant'
+                            col_name_string: 'evaluation_plan,participant_number'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '72c7cafd0e1b4a17b6c4abd41bdebdb8'
                         key: {

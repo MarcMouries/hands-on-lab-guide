@@ -15,6 +15,9 @@ Last updated 2026-11-13.
 
 | Item | Shipped |
 |---|---|
+| **Race-safe participant numbers** | Unique index on `(evaluation_plan, participant_number)`, the number set on the insert instead of written afterwards, and a refused insert retried against a fresh read. 10/10 against the live index |
+| **Every participant was being told they are number 1** | Found while checking the above. The read that picks the next free number used `GlideRecordSecure`, and a participant may read only their own row — so the "taken" list was one row long for everyone but a facilitator or an admin. Now a plain `GlideRecord`, the one deliberate exception in the server layer |
+| **Participant #2 backfilled** | Was `participant_number = 0` with no prefix since before numbering existed; now `2` / `p02` by the same rule the app uses |
 | **Cross-scope privileges declared in the repo** | The 11 `sys_scope_privilege` reads the artifact tracker needs — `sys_update_xml`, `sys_metadata`, `sys_app`, `sys_scope`, `sys_db_object`, `sc_cat_item`, `sys_atf_test`, `sys_hub_flow`, `sys_script`, `sys_script_client`, `sys_ui_policy` — now in `src/fluent/sys-scope-privilege/`, so a fresh install carries them. Seven others the instance had were left undeclared on purpose: they exist only because maintenance scripts were run in-scope, and nothing in the app uses them |
 | **`{{instance_url}}` token** | Step content names the instance by token instead of literal text; the value comes from `window.location.origin`, so a clone or a PDI is right with no content edit. Step 2 of the setup task now renders a clickable link |
 | **`task_id` is the task's slug** | `&task_id=Explain-existing-code` instead of a sys_id. Six words rather than a plan's four, resolved client-side against the loaded plan. A sys_id still resolves and is rewritten to the slug on load |

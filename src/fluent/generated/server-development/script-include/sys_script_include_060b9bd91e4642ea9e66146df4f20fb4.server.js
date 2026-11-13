@@ -387,12 +387,27 @@ LabApi.prototype = {
      * (now.assist.participant7 -> 7) keeps that number whenever it is still
      * free, so a pre-named roster lines up with itself.
      *
-     * Both paths read the plan's rows and then write, so two people opening
-     * the plan in the same instant can land on the same number. That is
-     * cosmetic: the number only has to be unique alongside the initials it is
-     * joined to, and the facilitator sees two rows rather than a silent
-     * failure. Making it race-proof needs the unique index tracked in ROADMAP.md.
+     * Allocation is race-safe, in three parts that only work together:
+     *
+     *  - a UNIQUE index on (evaluation_plan, participant_number), so the
+     *    database refuses a duplicate instead of accepting one;
+     *  - the number is set ON THE INSERT, not written afterwards, so there is
+     *    no window in which a row exists without one;
+     *  - a refused insert is retried: the next pass re-reads what is taken,
+     *    sees the winner's row and picks the next free number.
+     *
+     * Two people opening the plan in the same instant therefore get two
+     * different numbers, rather than the same one twice.
      * ------------------------------------------------------------ */
+
+    /**
+     * How many times an insert may lose the race before giving up.
+     *
+     * Each retry costs one read and one insert, and only a genuine collision
+     * triggers one, so a small number is enough: five simultaneous enrolments
+     * would all have to collide in sequence to exhaust it.
+     */
+    _NUMBER_ATTEMPTS: 5,
 
     /** The trailing digits of the caller's user name, or 0 if it has none. */
     _numberFromUserName: function () {
@@ -400,10 +415,23 @@ LabApi.prototype = {
         return match ? parseInt(match[1], 10) : 0
     },
 
-    /** The numbers already handed out in a plan, as a lookup by number. */
+    /**
+     * The numbers already handed out in a plan, as a lookup by number.
+     *
+     * `GlideRecord`, and deliberately not `GlideRecordSecure` as everywhere
+     * else in this class. A participant may read only their OWN Plan
+     * Participant row, so a secure read here returns one row and every
+     * participant is told they are number 1 - which is exactly what happened
+     * before: it looked correct only because the facilitator and the admin who
+     * tested it can read every row.
+     *
+     * The exception is narrow and safe: this reads one integer column, uses it
+     * to pick the next free number, and never returns any of it to a caller.
+     * Nothing about another participant reaches the client from here.
+     */
     _takenNumbers: function (planId) {
         var taken = {}
-        var pp = new GlideRecordSecure(LAB_T_PARTICIPANT)
+        var pp = new GlideRecord(LAB_T_PARTICIPANT)
         pp.addQuery('evaluation_plan', planId)
         pp.addQuery('participant_number', '>', 0)
         pp.query()
@@ -423,6 +451,22 @@ LabApi.prototype = {
         var number = 1
         while (taken[number]) {
             number++
+        }
+        return number
+    },
+
+    /**
+     * The number this caller should get in this plan, read fresh each time.
+     *
+     * A lab account whose user name ends in digits keeps that number while it
+     * is free, so a pre-named roster lines up with itself; otherwise it is the
+     * lowest number not already taken.
+     */
+    _allocateNumber: function (planId) {
+        var taken = this._takenNumbers(planId)
+        var number = this._numberFromUserName()
+        if (!number || taken[number]) {
+            number = this._lowestFreeNumber(taken)
         }
         return number
     },
@@ -463,25 +507,29 @@ LabApi.prototype = {
     /**
      * Give a participant their number and prefix if they do not have one.
      *
-     * Safe to call on every enrolment check: it writes only when the number
-     * is still missing, so a number never moves once assigned. A refused
-     * write is swallowed, because the caller is a read that must succeed.
+     * Only rows enrolled before numbers existed reach this: enrolment now sets
+     * the number on the insert. It writes only when the number is still
+     * missing, so a number never moves once assigned, and a write the unique
+     * index refuses is retried against a fresh read rather than swallowed.
+     *
+     * Failing all attempts leaves the number at 0, which the client shows as
+     * unassigned - the caller is a read that must still succeed.
      */
     _ensureParticipantNumber: function (planId, gr) {
         if (!gr || this._toInt(gr.getValue('participant_number')) > 0) {
             return
         }
-        var taken = this._takenNumbers(planId)
-        var number = this._numberFromUserName()
-        if (!number || taken[number]) {
-            number = this._lowestFreeNumber(taken)
-        }
-        gr.setValue('participant_number', number)
-        gr.setValue('prefix', this._prefixFor(number, this._initialsFor()))
-        try {
-            gr.update()
-        } catch (e) {
-            // Leaves the number at 0; the client shows it as unassigned.
+        for (var attempt = 0; attempt < this._NUMBER_ATTEMPTS; attempt++) {
+            var number = this._allocateNumber(planId)
+            gr.setValue('participant_number', number)
+            gr.setValue('prefix', this._prefixFor(number, this._initialsFor()))
+            try {
+                if (gr.update()) {
+                    return
+                }
+            } catch (e) {
+                // Someone took this number in between. Round again.
+            }
         }
     },
 
@@ -497,14 +545,40 @@ LabApi.prototype = {
             }
         }
 
-        var pp = new GlideRecordSecure(LAB_T_PARTICIPANT)
-        pp.initialize()
-        pp.setValue('evaluation_plan', planId)
-        pp.setValue('user', gs.getUserID())
-        pp.setValue('status', LAB_PARTICIPANT_IN_PROGRESS)
-        pp.setValue('started_on', this._now())
-        pp.setValue('percent_complete', 0)
-        var newId = pp.insert()
+        // The number goes on the insert, so the row never exists without one
+        // and the unique index can do its job. A refused insert is either that
+        // index rejecting a number someone else just took, or another request
+        // enrolling this same user - both are settled by looking again.
+        var newId = null
+        for (var attempt = 0; attempt < this._NUMBER_ATTEMPTS && !newId; attempt++) {
+            var number = this._allocateNumber(planId)
+            var pp = new GlideRecordSecure(LAB_T_PARTICIPANT)
+            pp.initialize()
+            pp.setValue('evaluation_plan', planId)
+            pp.setValue('user', gs.getUserID())
+            pp.setValue('status', LAB_PARTICIPANT_IN_PROGRESS)
+            pp.setValue('started_on', this._now())
+            pp.setValue('percent_complete', 0)
+            pp.setValue('participant_number', number)
+            pp.setValue('prefix', this._prefixFor(number, this._initialsFor()))
+
+            try {
+                newId = pp.insert()
+            } catch (e) {
+                newId = null
+            }
+
+            if (!newId) {
+                var raced = this._findParticipant(planId)
+                if (raced) {
+                    return {
+                        sys_id: raced.getUniqueValue() + '',
+                        created: false,
+                        participant: raced,
+                    }
+                }
+            }
+        }
 
         if (!newId) {
             return null
