@@ -486,24 +486,49 @@ Run against `marco1creator` before writing any of it.
 | Fluent can declare both | `SPPage({ public: true })` and `Widget({ public: true })` are in the SDK API, so the public surface is declared in the repo rather than clicked on |
 | `guest` | Exists, active, holds **zero** roles |
 
-**Still unverified, and needs a decision from you to proceed** — all three are
-the same class of action, creating an account and granting it a role, and the
-permission layer in this session refuses them:
+**Also confirmed, by creating a throwaway account and authenticating as it:**
 
-1. Can a scoped app insert a `sys_user` row?
-2. Can it write `user_password` such that the account can actually log in?
-3. Can it insert `sys_user_has_role` for `admin`?
+| Check | Result |
+|---|---|
+| A scoped app can insert a `sys_user` row | Yes |
+| A scoped app can grant `x_snc_holg.participant` | Yes |
+| A scoped app can grant `admin` | Yes |
+| The account can actually log in | Yes — `HTTP 200` on `/api/now/table/sys_user` and on the lab's own API, with a wrong password giving 401 as a control |
+| Basic auth is on, MFA is off | `glide.basicauth.required.api = true`, `glide.authenticate.multifactor = false` |
 
-The privileges are declared and nothing in the dictionary or the 21 business
-rules on `sys_user_has_role` suggests a block, so the expected answer is yes to
-all three — but expected is not tested, and B8 is exactly the task that depends
-on it. The probe is: create one throwaway account (`zz.holg.probe.<stamp>`), set
-a password, grant a role, authenticate as it over REST to prove the password
-works, then delete both rows. Minutes, and fully reversible.
+The probe account and all 182 of its role grants were deleted afterwards, and
+authenticating as it now returns 401.
 
-What is *not* yet testable at all: whether the insert works **from a guest
-session**, which only a real public widget can answer. That is the one finding
-that would change B8's shape, and it comes out of B7 rather than before it.
+**The finding that would have cost a workshop.** There are two ways to set a
+password from a script, and only one of them works:
+
+| | Stored value | Can the account log in? |
+|---|---|---|
+| `gr.setValue('user_password', pwd)` | 22 characters | **No — 401** |
+| `gr.user_password.setDisplayValue(pwd)` | 92 characters | **Yes — 200** |
+
+`setValue` stores something, the record looks right, nothing throws, and the
+account cannot log in. That is the shape of a bug found at the worst moment: a
+room of people, all of them locked out, nothing in the record to suggest why.
+B8 uses `setDisplayValue`, and its test authenticates over REST rather than
+checking that the column is non-empty.
+
+`setNewPassword()` does not exist in either scope here, so it is not an option.
+`setDisplayValue` works from the **scoped** app as well as from global —
+verified separately, since the app runs scoped and that is the context that
+matters.
+
+**One more thing granting `admin` does:** the platform's "Expand Roles"
+business rule materialises every role admin contains — 182 `sys_user_has_role`
+rows for one grant. B12 should delete the `admin` grant and let the platform
+retract the expansion, not try to manage 182 rows itself. Deleting the user
+removed all of them cleanly.
+
+**Still not testable without building B7:** whether the insert works from a
+**guest** session. Everything above ran as an admin. That answer comes out of
+the first public widget, not before it.
+
+
 
 ### 5.7 What this replaces
 
