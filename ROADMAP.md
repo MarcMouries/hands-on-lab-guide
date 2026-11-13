@@ -121,7 +121,7 @@ left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
-| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4, W5 and W6 decided. B6, B7, B8 and the system-context job have shipped; B9, B11 and B13 remain |
+| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4, W5 and W6 decided. B6, B7, B8 and the system-context job have shipped and are confirmed working end to end; B9, B11 and B13 remain |
 
 ---
 
