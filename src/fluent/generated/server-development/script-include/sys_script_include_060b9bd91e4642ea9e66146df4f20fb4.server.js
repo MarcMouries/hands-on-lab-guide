@@ -1692,6 +1692,123 @@ LabApi.prototype = {
         return granted
     },
 
+    /* ------------------------------------------------------------ *
+     * Finishing a registration from a privileged context
+     *
+     * A registrant is a guest, and a guest cannot grant `admin`: the role
+     * record belongs to Global, so the insert is a cross-scope write and is
+     * refused for anyone who is not an admin. The scheduled job that calls this
+     * runs as the system user, where that refusal does not apply - the same
+     * grant from this same scope succeeds in an admin session, so what was
+     * missing was never the scope privilege but the caller.
+     *
+     * Everything else about a registration already happened in the request:
+     * the account, its password, the lab role and the enrolment. This finishes
+     * the one part the public page cannot, a minute later at worst.
+     * ------------------------------------------------------------ */
+
+    /**
+     * Grants every open event's roles to the registrants still missing them.
+     *
+     * Idempotent, so running it on a settled room does nothing and writes
+     * nothing. Bounded, so a misconfigured event cannot turn one run into a
+     * sweep of the whole table. Returns a summary for the job's log.
+     */
+    grantPendingEventRoles: function () {
+        var LIMIT = 100
+        var summary = { checked: 0, granted: 0, people: [], errors: [] }
+
+        /* Open events only. A registration row outliving its workshop must not
+         * still be a route to the roles that workshop handed out. */
+        var events = {}
+        var ev = new GlideRecord(LAB_T_EVENT)
+        ev.addQuery('status', 'open')
+        ev.query()
+        while (ev.next()) {
+            var roles = []
+            var named = this._str(ev.getValue('granted_roles')).split(',')
+            for (var n = 0; n < named.length; n++) {
+                var role = this._str(named[n]).trim()
+                if (role && roles.indexOf(role) < 0) {
+                    roles.push(role)
+                }
+            }
+            if (roles.length) {
+                events[ev.getUniqueValue() + ''] = roles
+            }
+        }
+
+        var eventIds = []
+        for (var key in events) {
+            if (Object.prototype.hasOwnProperty.call(events, key)) {
+                eventIds.push(key)
+            }
+        }
+        if (!eventIds.length) {
+            return summary
+        }
+
+        var reg = new GlideRecord(LAB_T_REGISTRATION)
+        reg.addQuery('event', 'IN', eventIds.join(','))
+        reg.addQuery('status', 'IN', 'created,joined')
+        reg.addNotNullQuery('user')
+        reg.setLimit(LIMIT)
+        reg.query()
+
+        while (reg.next()) {
+            summary.checked++
+            var userId = this._str(reg.getValue('user'))
+            var wanted = events[this._str(reg.getValue('event'))] || []
+            var gained = []
+
+            for (var i = 0; i < wanted.length; i++) {
+                if (this._userHasRole(userId, wanted[i])) {
+                    continue
+                }
+                var roleId = this._roleId(wanted[i])
+                if (!roleId) {
+                    summary.errors.push(wanted[i] + ' is not a role on this instance')
+                    continue
+                }
+                try {
+                    var has = new GlideRecord(LAB_T_USER_HAS_ROLE)
+                    has.initialize()
+                    has.setValue('user', userId)
+                    has.setValue('role', roleId)
+                    if (has.insert()) {
+                        gained.push(wanted[i])
+                    } else {
+                        summary.errors.push('refused: ' + wanted[i])
+                    }
+                } catch (e) {
+                    summary.errors.push(wanted[i] + ': ' + e)
+                }
+            }
+
+            if (gained.length) {
+                summary.granted += gained.length
+                summary.people.push(this._str(reg.getValue('email')) + ' -> ' + gained.join(', '))
+
+                /* The row records what it ended up with, not what the request
+                 * managed at the time. */
+                var already = this._str(reg.getValue('granted_roles')).split(',')
+                var all = []
+                for (i = 0; i < already.length + gained.length; i++) {
+                    var name = this._str(
+                        i < already.length ? already[i] : gained[i - already.length],
+                    ).trim()
+                    if (name && all.indexOf(name) < 0) {
+                        all.push(name)
+                    }
+                }
+                reg.setValue('granted_roles', all.join(','))
+                reg.update()
+            }
+        }
+
+        return summary
+    },
+
     /** The event's roles this app may not grant itself. */
     _rolesNeedingGlobal: function (eventGr) {
         var pending = []

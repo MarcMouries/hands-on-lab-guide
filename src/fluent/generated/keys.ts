@@ -305,6 +305,10 @@ declare global {
                         table: 'sys_security_acl'
                         id: '5a33a2290b104617a3aa5c03c313bdb5'
                     }
+                    '5b09efb297ca45859ded500da8a1f0f8': {
+                        table: 'sysauto_script'
+                        id: '5b09efb297ca45859ded500da8a1f0f8'
+                    }
                     '5d15cf982fec5b10bec1567e8ea4e3b8': {
                         table: 'sys_restricted_caller_access'
                         id: '5d15cf982fec5b10bec1567e8ea4e3b8'
