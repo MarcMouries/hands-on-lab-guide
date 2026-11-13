@@ -27,8 +27,10 @@ One line each. The detail is in the numbered sections below.
 | **W5** | 🔴 | Self-registration: what a registrant sees after submitting | Credentials on screen, or emailed | [5.3](#53-what-the-registrant-sees-w5) |
 | **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | W4 | [5.4](#54-the-build-b6b11) |
 | **B7** | 🟠 | The public registration page and widget | W4 | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | Provisioning: create the user, set a password, grant the role, enrol them | W4, W5, and one thing to verify | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | Provisioning: create the user, set a password, grant the roles, enrol them | W4, W5, W6, and two things to verify | [5.4](#54-the-build-b6b11) |
+| **W6** | 🔴 | Which platform roles an event grants, and for how long | `admin` or a least-privilege bundle; time-boxed either way | [5.6](#55-platform-roles-including-admin-w6-b12) |
 | **B9** | 🟠 | Facilitator view of an event's registrations | B6 | [5.4](#54-the-build-b6b11) |
+| **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | W6 | [5.6](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b11) |
 | **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
@@ -307,8 +309,9 @@ needed and shut afterwards. The other two can be added later without redoing
 anything — approval is a status on the Registration row, and verification is a
 token column.
 
-Whichever you pick: **registration never creates an admin, a facilitator or an
-author.** It grants `x_snc_holg.participant` and nothing else.
+Whichever you pick: registration never grants a **lab** role beyond
+`x_snc_holg.participant` — never facilitator, never author. The platform roles
+a workshop needs are a separate matter, in 5.5.
 
 ### 5.3 What the registrant sees (W5)
 
@@ -327,7 +330,8 @@ This is really a question about whether outbound email works on
 
 `x_snc_holg_event`: `name` ("Customer Workshop November 13th 2026"), `starts_on`,
 `ends_on`, `status` (draft / open / closed), `registration_code`, `capacity`,
-`evaluation_plan` (which plan registrants are enrolled into), `facilitator`.
+`evaluation_plan` (which plan registrants are enrolled into), `facilitator`,
+`granted_roles` (what provisioning grants — see 5.5), `roles_revoked_on`.
 Registration is accepted only while `status = open` and the clock is inside the
 window — two conditions, so forgetting to close it is not the only safeguard.
 
@@ -349,7 +353,9 @@ one page serves every workshop via `?event=<code or slug>`.
 
 **B8 — provisioning.** Create the `sys_user` (user name derived so that the
 existing numbering lines up — see section 2), set a password, grant
-`x_snc_holg.participant`, link the row, stamp `provisioned_on`.
+`x_snc_holg.participant` plus the event's `granted_roles`, link the row, stamp
+`provisioned_on`. Runs in a privileged context, never in the public request —
+see 5.5 for why that is forced rather than chosen.
 
 *To verify on the instance before building this:* whether a scoped app can set
 `user_password` at all, and whether `password_needs_reset` can be set with it.
@@ -370,7 +376,66 @@ are still being used.
 enrols the new user into it, so they land on their tasks rather than an empty
 plan list.
 
-### 5.5 What this replaces
+### 5.5 Platform roles, including admin (W6, B12)
+
+The lab tasks need more than a login. Building a scoped application, writing ATF
+tests and running them needs `admin`, or a bundle that adds up to the same
+freedom. This is the part that deserves thought, because a public page whose
+end result is an admin account on this instance is a different proposition from
+one that hands out a plan reader.
+
+**What is verified on `marco1creator`:**
+
+| Fact | Reading |
+|---|---|
+| `admin`: `grantable = true`, `elevated_privilege = false` | A context holding `user_admin` or `admin` can insert the grant. No security-admin elevation needed |
+| 21 active business rules on `sys_user_has_role` | None blocks an admin insert. The "prevent" rules target specific roles: high assurance, SM, MID, read-only cloud |
+| `delegated_developer`, `app_engine_admin`, `atf_test_designer`, `atf_test_admin` all exist | A least-privilege bundle is available instead of `admin` |
+| 19 users already hold `admin` | For scale, not as an argument |
+
+**Not verified, and worth one probe before B8 is built:** an actual grant from a
+scheduled (system) context, and whether `user_password` can be set from a
+scoped app at all.
+
+**The fact that decides the architecture.** A public widget's server script runs
+as **guest**, which holds no roles at all, so the public request *cannot* grant
+anything — not admin, not the participant role. Provisioning has to happen in a
+privileged context: a scheduled job, or a facilitator action. The two-phase
+design in 5.4 is therefore not a preference, it is the only shape that works:
+
+```
+public form  ->  Lab Registration row        (runs as guest, grants nothing)
+                        |
+privileged  ->  create user, set password, grant roles, enrol
+(scheduled job or facilitator click, running as system or as a facilitator)
+```
+
+**W6 — which roles, and for how long.** Two decisions:
+
+| | Options |
+|---|---|
+| Which | `admin` (simplest, what a PDI gives everyone) · or `delegated_developer` + `app_engine_admin` + `atf_test_designer` + `atf_test_admin`, which covers the ten tasks without full admin · or admin for the Build Agent section only |
+| How long | **Time-boxed is the control that matters.** Granting admin is survivable; granting it permanently to a roomful of visiting customers is the part that is hard to undo |
+
+My recommendation: put the role list on the **event**, not in code
+(`granted_roles`, a list field), default it to the least-privilege bundle, and
+make an event that grants `admin` something a facilitator has to set
+deliberately — so nobody publishes an admin-minting page by accident. Then, for
+an event that does grant admin, require facilitator approval rather than the
+event code alone: when the prize is admin, "whoever has the code" is too wide.
+
+**B12 — revoke on close.** When an event closes, remove the granted roles and
+deactivate the accounts, on a schedule as well as on the status change, so a
+forgotten event does not leave standing admins. Keep the `sys_user` rows long
+enough to attribute the artifacts the tracker found, then purge with B10.
+
+One more reason to time-box: this app's own gates now ask for a **granted** role
+rather than trusting `gs.hasRole`, so a workshop admin is not automatically a
+facilitator or an author here. That is deliberate, and it means an admin
+participant can build their lab app without being able to edit the plan or read
+the dashboard.
+
+### 5.6 What this replaces
 
 **P2** — "create the remaining `now.assist.participantNN` accounts" — mostly
 goes away. Pre-made accounts stop being the mechanism; the event creates them.
