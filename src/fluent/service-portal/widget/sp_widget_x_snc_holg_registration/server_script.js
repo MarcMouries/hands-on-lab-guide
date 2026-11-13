@@ -36,6 +36,11 @@
     data.signedIn = !api.isGuest();
     data.signedInName = data.signedIn ? gs.getUserDisplayName() + '' : '';
 
+    /* `?email=` fills the form in so a test is one click. It fills it in and
+     * nothing more - see LabApi.registrationPrefill for why a URL must not be
+     * able to create an account on its own. */
+    data.prefill = api.registrationPrefill($sp.getParameter('email'));
+
     if (input && input.action === 'register') {
         data.result = api.register(found.sys_id, {
             first_name: input.first_name,

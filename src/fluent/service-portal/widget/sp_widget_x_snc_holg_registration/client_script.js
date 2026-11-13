@@ -4,6 +4,15 @@ api.controller = function () {
     c.form = { first_name: '', last_name: '', email: '', code: '' };
     c.busy = false;
 
+    /* `?email=` in the URL fills the form in, so testing the whole flow is one
+     * click. The server derives the names from the address and hands them over
+     * already filled; it never submits for you. */
+    if (c.data.prefill && c.data.prefill.email) {
+        c.form.first_name = c.data.prefill.first_name;
+        c.form.last_name = c.data.prefill.last_name;
+        c.form.email = c.data.prefill.email;
+    }
+
     /* The server decides everything; this only collects and submits. Guarding
      * here as well keeps the button from firing a request that cannot succeed,
      * but the server re-checks every field - a client check is a courtesy. */
@@ -64,6 +73,13 @@ api.controller = function () {
                 // Nor is the code kept once it has been used.
                 c.form.code = '';
                 c.data.code = '';
+
+                /* Only the already-registered outcome sets this. An account
+                 * that was just created must stay put so its password can be
+                 * read off the screen. */
+                if (c.data.result && c.data.result.redirect) {
+                    window.location.href = c.data.result.redirect;
+                }
             })
             .catch(function () {
                 c.busy = false;

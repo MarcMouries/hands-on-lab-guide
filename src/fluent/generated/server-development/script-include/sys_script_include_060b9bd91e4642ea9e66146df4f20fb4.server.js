@@ -1200,6 +1200,38 @@ LabApi.prototype = {
         return starts || ends
     },
 
+    /**
+     * Form values worked out from an email address, for `?email=` in the URL.
+     *
+     * A testing affordance, and deliberately only a prefill: the form still has
+     * to be submitted. A URL that created an account on GET would hand one out
+     * to every crawler, link preview and prefetching browser that ever saw it.
+     *
+     * `jane.doe@example.com` gives Jane and Doe; a local part with no separator
+     * gives a first name and an empty surname for the person to finish.
+     */
+    registrationPrefill: function (email) {
+        var address = this._str(email).trim().toLowerCase()
+        if (!address || address.indexOf('@') < 1) {
+            return { email: '', first_name: '', last_name: '' }
+        }
+
+        var words = address.split('@')[0].split(/[._+-]+/)
+        var named = []
+        for (var i = 0; i < words.length && named.length < 2; i++) {
+            var word = words[i].replace(/[^a-z]/g, '')
+            if (word) {
+                named.push(word.charAt(0).toUpperCase() + word.slice(1))
+            }
+        }
+
+        return {
+            email: address,
+            first_name: named[0] || '',
+            last_name: named[1] || '',
+        }
+    },
+
     /** One date as '13 November 2026', or '' when there is nothing to show. */
     _dayWords: function (value) {
         if (!value) {
@@ -1372,14 +1404,26 @@ LabApi.prototype = {
                 user: existing,
                 granted_roles: '',
             })
+            /*
+             * Sent on to the lab rather than left on a dead end. `redirect` is
+             * acted on by the client and set for this outcome only: an account
+             * that was just created has to stay on the page long enough for its
+             * password to be read off the screen.
+             *
+             * Signing in is still required - the lab asks - and the
+             * registration stays `awaiting_sign_in` until they come back here
+             * with a session, which is when the roles are actually granted.
+             */
+            var toLab = this._labUrl(eventGr)
             return {
                 ok: true,
                 heading: 'You already have an account here',
                 message:
-                    'Sign in with the credentials you already use, then open this same link again to join the workshop.',
+                    'Taking you to the lab. Sign in with the credentials you already use, then open this link again to join the workshop.',
                 user_name: '',
                 password: '',
-                lab_url: '',
+                lab_url: toLab,
+                redirect: toLab,
             }
         }
 
