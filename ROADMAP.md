@@ -333,9 +333,10 @@ log in. Nothing depends on outbound mail, which P6 leaves unanswered.
 - No trailing digits for the participant-number logic to read, so every number
   comes from lowest-free (section 2). That is already the fallback path and
   needs no change.
-- Two people with the same name collide. The form suffixes — `marc.mouries2` —
-  rather than failing, and the unique index on `sys_user.user_name` is what makes
-  a collision visible instead of silent.
+- Two people with the same name collide. A suffix (`marc.mouries2`) settles it —
+  but only after the email says they really are two people. See the matching
+  rules in 5.4, because suffixing first is how one person ends up with two
+  accounts.
 
 **Decided: an existing account is reused, and its password is never touched.**
 
@@ -387,7 +388,8 @@ Registration is accepted only while `status = open` and the clock is inside the
 window — two conditions, so forgetting to close it is not the only safeguard.
 
 `x_snc_holg_registration`: `event`, `first_name`, `last_name`, `email`,
-`status` (created / failed / revoked), `user` (the created `sys_user`),
+`status` (created / joined / awaiting_sign_in / failed / revoked), `user` (the
+`sys_user` created or matched),
 `created_on`, `failure_reason`. There is no `pending`: a registration either
 produced an account or it failed, and a failure is something to retry, not
 something to approve.
@@ -410,7 +412,32 @@ a user name from their first and last name, set the password with
 in), grant `x_snc_holg.participant` plus the event's `granted_roles`, link the
 row, stamp `created_on`. For a signed-in caller: skip all of that, grant the
 roles to the session's own user, and write the registration. One endpoint, two
-branches, and the branch is chosen by who is asking. Runs as part of the registration, not after it — see 5.5 for the
+branches, and the branch is chosen by who is asking.
+
+**Never a second account for someone who already has one.** The order of these
+checks is the whole of it — getting it wrong is how `marc.mouries` acquires a
+`marc.mouries2`:
+
+1. **Is there a session?** A signed-in caller is matched to their own user and
+   nothing is created, whatever they typed in the form.
+2. **Match on email first**, lower-cased and trimmed, against `sys_user.email`.
+   A match means this person already exists. Never create.
+3. **Then match the derived user name.** A name collision with a *different*
+   email is genuinely a different person, so suffix. A name collision with the
+   *same* email was already caught at step 2.
+4. **An inactive match is reactivated, not duplicated.** B12 deactivates accounts
+   when an event closes, so someone returning for a second workshop will match an
+   inactive account of their own. Reactivate it and grant the new event's roles —
+   never a fresh account, and never a password change.
+
+What a guest caller matching an existing account gets: no account creation, no
+roles granted, no credentials — a message saying the account already exists and
+to sign in and join from the same link. The registration row is kept as
+`awaiting_sign_in` so the facilitator can see who is stuck in that state. Roles
+are never granted to an account on the strength of an unverified email.
+
+The unique index on `(event, email)` in B6 catches the other duplicate: the same
+person registering twice for the same event. Runs as part of the registration, not after it — see 5.5 for the
 one probe that decides whether the form does it directly or hands it to a system
 context in the same breath.
 
