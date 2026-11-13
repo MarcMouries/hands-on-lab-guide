@@ -1623,28 +1623,64 @@ LabApi.prototype = {
         return granted
     },
 
-    /** Writes the registration row. Never throws - the account already exists. */
+    /**
+     * Writes the registration row, updating one that is already there.
+     *
+     * An upsert rather than an insert, because registering twice for the same
+     * event is a normal thing to do: somebody registered before the event's
+     * `granted_roles` was set, or signed in afterwards to pick up what the
+     * guest path could not grant them. Re-opening the link then grants the
+     * missing roles - `_grantEventRoles` skips what is already held - and this
+     * keeps the row honest about what they ended up with instead of leaving it
+     * describing the first attempt.
+     *
+     * Never throws: by the time this runs the account exists, and losing the
+     * bookkeeping must not look like a failed registration.
+     */
     _recordRegistration: function (eventGr, values) {
         try {
+            var email = this._str(values.email)
             var gr = new GlideRecord(LAB_T_REGISTRATION)
-            gr.initialize()
-            gr.setValue('event', eventGr.getUniqueValue())
-            gr.setValue('first_name', this._str(values.first_name))
-            gr.setValue('last_name', this._str(values.last_name))
-            gr.setValue('email', this._str(values.email))
+            gr.addQuery('event', eventGr.getUniqueValue())
+            gr.addQuery('email', email)
+            gr.setLimit(1)
+            gr.query()
+
+            var existing = gr.next()
+            if (!existing) {
+                gr = new GlideRecord(LAB_T_REGISTRATION)
+                gr.initialize()
+                gr.setValue('event', eventGr.getUniqueValue())
+                gr.setValue('email', email)
+                gr.setValue('first_name', this._str(values.first_name))
+                gr.setValue('last_name', this._str(values.last_name))
+            }
+
             gr.setValue('status', values.status)
             if (values.user) {
                 gr.setValue('user', values.user)
             }
-            gr.setValue('granted_roles', this._str(values.granted_roles))
-            if (values.failure_reason) {
-                gr.setValue('failure_reason', values.failure_reason)
+
+            /*
+             * Roles accumulate across attempts. The second visit grants only
+             * what the first one missed, so overwriting would lose the record
+             * of everything the first one did grant.
+             */
+            var already = this._str(gr.getValue('granted_roles')).split(',')
+            var adding = this._str(values.granted_roles).split(',')
+            var all = []
+            for (var i = 0; i < already.length + adding.length; i++) {
+                var name = this._str(i < already.length ? already[i] : adding[i - already.length]).trim()
+                if (name && all.indexOf(name) < 0) {
+                    all.push(name)
+                }
             }
-            return gr.insert() + ''
+            gr.setValue('granted_roles', all.join(','))
+
+            gr.setValue('failure_reason', this._str(values.failure_reason))
+
+            return (existing ? gr.update() : gr.insert()) + ''
         } catch (e) {
-            // The unique index on (event, email) lands here on a second
-            // registration for the same event, which is not an error worth
-            // showing: they are already registered.
             return ''
         }
     },
