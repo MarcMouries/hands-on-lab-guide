@@ -23,10 +23,9 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **W5** | 🔴 | Self-registration: what a registrant sees after submitting | Credentials on screen, or emailed | [5.3](#53-what-the-registrant-sees-w5) |
 | **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | Nothing | [5.4](#54-the-build-b6b11) |
 | **B7** | 🟠 | The public registration page and widget | Nothing | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | The form creates the account: user, password, roles, enrolment | W5, and two things to verify | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | The form creates the account: user, password, roles, enrolment | Nothing — the probes passed | [5.4](#54-the-build-b6b11) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b11) |
 | **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
@@ -126,7 +125,7 @@ left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
-| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4 and W6 decided. B6, B7, B9–B12 are unblocked; B8 waits on W5 and two probes |
+| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4, W5 and W6 decided and the probes passed. B6–B12 are all unblocked |
 
 ---
 
@@ -322,16 +321,32 @@ when the facilitator creates the event.
 account on this instance while the event is open. The window, the cap and
 closing the event are what bound it, and B12 takes the roles away afterwards.
 
-### 5.3 What the registrant sees (W5)
+### 5.3 What the registrant sees (W5 — decided)
 
-| Option | Trade-off |
-|---|---|
-| Credentials on screen, once | What the old app did, and what makes a room work: they read it and log in. But anyone who guesses a colleague's email could have registered as them |
-| Emailed to the address given | Proves the address works and keeps the password off a public page. Useless if the instance's email is a sink |
-| Both | Show a username and a one-time setup link, email the same link |
+**Decided, 13 November 2026: credentials on screen, once.** What the old app did,
+and what makes a room work — they read the username and password off the page and
+log in. Nothing depends on outbound mail, which P6 leaves unanswered.
 
-This is really a question about whether outbound email works on
-`marco1creator` at workshop time, which is P6.
+**Decided: the user name comes from their first and last name**, e.g.
+`marc.mouries`. Two consequences for the build:
+
+- No trailing digits for the participant-number logic to read, so every number
+  comes from lowest-free (section 2). That is already the fallback path and
+  needs no change.
+- Two people with the same name collide. The form suffixes — `marc.mouries2` —
+  rather than failing, and the unique index on `sys_user.user_name` is what makes
+  a collision visible instead of silent.
+
+**Decided: an email that already belongs to a user reuses that account** and
+grants it the event's roles, rather than creating a second one.
+
+> **Open, and narrow:** reuse plus on-screen credentials together would mean the
+> form *resets an existing user's password* and shows it to whoever submitted it.
+> With the event code as the only gate, that is account takeover of any user on
+> the instance — including yours. Unless you say otherwise, B8 reuses the account
+> and grants the roles but **does not touch its password**, telling the
+> registrant to sign in with the credentials they already have. That keeps the
+> decision and removes the one way it bites.
 
 ### 5.4 The build (B6–B11)
 
