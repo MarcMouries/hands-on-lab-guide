@@ -23,11 +23,10 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **W4** | 🔴 | Self-registration: confirm code **and** approval, now that events grant admin | Recommended in 5.2; say no and I build the code alone | [5.2](#52-the-decision-that-shapes-everything-else-w4) |
 | **W5** | 🔴 | Self-registration: what a registrant sees after submitting | Credentials on screen, or emailed | [5.3](#53-what-the-registrant-sees-w5) |
-| **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | W4 | [5.4](#54-the-build-b6b11) |
-| **B7** | 🟠 | The public registration page and widget | W4 | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | Provisioning: create the user, set a password, grant the roles, enrol them | W4, W5, and two things to verify | [5.4](#54-the-build-b6b11) |
+| **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | Nothing | [5.4](#54-the-build-b6b11) |
+| **B7** | 🟠 | The public registration page and widget | Nothing | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | Provisioning: create the user, set a password, grant the roles, enrol them | W5, and two things to verify | [5.4](#54-the-build-b6b11) |
 | **B9** | 🟠 | Facilitator view of an event's registrations | B6 | [5.4](#54-the-build-b6b11) |
 | **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
@@ -127,7 +126,7 @@ left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
-| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W6 decided: events grant `admin`. Blocked on W4, and B8 additionally on W5 |
+| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4 and W6 decided. B6, B7, B9–B11 are unblocked; B8 waits on W5 and two probes |
 
 ---
 
@@ -304,15 +303,26 @@ else here is ordinary work. Three ways to bound it:
 | Facilitator approval | The form writes a Registration row and creates nothing. The facilitator opens the list and provisions, one click or in bulk | Safest. Adds a step at the moment the room is waiting |
 | Email verification | A one-time link is emailed; the account is created when it is clicked | Proper, and proves the email belongs to them. Needs working outbound email — see P6, where email may be pointed at a sink |
 
-My recommendation **changed once admin was confirmed as the granted role**
-(5.5). An event code alone is the right gate for handing out a plan reader; it
-is too wide when the end of the flow is an admin account on this instance.
+**Decided: the event code *and* facilitator approval.** Your call, 13 November
+2026, once admin was confirmed as the granted role (5.5). A code alone is the
+right gate for handing out a plan reader; it is too wide when the end of the
+flow is an admin account on this instance.
 
-So: **event code *and* facilitator approval**. The code keeps the form quiet,
-and provisioning waits for a human — in practice one click for the whole room,
-with the facilitator opening the registration list at the start of the session.
-Email verification stays available later as a token column, for an event that
-ever runs without a facilitator in the room.
+So the form accepts a registration only with the right code, while the event is
+open and inside its window and under its cap — and **provisioning waits for a
+human**. In practice that is one click for the whole room: the facilitator opens
+the registration list at the start of the session and provisions everyone who
+has signed up.
+
+What this settles in the build:
+
+- `x_snc_holg_registration.status` starts at `pending` and only a facilitator
+  action moves it to `provisioned`. Nothing the public form writes can create a
+  user, which is also what the guest identity forces (5.5).
+- B9, the facilitator view, is no longer only a monitor — it is where approval
+  happens, so it carries the provision action, a bulk provision, and a retry.
+- Email verification stays available later as a token column, for an event that
+  ever runs without a facilitator in the room.
 
 Whichever you pick: registration never grants a **lab** role beyond
 `x_snc_holg.participant` — never facilitator, never author. The platform roles
@@ -370,8 +380,8 @@ create are already declared in the repo, so the access is there; what the
 scoped API will accept on a password field is not something to assume.
 
 **B9 — the facilitator view.** Registrations for an event, with provisioning
-state and a way to retry a failure. This is also where approval lives if W4
-goes that way.
+state and a way to retry a failure. This is where **approval** happens (5.2):
+provision one registrant, provision everyone pending, retry a failure.
 
 **B10 — purge.** Real names and email addresses of customers, on a demo
 instance. A registration is needed until the event closes and not after:
