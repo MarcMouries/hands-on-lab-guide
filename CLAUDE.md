@@ -99,6 +99,15 @@ the only undo.
   digest away, so the read returns the old value. Keep what you asked for in a
   ref and compare against that. Reading it back is what made every click in the
   authoring UI write the URL twice.
+- **`c.server.update()` takes no argument.** It sends `c.data` as the server
+  script's `input` and replaces `c.data` with the response. An object passed to
+  it is ignored, so `input.action` never arrives, the server falls through, and
+  the button changes while nothing happens — no error anywhere. Put the values
+  on `c.data` and call `update()` bare, or use `c.server.get(obj)`, which does
+  take an object but leaves `c.data` alone.
+- **A POST to a widget does not carry the page's query parameters.** Anything the
+  server script read from `$sp.getParameter()` on the GET has to travel in the
+  body too, or the submit rebuilds the page as if the URL were wrong.
 - **A Fluent property takes a literal, not an expression.** `css: [...].join()`
   or `'a' + 'b'` either fails the build or, worse, writes the string
   `Symbol(CallExpressionShape)` into the field with a clean build and a clean

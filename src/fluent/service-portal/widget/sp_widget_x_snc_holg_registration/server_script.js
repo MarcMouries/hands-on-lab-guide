@@ -13,12 +13,17 @@
     data.result = null;
     data.error = '';
 
-    /* Which event this page is for. The slug is in the URL; the code is typed,
-     * because a code in a URL is not a gate. */
-    var slug = $sp.getParameter('event') || options.event_slug || '';
+    /* Which event this page is for.
+     *
+     * `input.event_id` first: a POST from the form carries it in the body, and
+     * the page's own `?event=` query parameter is not guaranteed to come with
+     * it. Taking the URL first meant a registration could rebuild the page as
+     * "this link does not name a workshop" on the one request that mattered. */
     var api = new x_snc_holg.LabApi();
+    var wanted =
+        (input && input.event_id) || $sp.getParameter('event') || options.event_slug || '';
 
-    var found = api.registrationEvent(slug);
+    var found = api.registrationEvent(wanted);
     if (!found) {
         data.error = 'This registration link does not name a workshop. Check the link you were sent.';
         return;
@@ -38,5 +43,15 @@
             email: input.email,
             code: input.code,
         });
+
+        /* A breadcrumb for the next time this goes quiet. The outcome and the
+         * event only - no name, no email, no password. */
+        gs.info(
+            '[x_snc_holg] registration for event ' +
+                found.sys_id +
+                ': ' +
+                (data.result && data.result.ok ? 'ok' : 'refused') +
+                (data.result && data.result.heading ? ' - ' + data.result.heading : ''),
+        );
     }
 })();
