@@ -237,11 +237,13 @@ export function PromptMarkdown({ source }: { source: string }) {
 interface Props {
     prompt: LabPrompt
     index: number
+    /** How many prompts the task has, which decides whether a label is useful. */
+    total: number
     /** `{{token}}` values for this participant. */
     tokens: PromptTokens
 }
 
-export function PromptBox({ prompt, index, tokens }: Props) {
+export function PromptBox({ prompt, index, total, tokens }: Props) {
     /*
      * Tokens are filled in on the SOURCE, before rendering, so a Copy button
      * hands over Markdown rather than rendered text - just with this
@@ -253,7 +255,14 @@ export function PromptBox({ prompt, index, tokens }: Props) {
         [prompt.prompt_text, tokens],
     )
 
-    const label = prompt.label || 'Prompt ' + (index + 1)
+    /*
+     * A task with one step needs no label above it: the task title already
+     * says what to do, and "Prompt" above a single prompt is a word that earns
+     * nothing. Several steps do need telling apart, so an unlabelled one falls
+     * back to its position - "Step 2", matching the heading, rather than the
+     * old "Prompt 2".
+     */
+    const label = prompt.label || (total > 1 ? 'Step ' + (index + 1) : '')
 
     // Re-parsed only when the source text changes.
     const body = useMemo(() => <PromptMarkdown source={source} />, [source])
@@ -266,9 +275,11 @@ export function PromptBox({ prompt, index, tokens }: Props) {
      */
     return (
         <div className="holg-prompt">
-            <div className="holg-prompt__head">
-                <span className="holg-prompt__label">{label}</span>
-            </div>
+            {label ? (
+                <div className="holg-prompt__head">
+                    <span className="holg-prompt__label">{label}</span>
+                </div>
+            ) : null}
             <div className="holg-prompt__text holg-prompt__text--md">{body}</div>
         </div>
     )

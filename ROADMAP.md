@@ -17,8 +17,6 @@ One line each. The detail is in the numbered sections below.
 | **W3** | 🔴 | Artifact tracker: decide when the scan runs | On demand, every 5 minutes, or both | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **B1** | 🟠 | Build the artifact tracker | Nothing but W3 | [2](#2--ready-to-build) |
 | **B3** | 🟠 | Let someone assign a plan's facilitator without admin | A decision between two approaches | [2](#2--ready-to-build) |
-| **B4** | 🟠 | Reword the claims task description | Needs drafting, not substitution | [2](#2--ready-to-build) |
-| **B5** | 🟠 | Replace the per-step labels that still read "Prompt" | A data edit, best bundled with W1 | [2](#2--ready-to-build) |
 | **P1** | ⚫ | Have a real participant open a plan and check the number they get | You — one login, then I check the row | [3.1](#31-check-a-real-participants-number-p1) |
 | **P2** | ⚫ | Create the remaining `now.assist.participantNN` accounts | You — stops at 3 today | [3](#3--workshop-prep--your-side) |
 | **P3** | ⚫ | Give each account app-creation and test rights | You | [3](#3--workshop-prep--your-side) |
@@ -112,8 +110,6 @@ Decided, unblocked, not started.
 |---|---|
 | **Artifact tracker** | Expectation and evidence tables, the `sys_update_xml` query, the REST endpoint, the dashboard column, `app_name` / `app_scope` on Plan Participant. Blocked only on 1.3 |
 | **Authoring: the plan facilitator field** | Left out of the authoring UI on purpose — a field-level ACL restricts `facilitator` to the facilitator role, and an author need not have it. Now that facilitator no longer has record-level write on the plan table, assigning a facilitator is an **admin** job in the platform UI. Options if that chafes: add `x_snc_holg.author` to the field ACL, or give the authoring editor a facilitator picker and let the server set it |
-| **Claims task description** | `Build a claims exception tracking application with…` is the one task that never said "Use Now Assist to", so the rename skipped it. Needs new wording, not a substitution — I can draft it |
-| **Per-step labels still read "Prompt"** | `Prompt`, `Prompt 1 – application and data model`. These come from the `label` field on each Task Prompt record, not from code. A data edit, bundled naturally with 1.1 |
 
 ---
 

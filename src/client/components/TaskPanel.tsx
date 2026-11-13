@@ -46,7 +46,12 @@ export function TaskPanel({ section, task, tokens }: Props) {
                     <h3 className="holg-block__label">Steps</h3>
                     {task.prompts.map((prompt, index) => (
                         <React.Fragment key={prompt.sys_id}>
-                            <PromptBox prompt={prompt} index={index} tokens={tokens} />
+                            <PromptBox
+                                prompt={prompt}
+                                index={index}
+                                total={task.prompts.length}
+                                tokens={tokens}
+                            />
                         </React.Fragment>
                     ))}
                 </div>

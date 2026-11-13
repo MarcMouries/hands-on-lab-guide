@@ -15,6 +15,8 @@ Last updated 2026-11-13.
 
 | Item | Shipped |
 |---|---|
+| **B4 — the claims task description** | The one task that never said which tool it uses now says the right one: "Use **Build Agent** to build a claims exception tracking application end to end: a data model, roles, automation, a dashboard and demo data, across five steps." Every task but the setup one now names its tool |
+| **B5 — no step is labelled "Prompt" any more** | The five Build Agent steps are named for what they build (`Application and data model`, `Roles and access`, `Automation`, `Dashboard`, `Demo data`); the eight single-step tasks have no label at all, since the task title already says what to do. An unlabelled step among several falls back to "Step N", matching the heading, rather than "Prompt N" |
 | **B2 — shorter URL parameters** | `plan_id` → `plan`, `task_id` → `task`, `node_id` → `node`. The old names are still read, so every link already shared keeps working; writes emit only the new name and drop the old one in the same call, so the first write upgrades the URL it found. The REST path parameters are untouched — they are an API contract, not a reader's URL |
 | **Race-safe participant numbers** | Unique index on `(evaluation_plan, participant_number)`, the number set on the insert instead of written afterwards, and a refused insert retried against a fresh read. 10/10 against the live index |
 | **Every participant was being told they are number 1** | Found while checking the above. The read that picks the next free number used `GlideRecordSecure`, and a participant may read only their own row — so the "taken" list was one row long for everyone but a facilitator or an admin. Now a plain `GlideRecord`, the one deliberate exception in the server layer |

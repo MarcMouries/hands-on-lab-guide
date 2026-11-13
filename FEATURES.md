@@ -65,6 +65,7 @@ multi-participant workshop; 100–600 are the Now Assist for Creator exercises.
 | **Participant number and prefix** | Built *(recent)* | Assigned on enrolment, lowest free number first. Prefix is **initials + number**: `Participant #7` → `p07` → scope `x_snc_p07`; `Marc Mouries` as the fourth person → `mm04` → `x_snc_mm04`. See [Participant numbering](#participant-numbering--how-a-number-is-chosen) |
 | **A whole task as one stepped Markdown document** | Built *(recent)* | The outermost ordered list renders as a numbered timeline — badge, connector line, body — so all of a task's steps can live in one `prompt_text`. Numbers come from a CSS counter, so nothing authored or in JS keeps count |
 | **Per-block Copy button** | Built *(recent)* | Each fenced block gets its own Copy, which copies that block rather than the whole prompt — so a step whose instruction *is* a prompt puts just the prompt on the clipboard |
+| **Step labels say what the step is** | Built *(recent)* | A task with one step shows no label — the title already says what to do. Several steps carry their own names, and an unnamed one falls back to "Step N" |
 | **`{{token}}` substitution in step content** | Built *(recent)* | `{{user_name}}`, `{{participant_number}}`, `{{prefix}}`, `{{scope}}`, `{{app_name}}`, `{{instance_url}}`. One authored prompt serves every participant |
 
 ### Markdown rendering — constraints held
