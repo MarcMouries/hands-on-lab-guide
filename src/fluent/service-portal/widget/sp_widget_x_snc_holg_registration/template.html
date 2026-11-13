@@ -62,7 +62,8 @@
             </p>
 
             <p ng-if="!c.data.signedIn" class="holg-reg__welcome">
-              Welcome. Tell us who you are and we will set up your lab account.
+              Welcome &mdash; you're a few details away from joining this workshop as a
+              participant.
             </p>
 
             <div ng-if="!c.data.signedIn">
@@ -99,7 +100,7 @@
             </div>
 
             <button class="holg-reg__submit" type="submit" ng-disabled="!c.canSubmit()">
-              <span ng-if="!c.busy">{{c.data.signedIn ? 'Register me for this workshop' : 'Create my lab account'}}</span>
+              <span ng-if="!c.busy">Register me for this workshop</span>
               <span ng-if="c.busy">Setting things up&hellip;</span>
             </button>
           </div>
