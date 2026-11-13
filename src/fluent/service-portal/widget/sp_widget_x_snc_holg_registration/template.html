@@ -47,8 +47,9 @@
 
       <div ng-if="c.data.event.accepting">
         <p ng-if="c.data.signedIn" class="holg-reg__signedIn" role="status">
-          You are signed in as <strong>{{c.data.signedInName}}</strong>. Joining will not change
-          your password or your existing access &mdash; it adds what this workshop needs.
+          You are signed in as <strong>{{c.data.signedInName}}</strong>. Click the button below to
+          register as a participant to the workshop. Your password and your existing access are
+          not changed.
         </p>
 
         <div ng-if="!c.data.signedIn">
@@ -65,13 +66,17 @@
                  ng-model="c.form.email" autocomplete="email" required />
         </div>
 
-        <label class="holg-reg__label" for="holg-reg-code">Registration code</label>
-        <input class="holg-reg__input" id="holg-reg-code" type="text" maxlength="40"
-               ng-model="c.form.code" autocomplete="off"
-               aria-describedby="holg-reg-code-hint" required />
-        <p class="holg-reg__hint" id="holg-reg-code-hint">
-          Your facilitator will give you this.
-        </p>
+        <!-- Only when the event defines a code. Most do not: the link is the
+             invitation, and the event's own window and capacity are the gate. -->
+        <div ng-if="c.data.event.needs_code">
+          <label class="holg-reg__label" for="holg-reg-code">Registration code</label>
+          <input class="holg-reg__input" id="holg-reg-code" type="text" maxlength="40"
+                 ng-model="c.form.code" autocomplete="off"
+                 aria-describedby="holg-reg-code-hint" required />
+          <p class="holg-reg__hint" id="holg-reg-code-hint">
+            Your facilitator will give you this.
+          </p>
+        </div>
 
         <button class="holg-reg__submit" type="submit" ng-disabled="!c.canSubmit()">
           <span ng-if="!c.busy">{{c.data.signedIn ? 'Join this workshop' : 'Register'}}</span>

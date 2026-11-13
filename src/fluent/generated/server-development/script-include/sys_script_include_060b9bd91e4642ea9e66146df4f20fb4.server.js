@@ -1142,6 +1142,8 @@ LabApi.prototype = {
             when: this._eventWhen(match),
             accepting: state.accepting,
             closed_message: state.message,
+            // The form asks for a code only when there is one to ask for.
+            needs_code: !!this._str(match.getValue('registration_code')).trim(),
         }
     },
 
@@ -1239,10 +1241,17 @@ LabApi.prototype = {
             return this._registerFailed(state.message)
         }
 
-        var expected = this._str(gr.getValue('registration_code'))
-        var given = this._str(form.code)
-        if (!expected || given.toLowerCase().trim() !== expected.toLowerCase().trim()) {
-            return this._registerFailed('That registration code is not right.')
+        /*
+         * A code is required only when the event defines one. Blank means the
+         * link itself is the invitation, which is what most events here want;
+         * the remaining gates are the event's status, its window and its cap.
+         */
+        var expected = this._str(gr.getValue('registration_code')).trim()
+        if (expected) {
+            var given = this._str(form.code).trim()
+            if (given.toLowerCase() !== expected.toLowerCase()) {
+                return this._registerFailed('That registration code is not right.')
+            }
         }
 
         return this.isGuest()

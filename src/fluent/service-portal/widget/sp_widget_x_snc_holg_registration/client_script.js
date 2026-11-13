@@ -14,7 +14,7 @@ api.controller = function () {
         if (!c.data.event || !c.data.event.accepting) {
             return false;
         }
-        if (!c.form.code) {
+        if (c.data.event.needs_code && !c.form.code) {
             return false;
         }
         return c.data.signedIn

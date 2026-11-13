@@ -27,7 +27,7 @@ One line each. The detail is in the numbered sections below.
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
 | **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
-| **D1–D8** | ⚪ | Eight known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
+| **D1–D9** | ⚪ | Nine known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
 
 IDs are stable: **W** needs your word, **B** is mine to build, **N** is a nice
 to have, **P** is workshop prep on your side, **D** is a known debt. They do not renumber when something
@@ -294,19 +294,28 @@ name, email, event code in, username and password out. No approval, no queue, no
 facilitator action, nothing to wait for. That is what the old app did and what
 the workshop needs.
 
-**Decided, 13 November 2026: the event code is the gate.** Every control is a
-condition on the event, checked by the form itself, and none of them needs a
-human awake:
+**Decided, 13 November 2026, revised the same day: the code is optional and
+events here will not use one.** The conditions are all on the event record, all
+enforced in the form's own server script, and none needs a human awake:
 
 | Condition | Why |
 |---|---|
-| The right `registration_code` | Shared by the facilitator — on a slide, in the invitation |
-| `status = open` | An event in draft or closed accepts nobody, however many people have the code |
-| Inside `starts_on`–`ends_on` | A code that leaks after the workshop opens nothing |
-| Under `capacity` | Bounds the damage if it leaks during |
+| `status = open` | An event in draft or closed accepts nobody |
+| Inside `starts_on`–`ends_on` | Registration stops when the workshop is over |
+| Under `capacity` | Bounds how many accounts one link can produce |
+| The right `registration_code` | **Only when the event sets one.** Blank — the default, and what this workshop uses — means the form does not ask and does not check |
 
-Four conditions, all set when the event is created, all enforced in the form's
-own server script. People register at any hour and are working a second later.
+People register at any hour and are working a second later.
+
+**What dropping the code costs, stated once.** The code was the only part of the
+gate that was a secret. Without it, anyone who has the link — or finds it — can
+register while the event is open, and once `granted_roles` includes `admin` that
+means an admin account on this instance. What still bounds it: the event is open
+only when somebody opened it, the window closes it, and the capacity caps the
+number. What no longer bounds it: knowing anything. Treat the link as the
+credential it now is, keep the window to the hours of the workshop, and set a
+capacity that matches the room. Setting a code on a single event is one field if
+a particular workshop needs it back.
 
 What I had written here before — a facilitator approving registrations, and then
 a provisioning mode on the event — was my own addition on top of your design,
@@ -602,6 +611,7 @@ Keep a handful for testing.
 | **D3** | Deployed bundle cannot be verified independently | The `.jsdbx` files are not in `sys_ux_theme_asset` and are not attachments; the backing table for `/uxasset/externals/x_snc_holg/` was never located. Verification is by fetching the served URL and grepping it |
 | **D4** | A named account can miss its matching number | See below |
 | **D5** | Numbers are not reclaimed | Deleting a participant frees their number for the next enrolment, which is usually right, but it means a number is not permanently tied to a person |
+| **D9** | The registration link is the only thing protecting account creation | With no code, whoever has the URL can register while the event is open. Deliberate, 13 November 2026 — see 5.2. The window and the capacity are what remain |
 | **D8** | Roles granted by registration are permanent | An event grants `admin` and nothing takes it back when the event closes — the accounts and their roles persist until someone removes them by hand. Was B12, dropped on your call 13 November 2026. The manual routes: deactivate the users, or delete the `admin` grant and let the platform retract its 182 contained roles |
 | **D7** | Registration data is not purged | Lab Registration holds real names and email addresses and nothing deletes them; a closed event keeps its rows. Was B10, dropped on your call 13 November 2026. Deleting an event cascades its registrations, which is the manual route |
 | **D6** | `FacilitatorDashboard.css` is 13.4 KB of a 14 KB limit | Past that the SDK emits a standalone `components/*.css` that nothing loads, and the dashboard silently loses its styling. The next CSS addition there should split the file first |
