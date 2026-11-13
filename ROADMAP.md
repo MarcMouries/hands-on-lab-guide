@@ -23,7 +23,15 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [5](#5-debts-worth-clearing) |
+| **W4** | 🔴 | Self-registration: choose how abuse is kept out | Three options, one recommended | [5.2](#52-the-decision-that-shapes-everything-else-w4) |
+| **W5** | 🔴 | Self-registration: what a registrant sees after submitting | Credentials on screen, or emailed | [5.3](#53-what-the-registrant-sees-w5) |
+| **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | W4 | [5.4](#54-the-build-b6b11) |
+| **B7** | 🟠 | The public registration page and widget | W4 | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | Provisioning: create the user, set a password, grant the role, enrol them | W4, W5, and one thing to verify | [5.4](#54-the-build-b6b11) |
+| **B9** | 🟠 | Facilitator view of an event's registrations | B6 | [5.4](#54-the-build-b6b11) |
+| **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
+| **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b11) |
+| **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
 
 IDs are stable: **W** needs your word, **B** is mine to build, **P** is workshop
 prep on your side, **D** is a known debt. They do not renumber when something
@@ -111,10 +119,12 @@ If you want the schedule, it is small now — the scan is one method call.
 
 ## 2. 🟠 Ready to build
 
-Decided, unblocked, not started.
+Decided, unblocked, not started. B1 to B5 all shipped — see `DONE.md`. What is
+left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
+| **Self-registration and events (B6–B11)** | Planned in [section 5](#5--self-registration-and-events--the-plan). Blocked on W4, and B8 additionally on W5 |
 
 ---
 
@@ -245,7 +255,130 @@ Critical`, `dashboard`, `ServiceNow Studio`, and the role names in section 400.
 
 ---
 
-## 5. Debts worth clearing
+## 5. 🔴 Self-registration and events — the plan
+
+> *"a publicly visible invitation page with a form … a workflow would create
+> their user profile and their password … the concept of event so that the
+> registration page would say to register for the event such as 'Customer
+> Workshop November 13th 2026'"*
+
+### 5.1 What the old app actually did
+
+`Lab_Management_registration_update_set.xml` (the `x_snc_lab_man` app, exported
+October 2020) is worth reading before copying: **it never creates a user
+account.** It hands out instances from a pool.
+
+| Piece | What it is |
+|---|---|
+| `Get your Instance` widget | `public: true`, no roles. A form taking first name, last name, email |
+| `x_snc_lab_man_student_instances` | A pre-provisioned pool of PDIs, each with a `password` column in plain text |
+| `registerUser(email)` | Takes the first row with `reserved = false` and `state = Configured`, stamps the name and email on it, sets `reserved = true` |
+| `checkAlreadyRegistered(email)` | One query: has this email already claimed a row? |
+| `getUsersInstances(email)` | Returns the instance URL **and its password** to the browser for display |
+| `labManagement` script include | Syncs the pool, including paired child instances |
+| `instance_reservation` page | The portal page the widget sits on |
+
+So the useful precedent is the shape — a public portal page whose **widget
+server script** does the write, with no public REST endpoint anywhere. What it
+does not give us is any of the hard part:
+
+- **No user accounts.** It claims instances, it does not create people.
+- **No events.** One global pool, no notion of which workshop.
+- **No verification of any kind.** Type anyone's email and the page returns that
+  instance's password. For an in-person lab with a shared pool that was
+  tolerable; for creating login accounts it is not.
+- Both `sp_page` records in the export carry `public: false`, so how the page
+  was actually reached is not answerable from the file.
+
+### 5.2 The decision that shapes everything else (W4)
+
+A public endpoint that creates `sys_user` rows is the whole risk. Everything
+else here is ordinary work. Three ways to bound it:
+
+| Option | How it works | Cost |
+|---|---|---|
+| **Event code** *(recommended)* | The event carries a short code the facilitator reads out or puts on a slide. The form will not submit without it. Plus a registration cap and an open/closed window on the event | Anyone with the code can create accounts while the event is open. For a room of people that is the point |
+| Facilitator approval | The form writes a Registration row and creates nothing. The facilitator opens the list and provisions, one click or in bulk | Safest. Adds a step at the moment the room is waiting |
+| Email verification | A one-time link is emailed; the account is created when it is clicked | Proper, and proves the email belongs to them. Needs working outbound email — see P6, where email may be pointed at a sink |
+
+My recommendation is the **event code**, with a cap and a window, because the
+real control in a workshop is the room: registration is open for the hour it is
+needed and shut afterwards. The other two can be added later without redoing
+anything — approval is a status on the Registration row, and verification is a
+token column.
+
+Whichever you pick: **registration never creates an admin, a facilitator or an
+author.** It grants `x_snc_holg.participant` and nothing else.
+
+### 5.3 What the registrant sees (W5)
+
+| Option | Trade-off |
+|---|---|
+| Credentials on screen, once | What the old app did, and what makes a room work: they read it and log in. But anyone who guesses a colleague's email could have registered as them |
+| Emailed to the address given | Proves the address works and keeps the password off a public page. Useless if the instance's email is a sink |
+| Both | Show a username and a one-time setup link, email the same link |
+
+This is really a question about whether outbound email works on
+`marco1creator` at workshop time, which is P6.
+
+### 5.4 The build (B6–B11)
+
+**B6 — two tables.**
+
+`x_snc_holg_event`: `name` ("Customer Workshop November 13th 2026"), `starts_on`,
+`ends_on`, `status` (draft / open / closed), `registration_code`, `capacity`,
+`evaluation_plan` (which plan registrants are enrolled into), `facilitator`.
+Registration is accepted only while `status = open` and the clock is inside the
+window — two conditions, so forgetting to close it is not the only safeguard.
+
+`x_snc_holg_registration`: `event`, `first_name`, `last_name`, `email`,
+`status` (pending / provisioned / failed / revoked), `user` (the created
+`sys_user`), `created_on`, `provisioned_on`, `failure_reason`.
+Unique index on `(event, email)` — the same lesson as participant numbers: let
+the database refuse the duplicate rather than checking first and hoping.
+
+ACLs: facilitators read, authors and facilitators write the event, **nobody
+reads the registration table without a role**. The public widget writes through
+its server script, which is not subject to the table's read ACLs.
+
+**B7 — the public page.** An AngularJS widget, deliberately *not* the React
+bundle: the server script does the write, so there is no public REST route and
+no public write path beyond the one widget. The page names the event
+("Register for Customer Workshop November 13th 2026") from the event record, so
+one page serves every workshop via `?event=<code or slug>`.
+
+**B8 — provisioning.** Create the `sys_user` (user name derived so that the
+existing numbering lines up — see section 2), set a password, grant
+`x_snc_holg.participant`, link the row, stamp `provisioned_on`.
+
+*To verify on the instance before building this:* whether a scoped app can set
+`user_password` at all, and whether `password_needs_reset` can be set with it.
+The cross-scope privileges for `sys_user` create/write and `sys_user_has_role`
+create are already declared in the repo, so the access is there; what the
+scoped API will accept on a password field is not something to assume.
+
+**B9 — the facilitator view.** Registrations for an event, with provisioning
+state and a way to retry a failure. This is also where approval lives if W4
+goes that way.
+
+**B10 — purge.** Real names and email addresses of customers, on a demo
+instance. A registration is needed until the event closes and not after:
+delete the rows on close, or on a schedule, keeping the `sys_user` records that
+are still being used.
+
+**B11 — the event's plan.** An event names one evaluation plan; provisioning
+enrols the new user into it, so they land on their tasks rather than an empty
+plan list.
+
+### 5.5 What this replaces
+
+**P2** — "create the remaining `now.assist.participantNN` accounts" — mostly
+goes away. Pre-made accounts stop being the mechanism; the event creates them.
+Keep a handful for testing.
+
+---
+
+## 6. Debts worth clearing
 
 | ID | Item | Notes |
 |---|---|---|
