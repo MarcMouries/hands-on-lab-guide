@@ -1125,7 +1125,8 @@ LabApi.prototype = {
             var name = this._str(gr.getValue('name'))
             if (
                 (gr.getUniqueValue() + '').toLowerCase() === wanted ||
-                this._eventSlug(name).toLowerCase() === wanted
+                this._eventSlug(name).toLowerCase() === wanted ||
+                this._eventSlugDated(gr).toLowerCase() === wanted
             ) {
                 match = gr
                 break
@@ -1159,17 +1160,64 @@ LabApi.prototype = {
         return this._slug(name, 50)
     },
 
-    /** Readable dates for the page header, or '' when the event has none. */
-    _eventWhen: function (gr) {
+    /**
+     * The slug with the start date on the end: `Customer-Workshop-2026-11-13`.
+     *
+     * Once the date moved out of the name, two years of the same workshop share
+     * a name and therefore a slug. A link carries the date so it still points at
+     * one event; both forms are accepted on the way in, so the plain name keeps
+     * working when there is only one.
+     */
+    _eventSlugDated: function (gr) {
+        var base = this._eventSlug(this._str(gr.getValue('name')))
         var starts = this._str(gr.getValue('starts_on'))
-        var ends = this._str(gr.getValue('ends_on'))
-        if (!starts && !ends) {
+        if (!base || !starts) {
             return ''
         }
-        if (starts && ends) {
+        var day = (new GlideDateTime(starts).getDate() + '').split(' ')[0]
+        return day ? base + '-' + day : ''
+    },
+
+    /**
+     * The event's dates as a person would write them: "13 November 2026".
+     *
+     * The date belongs on the record, not in the name - an event called
+     * "Customer Workshop November 13th 2026" cannot be sorted, filtered or
+     * repeated next year. The page shows the name as its title and this
+     * underneath.
+     *
+     * Month names are spelled out here rather than taken from a format string,
+     * because a date a stranger reads off a phone must not depend on the
+     * instance's locale or on glide.sys.date_format being something sensible.
+     */
+    _eventWhen: function (gr) {
+        var starts = this._dayWords(this._str(gr.getValue('starts_on')))
+        var ends = this._dayWords(this._str(gr.getValue('ends_on')))
+
+        if (starts && ends && starts !== ends) {
             return starts + ' to ' + ends
         }
         return starts || ends
+    },
+
+    /** One date as '13 November 2026', or '' when there is nothing to show. */
+    _dayWords: function (value) {
+        if (!value) {
+            return ''
+        }
+        var months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December',
+        ]
+        var gdt = new GlideDateTime(value)
+        // getDate() gives yyyy-MM-dd in the system timezone, which is what a
+        // workshop date is: a day, not an instant.
+        var parts = (gdt.getDate() + '').split('-')
+        if (parts.length !== 3) {
+            return ''
+        }
+        var month = months[this._toInt(parts[1]) - 1]
+        return month ? this._toInt(parts[2]) + ' ' + month + ' ' + parts[0] : ''
     },
 
     /**

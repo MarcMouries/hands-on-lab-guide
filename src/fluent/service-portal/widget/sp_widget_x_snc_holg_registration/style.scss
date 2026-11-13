@@ -10,31 +10,38 @@
  * compiles to nothing at all, silently, and the page ships with 800 bytes of
  * CSS and no layout. Every selector here is spelled out.
  *
- * Brand colours are literal hex, following brand.css and for the reason it
- * documents: a corporate palette must stay constant across instance themes,
- * which is what a theme token is designed not to do. Surfaces, body text and
- * borders still resolve from `--now-*` Horizon tokens, so the card follows a
- * light or dark theme around fixed navy chrome.
+ * The palette is sampled from Now-Assist-for-Creator-Roadmap-2025.png, pixel by
+ * pixel rather than by eye: page #071a24, panels #0a2030, and the quarter
+ * headers' gradient from teal #35bab3 to green #62d84e. The green is also the
+ * deck's heading colour.
  *
- * Aqua is never text. #00cfec fails contrast on both navy and white, so it
- * appears only as rules and fills, exactly as the reference palette requires.
+ * Every colour here is literal, and the page is dark in both instance themes.
+ * That is deliberate, and the same reasoning brand.css gives: this page is the
+ * product's face to someone who has never seen the instance, so it should look
+ * like the deck they were just shown rather than like whatever theme the
+ * instance happens to carry.
+ *
+ * The gradient is never behind white text. White on #62d84e is 1.9:1 and fails
+ * even as large text, which is why the button's label is the near-black
+ * background colour instead - 10:1 on the green end, 6.4:1 on the teal - the
+ * same way the deck's own green pills carry dark text.
  */
 .holg-reg {
-    --holg-navy: #004668;
-    --holg-navy-deep: #00334d;
-    --holg-aqua: #00cfec;
-    --holg-aqua-deep: #00788f;
-    --holg-on-navy-muted: #c3dde8;
-    --holg-surface: rgb(var(--now-container-card--background-color, 255, 255, 255));
-    --holg-border: rgb(var(--now-container-card--border-color, 207, 213, 215));
-    --holg-text: rgb(var(--now-color_text--primary, 16, 23, 26));
-    --holg-text-soft: rgb(var(--now-color_text--secondary, 35, 46, 51));
+    --holg-ink: #071a24;
+    --holg-panel: #0a2030;
+    --holg-panel-soft: #0e2a3a;
+    --holg-teal: #35bab3;
+    --holg-green: #62d84e;
+    --holg-text: #eaf3f5;
+    --holg-text-soft: #9fb7bf;
+    --holg-border: #1b3b4c;
 
     box-sizing: border-box;
     padding: 24px 16px 48px;
     font-size: 16px;
     line-height: 1.55;
     color: var(--holg-text);
+    background: var(--holg-ink);
 }
 
 .holg-reg *,
@@ -49,11 +56,10 @@
     max-width: 520px;
     margin: 0 auto;
     overflow: hidden;
-    background: var(--holg-surface);
+    background: var(--holg-panel);
     border: 1px solid var(--holg-border);
     border-radius: 12px;
-    /* Soft rather than dramatic: this sits on an unknown portal theme. */
-    box-shadow: 0 1px 2px rgba(0, 51, 77, 0.08), 0 8px 24px rgba(0, 51, 77, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 /* ---------- hero ---------- */
@@ -61,8 +67,8 @@
 .holg-reg__hero {
     position: relative;
     padding: 28px 28px 24px;
-    color: #fff;
-    background: linear-gradient(145deg, #004668 0%, #00334d 100%);
+    padding-bottom: 22px;
+    background: var(--holg-panel-soft);
 }
 
 /* The one place aqua belongs: a fill, carrying the brand without being asked
@@ -73,8 +79,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 3px;
-    background: var(--holg-aqua);
+    height: 4px;
+    /* The quarter-header gradient from the deck, as a rule. */
+    background: linear-gradient(90deg, var(--holg-teal) 0%, var(--holg-green) 100%);
 }
 
 .holg-reg__eyebrow {
@@ -84,8 +91,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    /* 6.2:1 on the navy, so it reads as a label and not as decoration. */
-    color: var(--holg-on-navy-muted);
+    color: var(--holg-teal);
 }
 
 .holg-reg__title {
@@ -94,13 +100,15 @@
     line-height: 1.25;
     font-weight: 700;
     letter-spacing: -0.01em;
-    color: #fff;
+    /* The deck's heading green, 9.9:1 on the panel. */
+    color: var(--holg-green);
 }
 
 .holg-reg__when {
-    margin: 8px 0 0;
+    margin: 10px 0 0;
     font-size: 15px;
-    color: var(--holg-on-navy-muted);
+    font-weight: 600;
+    color: var(--holg-text);
 }
 
 /* ---------- body ---------- */
@@ -124,7 +132,7 @@
     margin-bottom: 5px;
     font-size: 14px;
     font-weight: 700;
-    color: var(--holg-navy);
+    color: var(--holg-text);
 }
 
 .holg-reg__input {
@@ -136,7 +144,7 @@
     font: inherit;
     font-size: 16px;
     color: var(--holg-text);
-    background: var(--holg-surface);
+    background: var(--holg-ink);
     border: 1px solid var(--holg-border);
     border-radius: 8px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -149,10 +157,10 @@
 
 .holg-reg__input:focus {
     outline: none;
-    border-color: var(--holg-aqua-deep);
+    border-color: var(--holg-green);
     /* A visible ring, not only a hue change: a colour-only focus state is
        invisible to anyone who cannot see the colour. */
-    box-shadow: 0 0 0 3px rgba(0, 120, 143, 0.25);
+    box-shadow: 0 0 0 3px rgba(98, 216, 78, 0.3);
 }
 
 .holg-reg__hint {
@@ -172,16 +180,18 @@
     font: inherit;
     font-size: 17px;
     font-weight: 700;
-    color: #fff;
+    /* Dark label on the gradient, like the deck's green pills. White would be
+       1.9:1 on the green end and illegible. */
+    color: var(--holg-ink);
     cursor: pointer;
-    background: var(--holg-navy);
-    border: 1px solid var(--holg-navy);
+    background: linear-gradient(90deg, var(--holg-teal) 0%, var(--holg-green) 100%);
+    border: 0;
     border-radius: 8px;
-    transition: background-color 0.15s ease, transform 0.08s ease;
+    transition: filter 0.15s ease, transform 0.08s ease;
 }
 
 .holg-reg__submit:hover:not([disabled]) {
-    background: var(--holg-navy-deep);
+    filter: brightness(1.08);
 }
 
 .holg-reg__submit:active:not([disabled]) {
@@ -189,8 +199,8 @@
 }
 
 .holg-reg__submit:focus-visible {
-    outline: 3px solid var(--holg-aqua-deep);
-    outline-offset: 2px;
+    outline: 3px solid var(--holg-green);
+    outline-offset: 3px;
 }
 
 .holg-reg__submit[disabled] {
@@ -204,22 +214,22 @@
     margin: 0 0 20px;
     padding: 14px 16px;
     font-size: 15px;
-    border-left: 3px solid var(--holg-aqua);
+    border-left: 3px solid var(--holg-teal);
     border-radius: 0 8px 8px 0;
-    background: rgba(0, 207, 236, 0.08);
+    background: rgba(53, 186, 179, 0.12);
 }
 
 .holg-reg__signedIn strong {
-    color: var(--holg-navy);
+    color: var(--holg-green);
 }
 
 .holg-reg__alert {
     margin: 0 0 16px;
     padding: 14px 16px;
     font-size: 15px;
-    color: #8c0021;
-    background: rgba(184, 25, 47, 0.07);
-    border-left: 3px solid #b8192f;
+    color: #ffb3bd;
+    background: rgba(184, 25, 47, 0.18);
+    border-left: 3px solid #ff5a70;
     border-radius: 0 8px 8px 0;
 }
 
@@ -228,7 +238,8 @@
     padding: 14px 16px;
     font-size: 15px;
     color: var(--holg-text-soft);
-    background: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    background: var(--holg-panel-soft);
+    border: 1px solid var(--holg-border);
     border-radius: 8px;
 }
 
@@ -243,8 +254,8 @@
     margin-bottom: 14px;
     font-size: 24px;
     font-weight: 700;
-    color: #fff;
-    background: #00a37a;
+    color: var(--holg-ink);
+    background: var(--holg-green);
     border-radius: 50%;
 }
 
@@ -252,7 +263,7 @@
     margin: 0 0 8px;
     font-size: 21px;
     font-weight: 700;
-    color: var(--holg-navy);
+    color: var(--holg-green);
 }
 
 .holg-reg__doneText {
@@ -263,7 +274,7 @@
 .holg-reg__creds {
     margin: 20px 0 0;
     padding: 18px;
-    background: rgba(0, 70, 104, 0.04);
+    background: var(--holg-ink);
     border: 1px solid var(--holg-border);
     border-radius: 10px;
 }
@@ -290,8 +301,8 @@
     padding: 8px 10px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 17px;
-    color: var(--holg-navy);
-    background: var(--holg-surface);
+    color: var(--holg-green);
+    background: var(--holg-panel-soft);
     border: 1px solid var(--holg-border);
     border-radius: 6px;
     /* Long enough to need wrapping on a phone. */
@@ -304,9 +315,9 @@
     padding: 12px 14px;
     font-size: 14px;
     font-weight: 700;
-    color: #6b4000;
-    background: rgba(255, 196, 0, 0.14);
-    border-left: 3px solid #8a5300;
+    color: #ffd98a;
+    background: rgba(255, 196, 0, 0.12);
+    border-left: 3px solid #e0a500;
     border-radius: 0 8px 8px 0;
 }
 
@@ -318,47 +329,20 @@
     font-weight: 700;
     text-align: center;
     text-decoration: none;
-    color: #fff;
-    background: var(--holg-navy);
+    color: var(--holg-ink);
+    background: linear-gradient(90deg, var(--holg-teal) 0%, var(--holg-green) 100%);
     border-radius: 8px;
 }
 
 .holg-reg__go:hover,
 .holg-reg__go:focus {
-    color: #fff;
-    background: var(--holg-navy-deep);
+    color: var(--holg-ink);
+    filter: brightness(1.08);
     text-decoration: none;
 }
 
-/* ---------- dark theme ----------
-   Only the surfaces move. The navy hero is brand and stays put, which is also
-   why its contrast holds in either theme. */
-
-@media (prefers-color-scheme: dark) {
-    .holg-reg__creds {
-        background: rgba(255, 255, 255, 0.04);
-    }
-
-    .holg-reg__signedIn {
-        background: rgba(0, 207, 236, 0.12);
-    }
-
-    .holg-reg__label,
-    .holg-reg__doneTitle,
-    .holg-reg__creds dd code,
-    .holg-reg__signedIn strong {
-        color: #7fd3ef;
-    }
-
-    .holg-reg__alert {
-        color: #ff9aa8;
-    }
-
-    .holg-reg__warn {
-        color: #ffd27f;
-        background: rgba(255, 196, 0, 0.1);
-    }
-}
+/* No light-theme variant: see the header. The page is the same in either
+   instance theme on purpose. */
 
 /* ---------- phone ---------- */
 
