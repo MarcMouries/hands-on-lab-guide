@@ -22,6 +22,38 @@ export interface ParticipantRow {
     started_on: string | null
     completed_on: string | null
     current_task_title: string | null
+    /*
+     * Filled in by the dashboard from the artifact scan, which is a separate
+     * request: the summary refreshes every 30 seconds and a scan does not.
+     * Zero totals mean no scan has landed yet, which the table shows as a dash
+     * rather than as 0 of 0.
+     */
+    artifacts_evidenced: number
+    artifacts_total: number
+    app_name: string
+}
+
+/** One participant's artifact evidence, as the tracker reports it. */
+export interface ArtifactRow {
+    sys_id: string
+    user: string
+    user_name: string
+    participant_number: number
+    /** The scope the setup task told them to build in. */
+    app_scope: string
+    /** The application actually found at that scope, '' when there is none. */
+    app_name: string
+    app_found: boolean
+    tasks_evidenced: number
+    tasks_total: number
+    /** taskId -> 'found' | 'partial' | 'missing'; only tasks with expectations. */
+    by_task: Record<string, string>
+}
+
+export interface ArtifactEvidence {
+    tasks: { sys_id: string; title: string; expectations: number }[]
+    participants: ArtifactRow[]
+    scanned_on: string
 }
 
 export interface TaskResultRow {
@@ -126,6 +158,63 @@ export async function fetchPlans(): Promise<LabPlan[]> {
 }
 
 /* ------------------------------------------------------------------ *
+ * GET /facilitator/plans/{plan_id}/artifacts
+ *
+ * A scan, not a cached figure: it is read when the dashboard opens and again
+ * whenever the facilitator asks. Evidence comes from sys_update_xml, so it is
+ * current as of the moment it is read.
+ * ------------------------------------------------------------------ */
+
+export async function fetchArtifactEvidence(planId: string): Promise<ArtifactEvidence> {
+    const received = await requestLabJson(
+        BASE + '/facilitator/plans/' + encodeURIComponent(planId) + '/artifacts',
+        {
+            notOkMessage: (status) =>
+                status === 403
+                    ? 'You need the x_snc_holg.facilitator role to see artifact evidence.'
+                    : 'Could not load artifact evidence (HTTP ' + status + ').',
+            isBareShape: (candidate) =>
+                Array.isArray(candidate.participants) || Array.isArray(candidate.tasks),
+        },
+    )
+
+    const body = received.body
+    return {
+        tasks: list(body.tasks).map((raw) => {
+            const task = rec(raw)
+            return {
+                sys_id: text(task.sys_id),
+                title: text(task.title),
+                expectations: count(task.expectations),
+            }
+        }),
+        participants: list(body.participants).map((raw) => {
+            const row = rec(raw)
+            const byTask = rec(row.by_task)
+            const verdicts: Record<string, string> = {}
+            for (const key in byTask) {
+                if (Object.prototype.hasOwnProperty.call(byTask, key)) {
+                    verdicts[key] = text(byTask[key])
+                }
+            }
+            return {
+                sys_id: text(row.sys_id),
+                user: text(row.user),
+                user_name: text(row.user_name),
+                participant_number: count(row.participant_number),
+                app_scope: text(row.app_scope),
+                app_name: text(row.app_name),
+                app_found: row.app_found === true,
+                tasks_evidenced: count(row.tasks_evidenced),
+                tasks_total: count(row.tasks_total),
+                by_task: verdicts,
+            }
+        }),
+        scanned_on: text(body.scanned_on),
+    }
+}
+
+/* ------------------------------------------------------------------ *
  * GET /facilitator/plans/{plan_id}/summary
  * ------------------------------------------------------------------ */
 
@@ -163,6 +252,11 @@ export async function fetchFacilitatorSummary(planId: string): Promise<Facilitat
                 started_on: nullableText(row.started_on),
                 completed_on: nullableText(row.completed_on),
                 current_task_title: nullableText(row.current_task_title),
+                // The summary does not carry evidence; the dashboard merges it
+                // in from the scan.
+                artifacts_evidenced: 0,
+                artifacts_total: 0,
+                app_name: '',
             }
         }),
         results_by_task: list(body.results_by_task).map((raw) => {

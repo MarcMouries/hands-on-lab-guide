@@ -3,6 +3,8 @@ import './FacilitatorDashboard.css'
 import { useMe } from '../hooks/useMe'
 import { usePlans } from '../hooks/usePlans'
 import { useFacilitatorSummary } from '../hooks/useFacilitatorSummary'
+import { useArtifactEvidence } from '../hooks/useArtifactEvidence'
+import { ParticipantRow } from '../services/facilitatorApi'
 import { formatClockTime } from '../utils/format'
 import { PLAN_PARAM, readUrlParam, setUrlParams } from '../utils/navigate'
 import { planSlug } from '../utils/planSlug'
@@ -90,6 +92,35 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
 
     const summaryState = useFacilitatorSummary(planId)
     const summary = summaryState.summary
+    const evidenceState = useArtifactEvidence(planId)
+
+    /*
+     * Evidence is merged onto the progress rows rather than shown in a panel of
+     * its own: a facilitator reads one line per participant, and "80% of tasks
+     * submitted but no application built" is the comparison worth making.
+     */
+    const rowsWithEvidence = useMemo((): ParticipantRow[] => {
+        const rows = summary ? summary.participants : []
+        const scan = evidenceState.evidence
+        if (!scan) {
+            return rows
+        }
+        const byParticipant: Record<string, (typeof scan.participants)[number]> = {}
+        scan.participants.forEach((row) => {
+            byParticipant[row.sys_id] = row
+        })
+        return rows.map((row) => {
+            const found = byParticipant[row.sys_id]
+            return found
+                ? {
+                      ...row,
+                      artifacts_evidenced: found.tasks_evidenced,
+                      artifacts_total: found.tasks_total,
+                      app_name: found.app_name,
+                  }
+                : row
+        })
+    }, [summary, evidenceState.evidence])
 
     return (
         <section className="holg-fac" aria-labelledby="holg-fac-title">
@@ -137,12 +168,34 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
                         </button>
                     </div>
                 </div>
-                <p className="holg-fac__note">Refreshes automatically every 30 seconds.</p>
+                <p className="holg-fac__note">
+                    {'Progress refreshes automatically every 30 seconds. '}
+                    {'The Artifacts column is a scan of what each participant has actually built\u2014'}
+                    {evidenceState.scannedAt
+                        ? 'last scanned ' + formatClockTime(evidenceState.scannedAt) + '. '
+                        : evidenceState.loading
+                          ? 'scanning now. '
+                          : 'not scanned yet. '}
+                    <button
+                        type="button"
+                        className="holg-link"
+                        onClick={evidenceState.refresh}
+                        disabled={!planId || evidenceState.loading}
+                    >
+                        {evidenceState.loading ? 'Scanning\u2026' : 'Scan again'}
+                    </button>
+                </p>
             </header>
 
             {plansState.error ? (
                 <p className="holg-alert" role="alert">
                     {plansState.error}
+                </p>
+            ) : null}
+
+            {evidenceState.error ? (
+                <p className="holg-alert" role="alert">
+                    {evidenceState.error}
                 </p>
             ) : null}
 
@@ -174,7 +227,7 @@ export default function FacilitatorDashboard({ pageName, params }: Props) {
 
                     <Panel title="Participant progress">
                         <ParticipantTable
-                            rows={summary.participants}
+                            rows={rowsWithEvidence}
                             canImpersonate={canImpersonate}
                             currentUser={
                                 meState.me

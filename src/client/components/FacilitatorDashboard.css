@@ -345,6 +345,25 @@
     color: var(--holg-series-pass);
 }
 
+/* ---------- artifact evidence ---------- */
+
+.holg-artifacts {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.holg-artifacts--done {
+    font-weight: 700;
+    color: var(--holg-series-pass);
+}
+
+/* Called out, not coloured as a failure: early in a lab it is simply not done
+ * yet, and a red row for every participant in the first ten minutes is noise. */
+.holg-artifacts__flag {
+    font-size: 12px;
+    color: rgb(var(--now-color_text--secondary, 35, 46, 51));
+}
+
 /* ---------- progress ---------- */
 
 .holg-progress {

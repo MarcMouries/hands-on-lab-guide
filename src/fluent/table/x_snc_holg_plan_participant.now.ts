@@ -35,6 +35,23 @@ export const x_snc_holg_plan_participant = Table({
             maxLength: 32,
             referenceTable: 'x_snc_holg_evaluation_plan',
         }),
+        /**
+         * The scope the participant is told to build in, written when their
+         * number is assigned: `x_snc_` + prefix. Stored rather than recomputed
+         * so the tracker and the page cannot disagree about it.
+         */
+        app_scope: StringColumn({
+            label: 'App scope',
+            maxLength: 40,
+        }),
+        /**
+         * The name of the application actually found at that scope, filled by
+         * the artifact tracker. Empty means it has not been created yet.
+         */
+        app_name: StringColumn({
+            label: 'App name',
+            maxLength: 120,
+        }),
         participant_number: IntegerColumn({
             default: '0',
             label: 'Participant number',

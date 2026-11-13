@@ -51,6 +51,31 @@ function Progress({ percent, user }: { percent: number; user: string }) {
     )
 }
 
+/**
+ * Evidence that the tasks were actually built, as a share of the tasks that
+ * have expectations at all. The application found at the participant's scope
+ * is the title, because it is the first thing a facilitator asks about.
+ */
+function Artifacts({ row }: { row: ParticipantRow }) {
+    if (!row.artifacts_total) {
+        return <span className="holg-muted">{EM_DASH}</span>
+    }
+    const done = row.artifacts_evidenced === row.artifacts_total
+    return (
+        <span
+            className={'holg-artifacts' + (done ? ' holg-artifacts--done' : '')}
+            title={
+                row.app_name
+                    ? 'Application found: ' + row.app_name
+                    : 'No application found at their scope yet'
+            }
+        >
+            {row.artifacts_evidenced + ' / ' + row.artifacts_total}
+            {row.app_name ? null : <span className="holg-artifacts__flag">{' no app'}</span>}
+        </span>
+    )
+}
+
 interface ParticipantTableProps {
     rows: ParticipantRow[]
     /**
@@ -195,6 +220,9 @@ export function ParticipantTable({ rows, canImpersonate, currentUser }: Particip
                                 </td>
                                 <td>
                                     <Progress percent={row.percent_complete} user={row.user_name} />
+                                </td>
+                                <td>
+                                    <Artifacts row={row} />
                                 </td>
                                 <td>
                                     <Cell value={row.current_task_title} />

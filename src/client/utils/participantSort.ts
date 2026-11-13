@@ -1,7 +1,14 @@
 import { ParticipantRow } from '../services/facilitatorApi'
 import { dateTimeSortKey } from './format'
 
-export type SortKey = 'user' | 'status' | 'progress' | 'current' | 'started' | 'completed'
+export type SortKey =
+    | 'user'
+    | 'status'
+    | 'progress'
+    | 'artifacts'
+    | 'current'
+    | 'started'
+    | 'completed'
 export type SortDirection = 'asc' | 'desc'
 
 export interface SortState {
@@ -19,6 +26,7 @@ export const COLUMNS: ColumnDef[] = [
     { key: 'user', label: 'User', numeric: false },
     { key: 'status', label: 'Status', numeric: false },
     { key: 'progress', label: 'Progress', numeric: true },
+    { key: 'artifacts', label: 'Artifacts', numeric: true },
     { key: 'current', label: 'Current task', numeric: false },
     { key: 'started', label: 'Started on', numeric: false },
     { key: 'completed', label: 'Completed on', numeric: false },
@@ -44,6 +52,14 @@ function sortValue(row: ParticipantRow, key: SortKey): string | number | null {
         }
         case 'progress':
             return row.percent_complete
+        case 'artifacts':
+            /*
+             * Sorted on the share evidenced, not the count, so a participant
+             * on a plan with three expected tasks is comparable with one on a
+             * plan with nine. No evidence loaded yet sorts last, like any
+             * other empty value.
+             */
+            return row.artifacts_total ? row.artifacts_evidenced / row.artifacts_total : null
         case 'current':
             return row.current_task_title ? row.current_task_title.toLowerCase() : null
         case 'started':

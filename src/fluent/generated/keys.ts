@@ -13,6 +13,10 @@ declare global {
                         table: 'sys_script_include'
                         id: '060b9bd91e4642ea9e66146df4f20fb4'
                     }
+                    '08266a9dca3d4e0195085dcf339a0d69': {
+                        table: 'sys_security_acl'
+                        id: '08266a9dca3d4e0195085dcf339a0d69'
+                    }
                     '083aed45cfa09f10f492f48d5d851c61': {
                         table: 'sys_scope_privilege'
                         id: '083aed45cfa09f10f492f48d5d851c61'
@@ -37,6 +41,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '0dbf36082f241b10bec1567e8ea4e3a5'
                     }
+                    '0e31cd8ee6444365888095d7f4c00a9b': {
+                        table: 'sys_security_acl'
+                        id: '0e31cd8ee6444365888095d7f4c00a9b'
+                    }
                     '0e6ce7b53a5e4918b7f19956812bb4ad': {
                         table: 'sys_ws_operation'
                         id: '0e6ce7b53a5e4918b7f19956812bb4ad'
@@ -52,6 +60,10 @@ declare global {
                     '10ea9fc42fe41b10bec1567e8ea4e362': {
                         table: 'sys_scope_privilege'
                         id: '10ea9fc42fe41b10bec1567e8ea4e362'
+                    }
+                    '110c92ca59da425c8f4e52a245b4397d': {
+                        table: 'sys_security_acl'
+                        id: '110c92ca59da425c8f4e52a245b4397d'
                     }
                     '1206c47acbac404baf7a0d444b3fbf11': {
                         table: 'sp_widget'
@@ -80,6 +92,10 @@ declare global {
                     '1e216ce9f5f249938fa1a59dafcbbca3': {
                         table: 'sp_instance'
                         id: '1e216ce9f5f249938fa1a59dafcbbca3'
+                    }
+                    '1f393d9eb51c40c0b192775bc2d06212': {
+                        table: 'sys_security_acl'
+                        id: '1f393d9eb51c40c0b192775bc2d06212'
                     }
                     '20aa90025cd546cebc1823650912a4ef': {
                         table: 'sys_security_acl'
@@ -513,6 +529,10 @@ declare global {
                         table: 'sys_security_acl'
                         id: 'c4a7dff3159a4acc821391f86e20f4c8'
                     }
+                    c7e2a4b91f0d46d2bf35e8c4a17de903: {
+                        table: 'sys_ws_operation'
+                        id: 'c7e2a4b91f0d46d2bf35e8c4a17de903'
+                    }
                     c81a9fd6c1074872bf31b265a3abb9c3: {
                         table: 'sys_ws_operation'
                         id: 'c81a9fd6c1074872bf31b265a3abb9c3'
@@ -667,6 +687,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '00a7bbe9089041e7a71d2cf097bfc0de'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'label'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_form'
                         id: '01e9c750ad1a48b3b82055eeb5e4551d'
                         key: {
@@ -775,6 +804,23 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '063acc7895f54c25985fa0662edfef85'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'plan_task'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '073ace22197b4aa49638377636171c26'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'plan_task'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '07dc5d141cff4b6d8938e0ec89b7e612'
                         key: {
@@ -815,6 +861,15 @@ declare global {
                                     name: 'x_snc_holg.participant'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '096227fafb98476991ae08526c355b51'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'order'
+                            language: 'en'
                         }
                     },
                     {
@@ -952,6 +1007,19 @@ declare global {
                                 id: 'a4e190a58df349a9868f0beced36bc9f'
                                 key: {
                                     name: 'x_snc_holg.facilitator'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '11707863dfb446f1976106a1d2749829'
+                        key: {
+                            sys_security_acl: '0e31cd8ee6444365888095d7f4c00a9b'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
                                 }
                             }
                         }
@@ -1400,6 +1468,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_index'
+                        id: '24549fc4ba5e40ae93317f9d9e4bcc1a'
+                        key: {
+                            logical_table_name: 'x_snc_holg_task_expectation'
+                            col_name_string: 'plan_task'
+                        }
+                    },
+                    {
                         table: 'sys_ui_form_section'
                         id: '261f5b66351e4dc88318d83f40c0e26d'
                         key: {
@@ -1608,6 +1684,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '374b4a5b9b8b4bbd80bf363008400a12'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'minimum'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: '375b73a29f5e4142883b233613acc749'
                         deleted: true
@@ -1767,6 +1851,41 @@ declare global {
                         id: '3f08c2b2477141189a5b83e30c3dbf50'
                         key: {
                             endpoint: 'x_snc_holg_incident_manager.do'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '4029f6d66c9f4fd6b9a4dadd0824be76'
+                        key: {
+                            sys_security_acl: '110c92ca59da425c8f4e52a245b4397d'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '403afecc2a2447eb9ab540942d8c3b9a'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'app_name'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '435b32c4c6664063aaee5daf9db96e03'
+                        key: {
+                            sys_security_acl: '08266a9dca3d4e0195085dcf339a0d69'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
+                                }
+                            }
                         }
                     },
                     {
@@ -2003,6 +2122,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '4ff5f11628c14d81bef2dd049551e5fd'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'name_contains'
+                        }
+                    },
+                    {
                         table: 'sys_ui_form'
                         id: '504112d6bb3c411997f69aebf4e6d164'
                         key: {
@@ -2032,11 +2159,39 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '520e537185524a759a838cbc2ae7d0f9'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'app_name'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '5318c3baa0e2489a9daf00f91409128e'
+                        key: {
+                            sys_security_acl: '08266a9dca3d4e0195085dcf339a0d69'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sn_glider_source_artifact_m2m'
                         id: '531b3a70b482409aaca9afb41fe83786'
                         key: {
                             application_file: '13dabf0c56d342a6b5e2c02472dcbdc2'
                             source_artifact: '1f11b6f99f0b438f8ffacdf8ddc2e963'
+                        }
+                    },
+                    {
+                        table: 'sys_db_object'
+                        id: '531f66eac36b4418a98af1b3f6ed5a33'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
                         }
                     },
                     {
@@ -2253,6 +2408,15 @@ declare global {
                             }
                             element: 'title'
                             position: '2'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '5c7e57ec04d348dcb5439a05e3d9578f'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'name_contains'
+                            language: 'en'
                         }
                     },
                     {
@@ -2672,6 +2836,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '71988ffad1ac430280ec010a7a6bbc16'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'ua_table_licensing_config'
                         id: '723bd2482f201b10bec1567e8ea4e35d'
                         key: {
@@ -2738,6 +2911,15 @@ declare global {
                         id: '791c4c7b0dbd4541980a838b4f12316c'
                         key: {
                             name: 'x_snc_holg_task_prompt'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '7b248e17c7f641e8a37d74c7cfe9884a'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'app_scope'
+                            language: 'en'
                         }
                     },
                     {
@@ -2871,6 +3053,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '8c6636dbda044648abffd4379aa06e13'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'label'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '8cba491828e24580b042b61de6a8419b'
                         key: {
@@ -2990,6 +3180,14 @@ declare global {
                             }
                             element: '.split'
                             position: '2'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '919358333ce24f5780f6eb9d21ed1ce5'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'NULL'
                         }
                     },
                     {
@@ -3389,6 +3587,24 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'a5fffa86a11e47a1aced0993200aca7b'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'minimum'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'a6fd332b9d0042c5a2fcf791de2add1d'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'target_table'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: 'a7860f7e3b884c73846ced9351a21a0a'
                         key: {
@@ -3613,6 +3829,14 @@ declare global {
                                     name: 'x_snc_holg.facilitator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'aecbe8dffccd4d259b1c936626ec16db'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'order'
                         }
                     },
                     {
@@ -3953,6 +4177,14 @@ declare global {
                                     name: 'x_snc_holg.author'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'c712186e71844edbaec9c6579364aab2'
+                        key: {
+                            name: 'x_snc_holg_plan_participant'
+                            element: 'app_scope'
                         }
                     },
                     {
@@ -4372,6 +4604,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'db39df49728a4f79ac2751fbc12aefbe'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
+                            element: 'target_table'
+                        }
+                    },
+                    {
                         table: 'sys_user_role'
                         id: 'dbc9761a37f842288c30190be4a37d71'
                         key: {
@@ -4496,6 +4736,13 @@ declare global {
                                     name: 'x_snc_holg.facilitator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: 'e30c1ec8923b46c885b4294db6a3902a'
+                        key: {
+                            name: 'x_snc_holg_task_expectation'
                         }
                     },
                     {
@@ -4997,6 +5244,19 @@ declare global {
                         key: {
                             logical_table_name: 'x_snc_holg_plan_section'
                             col_name_string: 'evaluation_plan'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'f735416a09c947d0ac6fc4b0e3e561d6'
+                        key: {
+                            sys_security_acl: '1f393d9eb51c40c0b192775bc2d06212'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {

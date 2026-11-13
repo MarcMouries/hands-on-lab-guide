@@ -27,6 +27,15 @@ RestApi({
             shortDescription: 'Users holding x_snc_holg.facilitator, to fill the facilitator picker.',
         },
         {
+            $id: Now.ID['c7e2a4b91f0d46d2bf35e8c4a17de903'],
+            name: 'Artifact evidence for a plan',
+            consumes: 'application/json',
+            script: Now.include('../generated/integrations-inbound/scripted-rest-api/sys_ws_operation_c7e2a4b91f0d46d2bf35e8c4a17de903.js'),
+            produces: 'application/json',
+            path: '/facilitator/plans/{plan_id}/artifacts',
+            shortDescription: 'Per-participant evidence that each task was actually built, from sys_update_xml.',
+        },
+        {
             $id: Now.ID['0c91be4cc71d4f2483e649e7da36e56f'],
             name: 'Get a plan for authoring',
             consumes: 'application/json',

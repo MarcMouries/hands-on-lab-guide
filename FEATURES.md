@@ -219,7 +219,36 @@ values straight by hand. `/holg?id=authoring` is the portal surface for it.
 
 ---
 
-## 5. Surfaces
+## 5. Artifact tracker
+
+Progress bars say what a participant has *submitted*. This says what they have
+actually built, which mid-workshop is the more useful question.
+
+| Feature | Status | Notes |
+|---|---|---|
+| **Task Expectation table** | Built *(recent)* | One row per artifact a task should produce: `target_table`, an optional `name_contains`, and a `minimum`. Authored, because only a person knows what good looks like |
+| **Evidence from `sys_update_xml`** | Built *(recent)* | One query for the whole room, matched on `sys_created_by`, so work a participant did in Global scope still counts as theirs. No reading into anyone's scope |
+| **The application at their scope** | Built *(recent)* | `app_scope` is written at enrolment (`x_snc_` + prefix); the scan fills `app_name` with whatever application is actually there, or leaves it empty |
+| **Artifacts column** | Built *(recent)* | `evidenced / expected` next to Progress, sortable on the share rather than the count, with "no app" called out |
+| **On demand** | Built *(recent)* | Scans when the dashboard opens and when the facilitator asks. A scheduled baseline is `ROADMAP.md` W3 |
+
+### Two things that were wrong before they were right
+
+**`sys_update_xml.table` is empty for metadata.** It is populated only for data
+rows — a record of a scoped app's own table. For everything a lab task actually
+produces it is blank, and the artifact's table lives in `name` as
+`<table>_<32 hex sys_id>`. On this instance 4,538 rows have no `table` at all,
+including every Custom Application. Matching on that column found nothing.
+
+**A name prefix is not a table.** `nameSTARTSWITHsys_script_` also matches
+`sys_script_client_` and `sys_script_include_`, so the first fix counted 22
+script includes as business rules. The query filters on the prefix because the
+database can index that, and then the table is compared exactly in JavaScript.
+The self-test asserts both halves.
+
+---
+
+## 6. Surfaces
 
 | Surface | Endpoint | Hosts |
 |---|---|---|
@@ -248,7 +277,7 @@ digest. The `.do` pages use the History API directly.
 
 ---
 
-## 6. Security
+## 7. Security
 
 | Feature | Status | Notes |
 |---|---|---|
@@ -262,7 +291,7 @@ digest. The `.do` pages use the History API directly.
 
 ---
 
-## 7. Build and tooling
+## 8. Build and tooling
 
 | Item | Notes |
 |---|---|
@@ -276,17 +305,11 @@ digest. The `.do` pages use the History API directly.
 
 ---
 
-## 8. Open — workshop facilitation tracking
+## 9. Constraints behind the tracker's design
 
-Wanted: facilitators can see, per participant, **which app they built**, **what
-records they have created**, and **whether those match the lab guide**, so it is
-obvious who is ahead and who is behind.
-
-Today the dashboard answers "how far along are they?" only from self-reported
-Task Results (`percent_complete`, `current_task_title`). It cannot tell whether
-a participant actually built anything, or built the right thing.
-
-Known constraints for the design:
+The dashboard used to answer "how far along are they?" only from self-reported
+Task Results. Section 5 is what answers "did they build it?". These are the
+constraints that shaped it, kept because they still bound anything built next:
 
 - **Scope is capped at 18 characters** (`sys_scope.scope`), and the company code
   `snc` consumes 6 of them as `x_snc_`, leaving 12. Past that the platform
@@ -300,7 +323,7 @@ Known constraints for the design:
 
 ---
 
-## 9. Known gaps and debts
+## 10. Known gaps and debts
 
 | Item | Notes |
 |---|---|

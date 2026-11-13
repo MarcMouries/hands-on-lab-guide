@@ -21,6 +21,9 @@ var LAB_T_RESULT = 'x_snc_holg_task_result'
 var LAB_T_CRITERION_RESPONSE = 'x_snc_holg_criterion_response'
 var LAB_T_USER = 'sys_user'
 var LAB_T_USER_ROLE = 'sys_user_role'
+var LAB_T_EXPECTATION = 'x_snc_holg_task_expectation'
+var LAB_T_UPDATE_XML = 'sys_update_xml'
+var LAB_T_SCOPE = 'sys_scope'
 var LAB_T_USER_HAS_ROLE = 'sys_user_has_role'
 
 // Roles
@@ -523,8 +526,10 @@ LabApi.prototype = {
         }
         for (var attempt = 0; attempt < this._NUMBER_ATTEMPTS; attempt++) {
             var number = this._allocateNumber(planId)
+            var backfillPrefix = this._prefixFor(number, this._initialsFor())
             gr.setValue('participant_number', number)
-            gr.setValue('prefix', this._prefixFor(number, this._initialsFor()))
+            gr.setValue('prefix', backfillPrefix)
+            gr.setValue('app_scope', 'x_snc_' + backfillPrefix)
             try {
                 if (gr.update()) {
                     return
@@ -561,8 +566,12 @@ LabApi.prototype = {
             pp.setValue('status', LAB_PARTICIPANT_IN_PROGRESS)
             pp.setValue('started_on', this._now())
             pp.setValue('percent_complete', 0)
+            var prefix = this._prefixFor(number, this._initialsFor())
             pp.setValue('participant_number', number)
-            pp.setValue('prefix', this._prefixFor(number, this._initialsFor()))
+            pp.setValue('prefix', prefix)
+            // The scope the setup task tells them to build in. Stored so the
+            // artifact tracker and the page cannot disagree about it.
+            pp.setValue('app_scope', 'x_snc_' + prefix)
 
             try {
                 newId = pp.insert()
@@ -1065,6 +1074,345 @@ LabApi.prototype = {
             result: this._serializeResult(gr),
             percent_complete: pct,
         })
+    },
+
+    /* ------------------------------------------------------------ *
+     * Artifact tracker
+     *
+     * Answers one question for a facilitator mid-workshop: who has actually
+     * built the thing this task asked for?
+     *
+     * Evidence comes from sys_update_xml - Customer Updates - rather than from
+     * reading into each participant's scope. Every metadata change lands there
+     * with its table, the artifact's display name and the user name that made
+     * it, so one indexed query covers the whole room, and work a participant
+     * did in Global scope still counts as theirs.
+     *
+     * What it cannot see: data. sys_update_xml records metadata only, so an
+     * expectation like "30 Claim records" is not answerable from it and is not
+     * modelled here. Expectations are authored per task, because only a person
+     * knows what good looks like.
+     * ------------------------------------------------------------ */
+
+    /** sys_id -> user_name, for matching against sys_update_xml.created_by. */
+    _userLogins: function (ids) {
+        var map = {}
+        if (!ids || !ids.length) {
+            return map
+        }
+        var gr = new GlideRecordSecure(LAB_T_USER)
+        gr.addQuery('sys_id', 'IN', ids.join(','))
+        gr.query()
+        while (gr.next()) {
+            map[gr.getUniqueValue() + ''] = this._str(gr.getValue('user_name'))
+        }
+        return map
+    },
+
+    /** Expectations for a set of tasks, as taskId -> [expectation]. */
+    _expectationsByTask: function (taskIds) {
+        var byTask = {}
+        if (!taskIds.length) {
+            return byTask
+        }
+        var gr = new GlideRecordSecure(LAB_T_EXPECTATION)
+        gr.addQuery('plan_task', 'IN', taskIds.join(','))
+        gr.orderBy('order')
+        gr.query()
+        while (gr.next()) {
+            var taskId = this._str(gr.getValue('plan_task'))
+            if (!byTask[taskId]) {
+                byTask[taskId] = []
+            }
+            byTask[taskId].push({
+                sys_id: gr.getUniqueValue() + '',
+                label: this._str(gr.getValue('label')),
+                target_table: this._str(gr.getValue('target_table')),
+                name_contains: this._str(gr.getValue('name_contains')).toLowerCase(),
+                minimum: Math.max(1, this._toInt(gr.getValue('minimum'))),
+            })
+        }
+        return byTask
+    },
+
+    /**
+     * Which table an update row is about.
+     *
+     * `sys_update_xml.table` is populated only for DATA rows - a record of a
+     * scoped app's own table. For metadata, which is most of what a lab task
+     * produces, it is empty and the table lives in `name` as
+     * `<table>_<32 hex sys_id>`. Verified on this instance: 4,538 of the rows
+     * have no `table` at all, including every Custom Application.
+     */
+    _updateTable: function (gr) {
+        var table = this._str(gr.getValue('table'))
+        if (table) {
+            return table
+        }
+        var name = this._str(gr.getValue('name'))
+        var match = /^(.*)_[0-9a-f]{32}$/.exec(name)
+        return match ? match[1] : ''
+    },
+
+    /**
+     * Every artifact these user names have touched in these tables.
+     *
+     * One query for the whole room, keyed `login|table` -> { updateName: the
+     * artifact's lowercased display name }. Distinct by that update name, so
+     * editing one artifact ten times still counts once. A deletion is not
+     * evidence, so DELETE rows are left out.
+     *
+     * The query filters on the `name` prefix as well as `table`, because of
+     * what _updateTable explains - and then the table is compared EXACTLY in
+     * JavaScript, because a prefix is not a table: `sys_script_` also matches
+     * sys_script_client and sys_script_include, which would have counted a
+     * client script as a business rule.
+     *
+     * `GlideRecord`, like the other platform reads here: sys_update_xml is a
+     * global table a facilitator has no granted access to, and nothing from it
+     * reaches a caller except the counts below.
+     */
+    _artifactIndex: function (logins, tables) {
+        var index = {}
+        if (!logins.length || !tables.length) {
+            return index
+        }
+
+        var wanted = {}
+        var clauses = []
+        for (var i = 0; i < tables.length; i++) {
+            wanted[tables[i]] = true
+            clauses.push('nameSTARTSWITH' + tables[i] + '_')
+            clauses.push('table=' + tables[i])
+        }
+
+        var gr = new GlideRecord(LAB_T_UPDATE_XML)
+        gr.addQuery('sys_created_by', 'IN', logins.join(','))
+        gr.addQuery('action', '!=', 'DELETE')
+        gr.addEncodedQuery(clauses.join('^OR'))
+        gr.query()
+        while (gr.next()) {
+            var table = this._updateTable(gr)
+            if (!wanted[table]) {
+                continue
+            }
+            var key = this._str(gr.getValue('sys_created_by')) + '|' + table
+            if (!index[key]) {
+                index[key] = {}
+            }
+            index[key][this._str(gr.getValue('name'))] =
+                this._str(gr.getValue('target_name')).toLowerCase()
+        }
+        return index
+    },
+
+    /** How many distinct artifacts one expectation has evidence for. */
+    _evidenceCount: function (index, login, expectation) {
+        var found = index[login + '|' + expectation.target_table]
+        if (!found) {
+            return 0
+        }
+        var count = 0
+        for (var name in found) {
+            if (!Object.prototype.hasOwnProperty.call(found, name)) {
+                continue
+            }
+            if (expectation.name_contains && found[name].indexOf(expectation.name_contains) < 0) {
+                continue
+            }
+            count++
+        }
+        return count
+    },
+
+    /**
+     * The application found at a participant's expected scope, or ''.
+     *
+     * The scope is predictable - `x_snc_` + prefix - so this needs no
+     * configuration and answers the first thing a facilitator wants to know:
+     * did they get the setup task done at all?
+     */
+    _appNameForScope: function (scope) {
+        if (!scope) {
+            return ''
+        }
+        var gr = new GlideRecord(LAB_T_SCOPE)
+        gr.addQuery('scope', scope)
+        gr.setLimit(1)
+        gr.query()
+        return gr.next() ? this._str(gr.getValue('name')) : ''
+    },
+
+    /* ------------------------------------------------------------ *
+     * GET /facilitator/plans/{plan_id}/artifacts
+     * ------------------------------------------------------------ */
+
+    getArtifactEvidence: function (request, response) {
+        if (!gs.hasRole(LAB_ROLE_FACILITATOR)) {
+            this._send(response, 403, { error: 'Requires the ' + LAB_ROLE_FACILITATOR + ' role' })
+            return
+        }
+
+        var planId = this._pathParam(request, 'plan_id')
+        if (!planId) {
+            this._send(response, 400, { error: 'plan_id is required' })
+            return
+        }
+
+        var plan = this._resolvePlan(planId)
+        if (!plan) {
+            this._send(response, 404, { error: 'Evaluation Plan not found or not accessible' })
+            return
+        }
+        var planSysId = plan.getUniqueValue() + ''
+
+        // Tasks of the plan, in reading order, with their expectations.
+        var sectionIds = []
+        var sg = new GlideRecordSecure(LAB_T_SECTION)
+        sg.addQuery('evaluation_plan', planSysId)
+        sg.query()
+        while (sg.next()) {
+            sectionIds.push(sg.getUniqueValue() + '')
+        }
+
+        var tasks = []
+        var taskIds = []
+        if (sectionIds.length) {
+            var tg = new GlideRecordSecure(LAB_T_TASK)
+            tg.addQuery('plan_section', 'IN', sectionIds.join(','))
+            tg.orderBy('order')
+            tg.orderBy('sys_created_on')
+            tg.query()
+            while (tg.next()) {
+                var taskId = tg.getUniqueValue() + ''
+                taskIds.push(taskId)
+                tasks.push({ sys_id: taskId, title: this._str(tg.getValue('title')) })
+            }
+        }
+
+        var expectationsByTask = this._expectationsByTask(taskIds)
+
+        // Only the tables some expectation actually names.
+        var tables = []
+        var seenTable = {}
+        var t
+        for (t = 0; t < taskIds.length; t++) {
+            var list = expectationsByTask[taskIds[t]] || []
+            for (var e = 0; e < list.length; e++) {
+                var table = list[e].target_table
+                if (table && !seenTable[table]) {
+                    seenTable[table] = true
+                    tables.push(table)
+                }
+            }
+        }
+        for (t = 0; t < tasks.length; t++) {
+            tasks[t].expectations = (expectationsByTask[tasks[t].sys_id] || []).length
+        }
+
+        // Participants, with the scope they were told to build in.
+        var participants = []
+        var userIds = []
+        var pg = new GlideRecordSecure(LAB_T_PARTICIPANT)
+        pg.addQuery('evaluation_plan', planSysId)
+        pg.orderBy('participant_number')
+        pg.query()
+        while (pg.next()) {
+            var userId = this._str(pg.getValue('user'))
+            userIds.push(userId)
+            participants.push({
+                sys_id: pg.getUniqueValue() + '',
+                user: userId,
+                user_name: '',
+                login: '',
+                participant_number: this._toInt(pg.getValue('participant_number')),
+                prefix: this._str(pg.getValue('prefix')),
+                app_scope: this._str(pg.getValue('app_scope')),
+                app_name: this._str(pg.getValue('app_name')),
+                app_found: false,
+                tasks_evidenced: 0,
+                tasks_total: 0,
+                by_task: {},
+            })
+        }
+
+        var names = this._userNames(userIds)
+        var logins = this._userLogins(userIds)
+        var loginList = []
+        var p
+        for (p = 0; p < participants.length; p++) {
+            participants[p].user_name = this._str(names[participants[p].user])
+            participants[p].login = this._str(logins[participants[p].user])
+            if (participants[p].login) {
+                loginList.push(participants[p].login)
+            }
+        }
+
+        var index = this._artifactIndex(loginList, tables)
+
+        for (p = 0; p < participants.length; p++) {
+            var row = participants[p]
+
+            // The scope is derived from the prefix, so a row written before
+            // app_scope existed still reports correctly.
+            var scope = row.app_scope || (row.prefix ? 'x_snc_' + row.prefix : '')
+            var appName = this._appNameForScope(scope)
+            row.app_scope = scope
+            row.app_name = appName
+            row.app_found = !!appName
+
+            for (t = 0; t < taskIds.length; t++) {
+                var expectations = expectationsByTask[taskIds[t]] || []
+                if (!expectations.length) {
+                    continue
+                }
+                row.tasks_total++
+                var met = 0
+                for (var x = 0; x < expectations.length; x++) {
+                    if (this._evidenceCount(index, row.login, expectations[x]) >= expectations[x].minimum) {
+                        met++
+                    }
+                }
+                row.by_task[taskIds[t]] =
+                    met === expectations.length ? 'found' : met > 0 ? 'partial' : 'missing'
+                if (met === expectations.length) {
+                    row.tasks_evidenced++
+                }
+            }
+
+            this._rememberApp(row.sys_id, scope, appName)
+        }
+
+        this._send(response, 200, {
+            plan: { sys_id: planSysId, name: this._str(plan.getValue('name')) },
+            tasks: tasks,
+            participants: participants,
+            scanned_on: this._now(),
+        })
+    },
+
+    /**
+     * Writes the scope and the application found at it back onto the row.
+     *
+     * Only when something changed, so a scan of a settled room writes nothing.
+     * A refused write is swallowed: this is a read endpoint, and the answer it
+     * returns is already correct without the row being updated.
+     */
+    _rememberApp: function (participantId, scope, appName) {
+        var gr = new GlideRecordSecure(LAB_T_PARTICIPANT)
+        if (!gr.get(participantId)) {
+            return
+        }
+        if (this._str(gr.getValue('app_scope')) === scope && this._str(gr.getValue('app_name')) === appName) {
+            return
+        }
+        gr.setValue('app_scope', scope)
+        gr.setValue('app_name', appName)
+        try {
+            gr.update()
+        } catch (e) {
+            // Reporting is unaffected.
+        }
     },
 
     /* ------------------------------------------------------------ *

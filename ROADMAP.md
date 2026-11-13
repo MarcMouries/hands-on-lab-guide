@@ -14,8 +14,7 @@ One line each. The detail is in the numbered sections below.
 |---|---|---|---|---|
 | **W1** | 🔴 | Drop the ServiceNow jargon from prompt wording | Your call on the 4.1, 4.3 and 4.4 proposals | [1.1](#11-prompt-wording--drop-the-servicenow-jargon), [4](#4--prompt-wording) |
 | **W2** | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
-| **W3** | 🔴 | Artifact tracker: decide when the scan runs | On demand, every 5 minutes, or both | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
-| **B1** | 🟠 | Build the artifact tracker | Nothing but W3 | [2](#2--ready-to-build) |
+| **W3** | 🔴 | Artifact tracker: add a scheduled baseline, or leave it on demand? | On demand is built; a 5-minute job is small from here | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **P1** | ⚫ | Have a real participant open a plan and check the number they get | You — one login, then I check the row | [3.1](#31-check-a-real-participants-number-p1) |
 | **P8** | ⚫ | Grant `x_snc_holg.facilitator` to whoever runs the workshop | You — nobody holds it today, so the picker is empty | [3.2](#32-nobody-holds-the-facilitator-role-p8) |
 | **P2** | ⚫ | Create the remaining `now.assist.participantNN` accounts | You — stops at 3 today | [3](#3--workshop-prep--your-side) |
@@ -24,7 +23,7 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **D1–D5** | ⚪ | Five known debts, none scheduled | Your word on whether any matters | [5](#5-debts-worth-clearing) |
+| **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [5](#5-debts-worth-clearing) |
 
 IDs are stable: **W** needs your word, **B** is mine to build, **P** is workshop
 prep on your side, **D** is a known debt. They do not renumber when something
@@ -88,17 +87,25 @@ cross-scope reads; it carries `application`, `table`, `type`, `target_name`,
 still attributes work a participant did in Global scope. Verified by sampling
 the 197 `x_snc_holg_*` rows on this instance.
 
-**Caveat found while verifying:** `sys_update_xml` is metadata only. Demo-data
-expectations ("30 Claim records") need a direct count in the participant's
-scope, so a few expectations will not be satisfiable from it.
+**Caveat found while verifying:** `sys_update_xml` is metadata only for
+*platform* tables. Demo-data expectations ("30 Claim records") are not modelled.
+Data rows of a scoped app's own tables do appear, with the table in the `table`
+column, so that door is open if you want it.
 
-**Still open:** when it runs.
+**Built on demand** (see `DONE.md`), because on demand is required under all
+three options: the scan runs when the dashboard opens and whenever the
+facilitator asks, and it is deliberately not on the summary's 30-second timer —
+the summary reads this app's tables, a scan reads `sys_update_xml` for the whole
+room, and nothing in it changes second to second.
+
+**Still open, and now the only part:** do you also want a scheduled baseline?
 
 | Option | Trade-off |
 |---|---|
-| On demand | Facilitator clicks Refresh. Always current, visible pause. |
-| Scheduled every 5 min | Dashboard instant, trend over time, up to 5 min stale. |
-| Both | Warm baseline plus per-participant refresh. Most useful live, most to build. |
+| Leave it on demand | What is built. Always current, one visible pause per scan. |
+| Add a 5-minute schedule | Dashboard instant and trendable, up to 5 minutes stale. A Scheduled Job writing the counts onto Plan Participant. |
+
+If you want the schedule, it is small now — the scan is one method call.
 
 ---
 
@@ -108,7 +115,6 @@ Decided, unblocked, not started.
 
 | Item | Notes |
 |---|---|
-| **Artifact tracker** | Expectation and evidence tables, the `sys_update_xml` query, the REST endpoint, the dashboard column, `app_name` / `app_scope` on Plan Participant. Blocked only on 1.3 |
 
 ---
 
@@ -248,6 +254,7 @@ Critical`, `dashboard`, `ServiceNow Studio`, and the role names in section 400.
 | **D3** | Deployed bundle cannot be verified independently | The `.jsdbx` files are not in `sys_ux_theme_asset` and are not attachments; the backing table for `/uxasset/externals/x_snc_holg/` was never located. Verification is by fetching the served URL and grepping it |
 | **D4** | A named account can miss its matching number | See below |
 | **D5** | Numbers are not reclaimed | Deleting a participant frees their number for the next enrolment, which is usually right, but it means a number is not permanently tied to a person |
+| **D6** | `FacilitatorDashboard.css` is 13.4 KB of a 14 KB limit | Past that the SDK emits a standalone `components/*.css` that nothing loads, and the dashboard silently loses its styling. The next CSS addition there should split the file first |
 
 ### D4 — a named account can miss its matching number
 
