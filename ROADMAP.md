@@ -16,7 +16,6 @@ One line each. The detail is in the numbered sections below.
 | **W2** | 🔴 | Make the setup task one stepped document instead of five records | Your go — it deletes four records | [1.2](#12-setup-task-as-one-stepped-document) |
 | **W3** | 🔴 | Artifact tracker: add a scheduled baseline, or leave it on demand? | On demand is built; a 5-minute job is small from here | [1.3](#13-artifact-tracker--when-does-the-scan-run) |
 | **P1** | ⚫ | Have a real participant open a plan and check the number they get | You — one login, then I check the row | [3.1](#31-check-a-real-participants-number-p1) |
-| **P8** | ⚫ | Grant `x_snc_holg.facilitator` to whoever runs the workshop | You — nobody holds it today, so the picker is empty | [3.2](#32-nobody-holds-the-facilitator-role-p8) |
 | **P2** | ⚫ | Create the remaining `now.assist.participantNN` accounts | You — stops at 3 today | [3](#3--workshop-prep--your-side) |
 | **P3** | ⚫ | Give each account app-creation and test rights | You | [3](#3--workshop-prep--your-side) |
 | **P4** | ⚫ | Turn on `sn_atf.enable` instance-wide | You | [3](#3--workshop-prep--your-side) |
@@ -141,23 +140,6 @@ left here waits on a decision in section 5.
   group managers.
 - **Stagger section 400** (Build an application) or run it facilitator-led — five
   chained Build Agent prompts, by far the heaviest on the instance.
-
-### 3.2 Nobody holds the facilitator role (P8)
-
-Not one user on this instance holds `x_snc_holg.facilitator`. The dashboard and
-the facilitator endpoints work for you only because `gs.hasRole` is true for an
-admin, and the new facilitator picker in the authoring UI is empty for the same
-reason — there is nobody to list.
-
-Grant it to whoever actually runs the workshop:
-
-```
-! npx now-sdk exec --scope global "var r=new GlideRecord('sys_user_role');r.get('name','x_snc_holg.facilitator');var u=new GlideRecord('sys_user');u.get('user_name','<their user name>');var g=new GlideRecord('sys_user_has_role');g.initialize();g.setValue('user',u.getUniqueValue());g.setValue('role',r.getUniqueValue());gs.info(g.insert())"
-```
-
-Worth doing before the day regardless: an admin passing every ACL hides whether
-the facilitator path actually works, which is how the participant-numbering bug
-survived testing.
 
 ### 3.1 Check a real participant's number (P1)
 
