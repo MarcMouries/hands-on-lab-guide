@@ -1355,7 +1355,7 @@ LabApi.prototype = {
         var email = this._str(gs.getUser().getEmail())
 
         var granted = this._grantEventRoles(eventGr, userId)
-        this._recordRegistration(eventGr, {
+        var registrationId = this._recordRegistration(eventGr, {
             first_name: this._str(gs.getUser().getFirstName()),
             last_name: this._str(gs.getUser().getLastName()),
             email: email || gs.getUserName() + '',
@@ -1364,6 +1364,16 @@ LabApi.prototype = {
             granted_roles: granted.join(','),
         })
         this._enrolInEventPlan(eventGr, userId)
+
+        var viaGlobal = this._grantThroughGlobal(registrationId)
+        if (viaGlobal.granted.length) {
+            this._recordRegistration(eventGr, {
+                email: email || gs.getUserName() + '',
+                status: 'joined',
+                user: userId,
+                granted_roles: viaGlobal.granted.join(','),
+            })
+        }
 
         return {
             ok: true,
@@ -1495,7 +1505,7 @@ LabApi.prototype = {
         }
 
         var granted = this._grantEventRoles(eventGr, userId)
-        this._recordRegistration(eventGr, {
+        var registrationId = this._recordRegistration(eventGr, {
             first_name: first,
             last_name: last,
             email: email,
@@ -1504,6 +1514,19 @@ LabApi.prototype = {
             granted_roles: granted.join(','),
         })
         this._enrolInEventPlan(eventGr, userId)
+
+        /* The registration has to exist before the bridge runs: it reads the
+         * roles off that row's own event rather than taking a role name, so it
+         * cannot be used to grant something nobody asked for. */
+        var viaGlobal = this._grantThroughGlobal(registrationId)
+        if (viaGlobal.granted.length) {
+            this._recordRegistration(eventGr, {
+                email: email,
+                status: 'created',
+                user: userId,
+                granted_roles: viaGlobal.granted.join(','),
+            })
+        }
 
         return {
             ok: true,
@@ -1591,6 +1614,42 @@ LabApi.prototype = {
      * the same code grants `admin` on a lab instance and nothing but the
      * participant role on a customer's.
      */
+    /** True when a role belongs to this application rather than to Global. */
+    _roleIsOurs: function (roleName) {
+        var name = this._str(roleName)
+        return name.indexOf('x_snc_holg.') === 0
+    },
+
+    /**
+     * Hands the out-of-scope roles to global.HolgEventRoles.
+     *
+     * x_snc_holg can grant its own roles and nothing else: `admin` belongs to
+     * Global, so the insert is a cross-scope write and is refused for any
+     * caller who is not an admin - which is every registrant. The bridge is a
+     * Script Include whose own scope is Global, so the same insert is no longer
+     * cross-scope. See src/global-scope/HolgEventRoles.js.
+     *
+     * Absent, this returns empty and the roles simply stay ungranted: the
+     * account, the lab role and the enrolment are already done by then, so a
+     * missing bridge costs the extra access and nothing else.
+     */
+    _grantThroughGlobal: function (registrationId) {
+        if (!registrationId) {
+            return { granted: [], error: 'no registration' }
+        }
+        try {
+            var bridge = new global.HolgEventRoles()
+            var answer = bridge.grantForRegistration(registrationId)
+            return {
+                granted: (answer && answer.granted) || [],
+                error: (answer && answer.error) || '',
+            }
+        } catch (e) {
+            // Not installed, or not callable from this scope.
+            return { granted: [], error: '' + e }
+        }
+    },
+
     _grantEventRoles: function (eventGr, userId) {
         var wanted = [LAB_ROLE_PARTICIPANT]
         var extra = this._str(eventGr.getValue('granted_roles')).split(',')
@@ -1603,6 +1662,16 @@ LabApi.prototype = {
 
         var granted = []
         for (i = 0; i < wanted.length; i++) {
+            /*
+             * Only this app's own roles are granted here. Attempting a Global
+             * role from this scope does not merely fail - the platform pushes a
+             * security message into the session, which the registrant then sees
+             * on the page as a refusal, having in fact been registered
+             * successfully. Those roles go through the global bridge instead.
+             */
+            if (!this._roleIsOurs(wanted[i])) {
+                continue
+            }
             var roleId = this._roleId(wanted[i])
             if (!roleId || this._userHasRole(userId, wanted[i])) {
                 continue
@@ -1621,6 +1690,19 @@ LabApi.prototype = {
             }
         }
         return granted
+    },
+
+    /** The event's roles this app may not grant itself. */
+    _rolesNeedingGlobal: function (eventGr) {
+        var pending = []
+        var extra = this._str(eventGr.getValue('granted_roles')).split(',')
+        for (var i = 0; i < extra.length; i++) {
+            var name = this._str(extra[i]).trim()
+            if (name && !this._roleIsOurs(name) && pending.indexOf(name) < 0) {
+                pending.push(name)
+            }
+        }
+        return pending
     },
 
     /**
