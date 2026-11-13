@@ -23,15 +23,11 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | Nothing | [5.4](#54-the-build-b6b11) |
-| **B7** | 🟠 | The public registration page and widget | Nothing | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | The form creates an account, or enrols the signed-in user | Nothing — the probes passed | [5.4](#54-the-build-b6b11) |
-| **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b11) |
-| **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
-| **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
-| **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | The form creates an account, or enrols the signed-in user | **Written and deployed; one path needs you to test it** | [5.4](#54-the-build-b6b12) |
+| **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
+| **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
 | **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
-| **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
+| **D1–D8** | ⚪ | Eight known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
 
 IDs are stable: **W** needs your word, **B** is mine to build, **N** is a nice
 to have, **P** is workshop prep on your side, **D** is a known debt. They do not renumber when something
@@ -375,7 +371,7 @@ nothing but the event code. `public: true` is per page, so that is a second
 page rather than a compromise on the first — or the same page, since a signed-in
 caller never reaches the account-creation branch.
 
-### 5.4 The build (B6–B11)
+### 5.4 The build (B6–B12)
 
 **B6 — two tables.**
 
@@ -451,11 +447,6 @@ scoped API will accept on a password field is not something to assume.
 state, and a way to retry one that failed. A monitor and a repair tool, not an
 approval queue — nobody has to act for a registration to succeed.
 
-**B10 — purge.** Real names and email addresses of customers, on a demo
-instance. A registration is needed until the event closes and not after:
-delete the rows on close, or on a schedule, keeping the `sys_user` records that
-are still being used.
-
 **B11 — the event's plan.** An event names one evaluation plan; provisioning
 enrols the new user into it, so they land on their tasks rather than an empty
 plan list.
@@ -506,25 +497,18 @@ gives everyone anyway.
 
 Two consequences follow, and together they are the whole safety story:
 
-- **Time-boxed, which is B12.** Granting admin is survivable; granting it
-  permanently to a roomful of visiting customers is the part that is hard to
-  undo. Unless you say otherwise, revoke-on-close is the default: when an event
-  closes the granted roles come off and the accounts are deactivated, on a
-  schedule as well as on the status change, so a forgotten event leaves no
-  standing admins.
+- **Not time-boxed.** Revocation was planned and is dropped (D8): an event that
+  closes stops accepting registrations and leaves the accounts and their admin
+  roles exactly as they are. Removing access is a manual job.
 
-  The event already carries `starts_on` and `ends_on` (5.4), so **an event with
-  an end date closes itself** — the scheduled half of B12 is what makes the end
-  date mean something rather than being a label. An event with no end date stays
-  open until somebody closes it.
+  The event still carries `starts_on` and `ends_on` (5.4), which bound who can
+  *register*: past the end date the form refuses, so a leaked code stops
+  working. What it does not bound is what was already granted.
 
-  **N1 — terminating early, by hand.** A control on the facilitator view that
-  closes an event before its end date: the session finished early, or something
-  went wrong and the admin accounts should stop working now. Nice to have, as
-  you said, and genuinely so — it triggers the same revocation B12 already
-  performs, so it is a button rather than a mechanism. Worth knowing what is
-  *not* optional: without the scheduled sweep, an event whose end date passes
-  while nobody is looking keeps its admins.
+  **Dropped on your call, 13 November 2026 (was B12).** Nothing revokes the
+  roles; closing an event stops new registrations and leaves existing access in
+  place. Recorded as D8. N1, terminating an event early, is therefore also just
+  a way to stop new registrations rather than to cut off access.
 - **The code carries more weight than it would otherwise.** When every event
   mints an admin, the code, the window and the cap are the only things standing
   between a leaked URL and an admin account — so an event's window should be the
@@ -618,6 +602,8 @@ Keep a handful for testing.
 | **D3** | Deployed bundle cannot be verified independently | The `.jsdbx` files are not in `sys_ux_theme_asset` and are not attachments; the backing table for `/uxasset/externals/x_snc_holg/` was never located. Verification is by fetching the served URL and grepping it |
 | **D4** | A named account can miss its matching number | See below |
 | **D5** | Numbers are not reclaimed | Deleting a participant frees their number for the next enrolment, which is usually right, but it means a number is not permanently tied to a person |
+| **D8** | Roles granted by registration are permanent | An event grants `admin` and nothing takes it back when the event closes — the accounts and their roles persist until someone removes them by hand. Was B12, dropped on your call 13 November 2026. The manual routes: deactivate the users, or delete the `admin` grant and let the platform retract its 182 contained roles |
+| **D7** | Registration data is not purged | Lab Registration holds real names and email addresses and nothing deletes them; a closed event keeps its rows. Was B10, dropped on your call 13 November 2026. Deleting an event cascades its registrations, which is the manual route |
 | **D6** | `FacilitatorDashboard.css` is 13.4 KB of a 14 KB limit | Past that the SDK emits a standalone `components/*.css` that nothing loads, and the dashboard silently loses its styling. The next CSS addition there should split the file first |
 
 ### D4 — a named account can miss its matching number

@@ -24,6 +24,8 @@ var LAB_T_USER_ROLE = 'sys_user_role'
 var LAB_T_EXPECTATION = 'x_snc_holg_task_expectation'
 var LAB_T_UPDATE_XML = 'sys_update_xml'
 var LAB_T_SCOPE = 'sys_scope'
+var LAB_T_EVENT = 'x_snc_holg_event'
+var LAB_T_REGISTRATION = 'x_snc_holg_registration'
 var LAB_T_USER_HAS_ROLE = 'sys_user_has_role'
 
 // Roles
@@ -33,6 +35,7 @@ var LAB_ROLE_AUTHOR = 'x_snc_holg.author'
 
 // Stored choice values, exactly as defined on the tables
 var LAB_PLAN_PUBLISHED = 'published'
+var LAB_PARTICIPANT_NOT_STARTED = 'not_started'
 var LAB_PARTICIPANT_IN_PROGRESS = 'in_progress'
 var LAB_PARTICIPANT_COMPLETE = 'complete'
 var LAB_RESULT_NOT_STARTED = 'not_started'
@@ -287,14 +290,14 @@ LabApi.prototype = {
      *   3. drop stop-words (case-insensitive): a, the, with, and
      *      ('for' is intentionally kept)
      *   4. if that removed everything, fall back to the unfiltered words
-     *   5. keep the first 4 words and join with '-'
+     *   5. keep the first 4 words and join with '-', or `maxWords` of them
      *   6. original letter case is preserved
      *
      * 'Now Assist for Creator'  -> 'Now-Assist-for-Creator'
      * 'Generate a server-side ATF test' -> 'Generate-server-side-ATF'
      * Returns '' for null/empty input.
      */
-    _slug: function (text) {
+    _slug: function (text, maxWords) {
         var raw = this._str(text)
         if (!raw) {
             return ''
@@ -330,7 +333,7 @@ LabApi.prototype = {
         }
 
         var use = kept.length ? kept : words
-        return use.slice(0, LAB_SLUG_MAX_WORDS).join('-')
+        return use.slice(0, maxWords || LAB_SLUG_MAX_WORDS).join('-')
     },
 
     /**
@@ -1078,6 +1081,495 @@ LabApi.prototype = {
             result: this._serializeResult(gr),
             percent_complete: pct,
         })
+    },
+
+    /* ------------------------------------------------------------ *
+     * Self-registration for a lab event
+     *
+     * Called from the public registration widget, which is the only part of
+     * this application reachable without a session. Everything here therefore
+     * assumes the caller may be `guest` and may be hostile: every value is
+     * re-read from the event record rather than trusted from the form, and the
+     * only thing the form can influence is which event and what the person is
+     * called.
+     *
+     * Reads use plain `GlideRecord` throughout. A guest satisfies no ACL, so a
+     * secure read would see nothing and every registration would fail as if the
+     * event did not exist. The containment is that nothing read here is
+     * returned to the caller beyond the event's own name and dates.
+     * ------------------------------------------------------------ */
+
+    /** True when nobody is signed in. The whole flow branches on this. */
+    isGuest: function () {
+        var name = gs.getUserName() + ''
+        return !name || name === 'guest'
+    },
+
+    /**
+     * The event a registration link names, as the page needs it.
+     *
+     * Matched on the slug of the name, the same readable form `plan_id` uses,
+     * or on a sys_id. Returns null rather than an error when nothing matches:
+     * a bad link should not say whether an event exists.
+     */
+    registrationEvent: function (slugOrId) {
+        var wanted = this._str(slugOrId).toLowerCase()
+        if (!wanted) {
+            return null
+        }
+
+        var gr = new GlideRecord(LAB_T_EVENT)
+        gr.query()
+        var match = null
+        while (gr.next()) {
+            var name = this._str(gr.getValue('name'))
+            if (
+                (gr.getUniqueValue() + '').toLowerCase() === wanted ||
+                this._eventSlug(name).toLowerCase() === wanted
+            ) {
+                match = gr
+                break
+            }
+        }
+        if (!match) {
+            return null
+        }
+
+        var state = this._eventState(match)
+        return {
+            sys_id: match.getUniqueValue() + '',
+            name: this._str(match.getValue('name')),
+            when: this._eventWhen(match),
+            accepting: state.accepting,
+            closed_message: state.message,
+        }
+    },
+
+    /**
+     * An event's slug, from its WHOLE name rather than the first four words.
+     *
+     * A plan slug is typed by a person, so four words is a kindness. An event
+     * slug only ever appears in a link somebody is sent, and four words makes
+     * "Customer Workshop November 13th 2026" and the same workshop in 2027 the
+     * same string - a link for one would open the other.
+     */
+    _eventSlug: function (name) {
+        return this._slug(name, 50)
+    },
+
+    /** Readable dates for the page header, or '' when the event has none. */
+    _eventWhen: function (gr) {
+        var starts = this._str(gr.getValue('starts_on'))
+        var ends = this._str(gr.getValue('ends_on'))
+        if (!starts && !ends) {
+            return ''
+        }
+        if (starts && ends) {
+            return starts + ' to ' + ends
+        }
+        return starts || ends
+    },
+
+    /**
+     * Whether an event is accepting registrations, and what to say when not.
+     *
+     * Four conditions, all on the record: open, started, not finished, not
+     * full. The message is deliberately the same shape for all of them - a
+     * visitor does not need to know which one they failed, and a code-guesser
+     * should not be told either.
+     */
+    _eventState: function (gr) {
+        var shut = {
+            accepting: false,
+            message: 'This workshop is not accepting registrations.',
+        }
+
+        if (this._str(gr.getValue('status')) !== 'open') {
+            return shut
+        }
+
+        var now = new GlideDateTime()
+        var starts = this._str(gr.getValue('starts_on'))
+        if (starts && now.compareTo(new GlideDateTime(starts)) < 0) {
+            return {
+                accepting: false,
+                message: 'Registration for this workshop has not opened yet.',
+            }
+        }
+        var ends = this._str(gr.getValue('ends_on'))
+        if (ends && now.compareTo(new GlideDateTime(ends)) > 0) {
+            return shut
+        }
+
+        var capacity = this._toInt(gr.getValue('capacity'))
+        if (capacity > 0 && this._registrationCount(gr.getUniqueValue() + '') >= capacity) {
+            return { accepting: false, message: 'This workshop is full.' }
+        }
+
+        return { accepting: true, message: '' }
+    },
+
+    /** How many people have registered for an event. */
+    _registrationCount: function (eventId) {
+        var agg = new GlideAggregate(LAB_T_REGISTRATION)
+        agg.addQuery('event', eventId)
+        agg.addAggregate('COUNT')
+        agg.query()
+        return agg.next() ? this._toInt(agg.getAggregate('COUNT')) : 0
+    },
+
+    /**
+     * Register for an event, or join it with the account you already have.
+     *
+     * Returns a plain object for the widget: { ok, heading, message,
+     * user_name, password, lab_url }. A password comes back exactly once, for
+     * an account that was created in this call, and is never stored anywhere
+     * readable or written to a log.
+     */
+    register: function (eventId, form) {
+        var gr = new GlideRecord(LAB_T_EVENT)
+        if (!gr.get(eventId)) {
+            return this._registerFailed('This workshop could not be found.')
+        }
+
+        // Re-checked here and not taken from the page: the page was rendered
+        // before the form was filled in, and an event can close in between.
+        var state = this._eventState(gr)
+        if (!state.accepting) {
+            return this._registerFailed(state.message)
+        }
+
+        var expected = this._str(gr.getValue('registration_code'))
+        var given = this._str(form.code)
+        if (!expected || given.toLowerCase().trim() !== expected.toLowerCase().trim()) {
+            return this._registerFailed('That registration code is not right.')
+        }
+
+        return this.isGuest()
+            ? this._registerNewAccount(gr, form)
+            : this._joinAsCurrentUser(gr)
+    },
+
+    _registerFailed: function (message) {
+        return { ok: false, message: message }
+    },
+
+    /**
+     * A signed-in visitor joins with the account they already have.
+     *
+     * Their password is never touched and nothing is shown back to them. This
+     * is the normal path on a customer's own instance, where everybody already
+     * exists and their credentials are theirs.
+     */
+    _joinAsCurrentUser: function (eventGr) {
+        var userId = gs.getUserID() + ''
+        var email = this._str(gs.getUser().getEmail())
+
+        var granted = this._grantEventRoles(eventGr, userId)
+        this._recordRegistration(eventGr, {
+            first_name: this._str(gs.getUser().getFirstName()),
+            last_name: this._str(gs.getUser().getLastName()),
+            email: email || gs.getUserName() + '',
+            status: 'joined',
+            user: userId,
+            granted_roles: granted.join(','),
+        })
+        this._enrolInEventPlan(eventGr, userId)
+
+        return {
+            ok: true,
+            heading: 'You are in',
+            message:
+                'Your account now has what this workshop needs. Sign in as you normally do - your password has not been changed.',
+            user_name: gs.getUserName() + '',
+            password: '',
+            lab_url: this._labUrl(eventGr),
+        }
+    },
+
+    /**
+     * A visitor with no session gets an account - unless they already have one.
+     *
+     * The order of these checks is the point. Matching the email BEFORE the
+     * user name is what stops one person ending up with two accounts: a name
+     * collision is only a different person when the email differs too.
+     */
+    _registerNewAccount: function (eventGr, form) {
+        var first = this._str(form.first_name).trim()
+        var last = this._str(form.last_name).trim()
+        var email = this._str(form.email).trim().toLowerCase()
+
+        if (!first || !last || !email || email.indexOf('@') < 1) {
+            return this._registerFailed('Please give your first name, last name and email address.')
+        }
+
+        // 1. Already a user here? Then never create, and never grant on the
+        //    strength of an email nobody has verified.
+        var existing = this._userByEmail(email)
+        if (existing) {
+            this._recordRegistration(eventGr, {
+                first_name: first,
+                last_name: last,
+                email: email,
+                status: 'awaiting_sign_in',
+                user: existing,
+                granted_roles: '',
+            })
+            return {
+                ok: true,
+                heading: 'You already have an account here',
+                message:
+                    'Sign in with the credentials you already use, then open this same link again to join the workshop.',
+                user_name: '',
+                password: '',
+                lab_url: '',
+            }
+        }
+
+        // 2. A free user name, suffixed only when a DIFFERENT person holds it.
+        var login = this._freeUserName(first, last)
+        var password = this._generatePassword()
+
+        var userId = null
+        try {
+            var u = new GlideRecord(LAB_T_USER)
+            u.initialize()
+            u.setValue('user_name', login)
+            u.setValue('first_name', first)
+            u.setValue('last_name', last)
+            u.setValue('email', email)
+            u.setValue('active', true)
+            u.setValue('locked_out', false)
+            u.setValue('web_service_access_only', false)
+            userId = u.insert()
+
+            if (userId) {
+                /*
+                 * setDisplayValue, NOT setValue. setValue stores a value, throws
+                 * nothing, leaves the record looking correct - and the account
+                 * cannot log in. Verified against this instance: 401 with
+                 * setValue, 200 with setDisplayValue.
+                 */
+                var fresh = new GlideRecord(LAB_T_USER)
+                fresh.get(userId)
+                fresh.user_password.setDisplayValue(password)
+                fresh.setValue('password_needs_reset', false)
+                fresh.update()
+            }
+        } catch (e) {
+            userId = null
+        }
+
+        if (!userId) {
+            this._recordRegistration(eventGr, {
+                first_name: first,
+                last_name: last,
+                email: email,
+                status: 'failed',
+                user: '',
+                granted_roles: '',
+                failure_reason: 'The account could not be created.',
+            })
+            return this._registerFailed(
+                'Your account could not be created. Tell your facilitator - your registration has been recorded.',
+            )
+        }
+
+        var granted = this._grantEventRoles(eventGr, userId)
+        this._recordRegistration(eventGr, {
+            first_name: first,
+            last_name: last,
+            email: email,
+            status: 'created',
+            user: userId,
+            granted_roles: granted.join(','),
+        })
+        this._enrolInEventPlan(eventGr, userId)
+
+        return {
+            ok: true,
+            heading: 'You are registered',
+            message: 'Use these to sign in.',
+            user_name: login,
+            password: password,
+            lab_url: this._labUrl(eventGr),
+        }
+    },
+
+    /** The sys_id of a user with this email, or '' - matched case-insensitively. */
+    _userByEmail: function (email) {
+        var gr = new GlideRecord(LAB_T_USER)
+        gr.addQuery('email', email)
+        gr.setLimit(1)
+        gr.query()
+        if (gr.next()) {
+            return gr.getUniqueValue() + ''
+        }
+        // Some instances store it mixed-case; the query above is exact.
+        var any = new GlideRecord(LAB_T_USER)
+        any.addQuery('email', 'CONTAINS', email)
+        any.query()
+        while (any.next()) {
+            if (this._str(any.getValue('email')).toLowerCase() === email) {
+                return any.getUniqueValue() + ''
+            }
+        }
+        return ''
+    },
+
+    /**
+     * first.last, suffixed until it is free.
+     *
+     * Only reached when the email did not match, so a collision here really is
+     * a different person with the same name rather than the same person twice.
+     */
+    _freeUserName: function (first, last) {
+        var base = (first + '.' + last).toLowerCase().replace(/[^a-z0-9.]/g, '')
+        if (!base || base === '.') {
+            base = 'lab.participant'
+        }
+        var candidate = base
+        var suffix = 1
+        while (this._userNameTaken(candidate) && suffix < 50) {
+            suffix++
+            candidate = base + suffix
+        }
+        return candidate
+    },
+
+    _userNameTaken: function (login) {
+        var gr = new GlideRecord(LAB_T_USER)
+        gr.addQuery('user_name', login)
+        gr.setLimit(1)
+        gr.query()
+        return gr.next()
+    },
+
+    /**
+     * A password a person can read off a screen and type without a mistake.
+     *
+     * No l/1/I/0/O, and shaped word-digit-word so it survives being read aloud
+     * to a room. Long enough that guessing is not the attack worth worrying
+     * about here - the registration code is.
+     */
+    _generatePassword: function () {
+        var words = [
+            'amber', 'basalt', 'cedar', 'delta', 'ember', 'flint', 'granite', 'harbor',
+            'indigo', 'juniper', 'kelvin', 'lantern', 'marble', 'nectar', 'onyx',
+            'quartz', 'ridge', 'summit', 'tundra', 'umber', 'vertex', 'walnut',
+        ]
+        function pick(list) {
+            return list[Math.floor(Math.random() * list.length)]
+        }
+        var digits = '' + (Math.floor(Math.random() * 90) + 10)
+        return pick(words) + '-' + digits + '-' + pick(words)
+    },
+
+    /**
+     * Grants the lab role plus whatever the event names, and reports what stuck.
+     *
+     * The event's `granted_roles` is read per event rather than hardcoded, so
+     * the same code grants `admin` on a lab instance and nothing but the
+     * participant role on a customer's.
+     */
+    _grantEventRoles: function (eventGr, userId) {
+        var wanted = [LAB_ROLE_PARTICIPANT]
+        var extra = this._str(eventGr.getValue('granted_roles')).split(',')
+        for (var i = 0; i < extra.length; i++) {
+            var name = this._str(extra[i]).trim()
+            if (name && wanted.indexOf(name) < 0) {
+                wanted.push(name)
+            }
+        }
+
+        var granted = []
+        for (i = 0; i < wanted.length; i++) {
+            var roleId = this._roleId(wanted[i])
+            if (!roleId || this._userHasRole(userId, wanted[i])) {
+                continue
+            }
+            try {
+                var has = new GlideRecord(LAB_T_USER_HAS_ROLE)
+                has.initialize()
+                has.setValue('user', userId)
+                has.setValue('role', roleId)
+                if (has.insert()) {
+                    granted.push(wanted[i])
+                }
+            } catch (e) {
+                // Reported through the registration row rather than thrown: a
+                // missing role should not lose the registration.
+            }
+        }
+        return granted
+    },
+
+    /** Writes the registration row. Never throws - the account already exists. */
+    _recordRegistration: function (eventGr, values) {
+        try {
+            var gr = new GlideRecord(LAB_T_REGISTRATION)
+            gr.initialize()
+            gr.setValue('event', eventGr.getUniqueValue())
+            gr.setValue('first_name', this._str(values.first_name))
+            gr.setValue('last_name', this._str(values.last_name))
+            gr.setValue('email', this._str(values.email))
+            gr.setValue('status', values.status)
+            if (values.user) {
+                gr.setValue('user', values.user)
+            }
+            gr.setValue('granted_roles', this._str(values.granted_roles))
+            if (values.failure_reason) {
+                gr.setValue('failure_reason', values.failure_reason)
+            }
+            return gr.insert() + ''
+        } catch (e) {
+            // The unique index on (event, email) lands here on a second
+            // registration for the same event, which is not an error worth
+            // showing: they are already registered.
+            return ''
+        }
+    },
+
+    /** Enrols the new user in the event's plan, so they land on their tasks. */
+    _enrolInEventPlan: function (eventGr, userId) {
+        var planId = this._str(eventGr.getValue('evaluation_plan'))
+        if (!planId || !userId) {
+            return
+        }
+        var existing = new GlideRecord(LAB_T_PARTICIPANT)
+        existing.addQuery('evaluation_plan', planId)
+        existing.addQuery('user', userId)
+        existing.setLimit(1)
+        existing.query()
+        if (existing.next()) {
+            return
+        }
+        try {
+            var pp = new GlideRecord(LAB_T_PARTICIPANT)
+            pp.initialize()
+            pp.setValue('evaluation_plan', planId)
+            pp.setValue('user', userId)
+            pp.setValue('status', LAB_PARTICIPANT_NOT_STARTED)
+            pp.setValue('percent_complete', 0)
+            pp.insert()
+            // The number and prefix are left to the participant path, which
+            // assigns them on first open - one place that decides a number.
+        } catch (e) {
+            // Enrolment also happens when they first open the plan.
+        }
+    },
+
+    /** Where to send them next. */
+    _labUrl: function (eventGr) {
+        var planId = this._str(eventGr.getValue('evaluation_plan'))
+        if (!planId) {
+            return '/holg'
+        }
+        var plan = new GlideRecord(LAB_T_PLAN)
+        if (!plan.get(planId)) {
+            return '/holg'
+        }
+        return '/holg?id=plan&plan=' + this._slug(this._str(plan.getValue('name')))
     },
 
     /* ------------------------------------------------------------ *

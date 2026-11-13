@@ -1,0 +1,91 @@
+/* Registration form.
+ *
+ * Standalone styling rather than the lab's stylesheets: this page is reached by
+ * people who have never seen the instance, often on a phone, and it loads
+ * before any React bundle. Colours resolve from Horizon tokens with literal
+ * fallbacks, as everywhere else in this app. */
+.holg-reg {
+    box-sizing: border-box;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+
+    * { box-sizing: border-box; }
+
+    &__title { font-size: 24px; font-weight: 700; margin: 0 0 4px; }
+    &__when { margin: 0 0 16px; color: rgb(var(--now-color_text--secondary, 35, 46, 51)); }
+
+    &__label { display: block; font-size: 14px; font-weight: 700; margin-top: 12px; }
+
+    &__input {
+        width: 100%;
+        min-height: 40px;
+        padding: 8px;
+        font: inherit;
+        color: inherit;
+        border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+        border-radius: 4px;
+        background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    }
+
+    &__hint { font-size: 13px; margin: 4px 0 0; color: rgb(var(--now-color_text--secondary, 35, 46, 51)); }
+
+    &__submit {
+        width: 100%;
+        min-height: 44px;
+        margin-top: 16px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        color: #fff;
+        background-color: #032d42;
+        border: 1px solid #032d42;
+        border-radius: 4px;
+
+        &[disabled] { opacity: 0.5; cursor: not-allowed; }
+    }
+
+    &__alert, &__closed {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #b8002e;
+        color: #b8002e;
+    }
+
+    &__closed { border-color: rgb(var(--now-container-card--border-color, 207, 213, 215)); color: inherit; }
+
+    &__signedIn {
+        padding: 8px 12px;
+        border-radius: 4px;
+        background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    }
+
+    &__doneTitle { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+
+    &__creds {
+        margin: 16px 0;
+        padding: 12px;
+        border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
+        border-radius: 4px;
+
+        dt { font-size: 13px; font-weight: 700; }
+        dd { margin: 0 0 8px; code { font-size: 16px; } }
+    }
+
+    /* The one thing on the page nobody may skim past. */
+    &__warn { font-weight: 700; }
+
+    &__go {
+        display: inline-block;
+        min-height: 44px;
+        padding: 10px 16px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #fff;
+        background-color: #032d42;
+        border-radius: 4px;
+    }
+}

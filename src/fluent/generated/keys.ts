@@ -9,6 +9,10 @@ declare global {
                         table: 'sp_container'
                         id: '01eb7d8789834f48a8034af3c9092c17'
                     }
+                    '03bba929cbfe4c7485ecaecd38cd18dc': {
+                        table: 'sp_row'
+                        id: '03bba929cbfe4c7485ecaecd38cd18dc'
+                    }
                     '060b9bd91e4642ea9e66146df4f20fb4': {
                         table: 'sys_script_include'
                         id: '060b9bd91e4642ea9e66146df4f20fb4'
@@ -89,6 +93,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '1a2a07882f641b10bec1567e8ea4e373'
                     }
+                    '1bcf4096ebf84ae2a2e2a8a2898a7e6d': {
+                        table: 'sp_container'
+                        id: '1bcf4096ebf84ae2a2e2a8a2898a7e6d'
+                    }
                     '1e216ce9f5f249938fa1a59dafcbbca3': {
                         table: 'sp_instance'
                         id: '1e216ce9f5f249938fa1a59dafcbbca3'
@@ -137,9 +145,17 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '2c2547482fe01b10bec1567e8ea4e3cb'
                     }
+                    '2d02f28190504fcf8ac16cc1fa90ce67': {
+                        table: 'sys_security_acl'
+                        id: '2d02f28190504fcf8ac16cc1fa90ce67'
+                    }
                     '2d59d70971e5469fb46a527dc6101ba6': {
                         table: 'sp_row'
                         id: '2d59d70971e5469fb46a527dc6101ba6'
+                    }
+                    '2f066dd66ce94006a9a4d220556867a1': {
+                        table: 'sp_widget'
+                        id: '2f066dd66ce94006a9a4d220556867a1'
                     }
                     '30580a635cd2463aba16968924ce4beb': {
                         table: 'sys_ws_operation'
@@ -152,6 +168,10 @@ declare global {
                     '3144315507c546d4bb6db865ec4ff429': {
                         table: 'sys_ws_operation'
                         id: '3144315507c546d4bb6db865ec4ff429'
+                    }
+                    '32c990e73d7a46549115aa412ddc0763': {
+                        table: 'sys_security_acl'
+                        id: '32c990e73d7a46549115aa412ddc0763'
                     }
                     '332aed45cfa09f10f492f48d5d851c58': {
                         table: 'sys_scope_privilege'
@@ -176,6 +196,10 @@ declare global {
                     '379023482f281b10bec1567e8ea4e32b': {
                         table: 'sys_scope_privilege'
                         id: '379023482f281b10bec1567e8ea4e32b'
+                    }
+                    '3ae653d8ec7245bab547f53e8e2457b6': {
+                        table: 'sys_security_acl'
+                        id: '3ae653d8ec7245bab547f53e8e2457b6'
                     }
                     '3bcd06de5ce84baaaa3326b9e2ef4e1e': {
                         table: 'sys_security_acl'
@@ -333,6 +357,10 @@ declare global {
                         table: 'sys_security_acl'
                         id: '6d1069bd310744bc81446f750a9dd839'
                     }
+                    '6e05860f0c9f451d9adf3f351e0ee65e': {
+                        table: 'sys_security_acl'
+                        id: '6e05860f0c9f451d9adf3f351e0ee65e'
+                    }
                     '732aed45cfa09f10f492f48d5d851c45': {
                         table: 'sys_scope_privilege'
                         id: '732aed45cfa09f10f492f48d5d851c45'
@@ -344,6 +372,10 @@ declare global {
                     '772aed45cfa09f10f492f48d5d851c53': {
                         table: 'sys_scope_privilege'
                         id: '772aed45cfa09f10f492f48d5d851c53'
+                    }
+                    '783d015dc53a4196b4376f5b3af4ca11': {
+                        table: 'sp_instance'
+                        id: '783d015dc53a4196b4376f5b3af4ca11'
                     }
                     '7b2aed45cfa09f10f492f48d5d851c5c': {
                         table: 'sys_scope_privilege'
@@ -389,6 +421,10 @@ declare global {
                         table: 'sys_scope_privilege'
                         id: '86de2fc02fa81b10bec1567e8ea4e3d5'
                     }
+                    '872fb3bf83b3476e8920881633084e78': {
+                        table: 'sp_column'
+                        id: '872fb3bf83b3476e8920881633084e78'
+                    }
                     '873b98331da34f4787c1f0a14dcc82ed': {
                         table: 'sys_ws_definition'
                         id: '873b98331da34f4787c1f0a14dcc82ed'
@@ -412,6 +448,10 @@ declare global {
                     '8c3f6f402fa81b10bec1567e8ea4e367': {
                         table: 'sys_scope_privilege'
                         id: '8c3f6f402fa81b10bec1567e8ea4e367'
+                    }
+                    '8ddfe64d478341f38b567b5e928e1b93': {
+                        table: 'sys_security_acl'
+                        id: '8ddfe64d478341f38b567b5e928e1b93'
                     }
                     '8e8912842f201b10bec1567e8ea4e394': {
                         table: 'sys_embedded_help_role'
@@ -570,6 +610,10 @@ declare global {
                         table: 'sp_row'
                         id: 'd30a3dc1fe8d4d88adc3df1730f45690'
                     }
+                    d3ea31308496418eb22b5038f20ff0c4: {
+                        table: 'sys_security_acl'
+                        id: 'd3ea31308496418eb22b5038f20ff0c4'
+                    }
                     d4e79f802fe41b10bec1567e8ea4e327: {
                         table: 'sys_scope_privilege'
                         id: 'd4e79f802fe41b10bec1567e8ea4e327'
@@ -577,6 +621,10 @@ declare global {
                     d59a1bc42fe41b10bec1567e8ea4e323: {
                         table: 'sys_scope_privilege'
                         id: 'd59a1bc42fe41b10bec1567e8ea4e323'
+                    }
+                    d9966233c8824560a77afb6ae2843a0c: {
+                        table: 'sys_security_acl'
+                        id: 'd9966233c8824560a77afb6ae2843a0c'
                     }
                     da0b8e7d3f664d399000118355db0a2c: {
                         table: 'sys_ws_operation'
@@ -786,6 +834,19 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: '04f49300d4c749c8b78b70a09f43b666'
+                        key: {
+                            sys_security_acl: '8ddfe64d478341f38b567b5e928e1b93'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '05d99f957767477f9fd23283c993ec56'
                         key: {
@@ -896,6 +957,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: '0a6bf3f0a0f249f6bbca9cdf5424ee45'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
+                        }
+                    },
+                    {
                         table: 'sys_db_object'
                         id: '0b0c14eac70f45ae89fc8f93c9f906d8'
                         key: {
@@ -916,6 +985,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '0b5f00c4d1ff4d3ea8d1966f7a122334'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'user'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '0bcbb524d3f04c7d91130eaca44360c2'
                         key: {
@@ -930,6 +1008,13 @@ declare global {
                             }
                             element: '.end_split'
                             position: '8'
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: '0cc72ab828364c2a8291ca977e861ea6'
+                        key: {
+                            name: 'x_snc_holg_registration'
                         }
                     },
                     {
@@ -956,6 +1041,19 @@ declare global {
                             name: 'x_snc_holg_plan_participant'
                             element: 'started_on'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '0eb6d2a78edc4d20a2cc7ee47d11b71f'
+                        key: {
+                            sys_security_acl: '6e05860f0c9f451d9adf3f351e0ee65e'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
                         }
                     },
                     {
@@ -1035,6 +1133,14 @@ declare global {
                                     name: 'x_snc_holg.facilitator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '11c49f7540054830938088e5d90f87a4'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'roles_revoked_on'
                         }
                     },
                     {
@@ -1359,6 +1465,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '1c7741680fd644c1ad6e76afee39706e'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'registration_code'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '1e086aa53a914894a0fc20daf37cc2b1'
                         key: {
@@ -1407,6 +1521,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '20adca0ec6794a54b52f91cce66565a5'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '20fd465b49bd4b91817f611472039ead'
                         key: {
@@ -1430,6 +1553,17 @@ declare global {
                             name: 'x_snc_holg_evaluation_plan'
                             element: 'name'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '218aaea343b1469291c1822b3f79ea8e'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                            value: 'awaiting_sign_in'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -1476,6 +1610,21 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '247fa9c3b73b4b9abb971308973334e3'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'email'
+                        }
+                    },
+                    {
+                        table: 'sys_db_object'
+                        id: '253f5d7a663a4d1aa65533d6c7140c52'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                        }
+                    },
+                    {
                         table: 'sys_ui_form_section'
                         id: '261f5b66351e4dc88318d83f40c0e26d'
                         key: {
@@ -1500,6 +1649,14 @@ declare global {
                     },
                     {
                         table: 'sys_index'
+                        id: '26bc7292fd03482498ef5bc2cf446a2b'
+                        key: {
+                            logical_table_name: 'x_snc_holg_event'
+                            col_name_string: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_index'
                         id: '26f061fc125c47c89ffe943a82938c3c'
                         key: {
                             logical_table_name: 'x_snc_holg_task_prompt'
@@ -1512,6 +1669,14 @@ declare global {
                         key: {
                             name: 'x_snc_holg_criterion_response'
                             element: 'answer'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '287d67b82a7d478fbd6406e5efeb0765'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'NULL'
                         }
                     },
                     {
@@ -1582,6 +1747,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '2f2e81fe1d434f4e9f45873d27710a29'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'failure_reason'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '2f9ef383fb244061aabd882207cdea04'
                         key: {
                             name: 'x_snc_holg_plan_participant'
@@ -1629,6 +1803,28 @@ declare global {
                                 id: 'dbc9761a37f842288c30190be4a37d71'
                                 key: {
                                     name: 'x_snc_holg.participant'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '3249c26dbde145b4b0f1de50c07d5d0a'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'revoked_on'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '346dc608cab34398a0fd61d9dfc20956'
+                        key: {
+                            sys_security_acl: 'd3ea31308496418eb22b5038f20ff0c4'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
                                 }
                             }
                         }
@@ -1962,6 +2158,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '46cbf5065eda4bdba35a8a75e51110a0'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                        }
+                    },
+                    {
                         table: 'sn_glider_source_artifact_m2m'
                         id: '471a66bf406e40e59b3c97bf2318b445'
                         key: {
@@ -2069,6 +2273,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '4c0f61589e80482cbce0ed938f359431'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_index'
                         id: '4c95e19352a545ed8e91d895b0be9e42'
                         key: {
@@ -2083,6 +2295,14 @@ declare global {
                             name: 'x_snc_holg_task_prompt'
                             element: 'prompt_text'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '4d170455232745a0b9ff7eee5693ad29'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
                         }
                     },
                     {
@@ -2117,6 +2337,19 @@ declare global {
                                     caption: 'Success Criterion'
                                     view: 'Default view'
                                     sys_domain: 'global'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '4eeb0877c02e4eb4b9041a04112fe635'
+                        key: {
+                            sys_security_acl: '3ae653d8ec7245bab547f53e8e2457b6'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
                                 }
                             }
                         }
@@ -2204,6 +2437,15 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: '53ce7ca4e33240e690f26befe13b7155'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'starts_on'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: '547cd1054bba44d68121f8936e3b85aa'
                         key: {
                             name: 'x_snc_holg_plan_section'
@@ -2262,6 +2504,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '573e038c02ac445b82aa1819f251dcc8'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'first_name'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_index'
                         id: '578c85d3eeb34b52a58fbdba7eb04c9f'
                         key: {
@@ -2296,6 +2547,15 @@ declare global {
                         key: {
                             name: 'x_snc_holg_task_prompt'
                             element: 'prompt_text'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '59b2a0c8ff44491eb42228be8e1147fc'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'roles_revoked_on'
+                            language: 'en'
                         }
                     },
                     {
@@ -2411,6 +2671,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '5c7d0e6a53fa49fb925a2177034a5d94'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                            value: 'created'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '5c7e57ec04d348dcb5439a05e3d9578f'
                         key: {
@@ -2504,6 +2775,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '5f5a726f887e4da18fe3daf40ef5a8ed'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'NULL'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '5fc75a0e1a904405b9e428225f283f49'
                         key: {
@@ -2575,6 +2855,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: '62f35f904d5441ccb5ce89e25b88e064'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'revoked_on'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '6356b3b868bb4c6bbb1e0105e357313b'
                         key: {
@@ -2615,6 +2903,14 @@ declare global {
                             name: 'x_snc_holg_task_result'
                             element: 'plan_participant'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '66ff75d6b31a4c82acfc71591144427a'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'granted_roles'
                         }
                     },
                     {
@@ -2671,6 +2967,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '6a65c835ad744c0fad2364921e03b439'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'registration_code'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: '6b2867af3b624694bb8ec1b4ec12068e'
                         key: {
@@ -2715,6 +3020,14 @@ declare global {
                             element: 'NULL'
                             relationship: 'NULL'
                             parent: 'x_snc_holg_evaluation_plan'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '6c2743bada3c4914b7e4aa335587adff'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'failure_reason'
                         }
                     },
                     {
@@ -2868,6 +3181,26 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '731152553a8e473ead9a3baf7262cb18'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: '75773c84a703434cb61198096d29c674'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                            value: 'joined'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '760f908d726645ffa85a7bd0def86351'
                         key: {
@@ -2960,6 +3293,17 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: '7cb36891d9454e50adcb34c799239852'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                            value: 'failed'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: '7edea7f05ed246b8845d672dd9230a5c'
                         key: {
@@ -2978,6 +3322,28 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '8167601d2ae64f719301e207c59adf8e'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'email'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '81b6296ac0534e24a4b7f06e2d76c8be'
+                        key: {
+                            sys_security_acl: 'd9966233c8824560a77afb6ae2843a0c'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_ux_lib_asset'
                         id: '833a74590d484570ae2ea9cbe9663806'
                         key: {
@@ -2990,6 +3356,14 @@ declare global {
                         key: {
                             name: 'x_snc_holg_success_criterion'
                             element: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '84dc46046b7d48d2b01389c45c2faaed'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'granted_roles'
                         }
                     },
                     {
@@ -3015,6 +3389,15 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: '89a1869eb7564f75873326eb2d35d77f'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'granted_roles'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_dictionary'
                         id: '89ba50f69d944a2996623e660decd685'
                         key: {
@@ -3027,6 +3410,19 @@ declare global {
                         id: '8abac99b6b7444b58960a50400f29074'
                         key: {
                             sys_security_acl: '9695d9e510bc46d59f87987bd84f1458'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: '8b7db00872164442b99ac363d92a63ec'
+                        key: {
+                            sys_security_acl: '6e05860f0c9f451d9adf3f351e0ee65e'
                             sys_user_role: {
                                 id: 'a4e190a58df349a9868f0beced36bc9f'
                                 key: {
@@ -3140,6 +3536,15 @@ declare global {
                             }
                             element: 'percent_complete'
                             position: '5'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: '903cd76823df4c948b71efcebe7ad70a'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'name'
+                            language: 'en'
                         }
                     },
                     {
@@ -3315,6 +3720,14 @@ declare global {
                             name: 'x_snc_holg_evaluation_plan'
                             element: 'status'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: '964c6c1b0977423c9179db13d3606e6e'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'evaluation_plan'
                         }
                     },
                     {
@@ -3675,6 +4088,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'a83074dc9d5e4c858831cad03c0f04c8'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'capacity'
+                        }
+                    },
+                    {
                         table: 'sys_ui_page'
                         id: 'a86da023b30248018106603f4dc6c171'
                         key: {
@@ -3878,10 +4299,32 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_security_acl_role'
+                        id: 'b19522ce260140489423e0a7028c16b7'
+                        key: {
+                            sys_security_acl: '32c990e73d7a46549115aa412ddc0763'
+                            sys_user_role: {
+                                id: 'b54857c342c24e20870c5ecea9c4a7a2'
+                                key: {
+                                    name: 'x_snc_holg.author'
+                                }
+                            }
+                        }
+                    },
+                    {
                         table: 'sys_documentation'
                         id: 'b217d0ad4b2e4b698634fee8b2532a9d'
                         key: {
                             name: 'x_snc_holg_plan_participant'
+                            element: 'evaluation_plan'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'b316d83df1ab44c693dcc9bf94863754'
+                        key: {
+                            name: 'x_snc_holg_event'
                             element: 'evaluation_plan'
                             language: 'en'
                         }
@@ -4090,6 +4533,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: 'bed9db746dfa4ce5bcfeddb37a5f3fa0'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'name'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: 'c047638b4496483fb54225fa983caf4c'
                         key: {
                             name: 'x_snc_holg_plan_section'
@@ -4139,6 +4590,14 @@ declare global {
                         key: {
                             name: 'x_snc_holg_plan_task'
                             element: 'how_to_test'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'c5233169419144519b5bf001a4cd7061'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'ends_on'
                         }
                     },
                     {
@@ -4276,6 +4735,34 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice'
+                        id: 'cb50efc08dd648d29ac9d0cdb94fd3a3'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
+                            value: 'draft'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'cbf2054b83ee406db6999e265ac5998e'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'user'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'cc0499474d0c4d3f855f6f8f80c608c9'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'last_name'
+                            language: 'en'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: 'cc0e57482dc14cd1be7c29640994f215'
                         key: {
@@ -4290,6 +4777,28 @@ declare global {
                             }
                             element: 'how_to_test'
                             position: '8'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'cc57625ce804441bbbe6e65d0eccd961'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'event'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'cc61bf9886bd45bebc2a52be9ba96d06'
+                        key: {
+                            sys_security_acl: '32c990e73d7a46549115aa412ddc0763'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
+                                }
+                            }
                         }
                     },
                     {
@@ -4332,6 +4841,17 @@ declare global {
                         id: 'ce8912842f201b10bec1567e8ea4e391'
                         key: {
                             name: 'x_snc_holg.user'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'ce8f99127695411e9edb271c90f0c9ec'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
+                            value: 'closed'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4427,6 +4947,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'd2941a8c77d1445eb2b3d4428f963cdc'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'event'
+                        }
+                    },
+                    {
                         table: 'sys_ui_element'
                         id: 'd2fbde58aba948e8b1e792518348983b'
                         key: {
@@ -4449,6 +4977,15 @@ declare global {
                         key: {
                             name: 'x_snc_holg_evaluation_plan'
                             element: 'facilitator'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'd469cac23f06467eba3a337967610389'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
                             language: 'en'
                         }
                     },
@@ -4523,6 +5060,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'd964ebba73134e34ae3bc4755253f6d9'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'starts_on'
+                        }
+                    },
+                    {
                         table: 'sys_ui_list_element'
                         id: 'd9e03e8c2fa01b10bec1567e8ea4e343'
                         key: {
@@ -4538,6 +5083,13 @@ declare global {
                                 }
                             }
                             element: 'description'
+                        }
+                    },
+                    {
+                        table: 'ua_table_licensing_config'
+                        id: 'da3aa7db7fcb4c1b8b4aeb99bb60b3eb'
+                        key: {
+                            name: 'x_snc_holg_event'
                         }
                     },
                     {
@@ -4589,6 +5141,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_dictionary'
+                        id: 'dadef0bb4dd049398eb0eaa5ec004745'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'last_name'
+                        }
+                    },
+                    {
                         table: 'sys_ui_section'
                         id: 'db052b087b0f4c71bfc199e5a7059208'
                         key: {
@@ -4616,6 +5176,17 @@ declare global {
                         id: 'dbc9761a37f842288c30190be4a37d71'
                         key: {
                             name: 'x_snc_holg.participant'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'dc2bb0983b0b492e95189d348ba35ee9'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                            value: 'revoked'
+                            language: 'en'
+                            dependent_value: 'NULL'
                         }
                     },
                     {
@@ -4672,6 +5243,19 @@ declare global {
                         key: {
                             name: 'x_snc_holg_plan_participant'
                             element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_security_acl_role'
+                        id: 'e1248e4af06e4d7ca82a61e03ce2f3ba'
+                        key: {
+                            sys_security_acl: '2d02f28190504fcf8ac16cc1fa90ce67'
+                            sys_user_role: {
+                                id: 'a4e190a58df349a9868f0beced36bc9f'
+                                key: {
+                                    name: 'x_snc_holg.facilitator'
+                                }
+                            }
                         }
                     },
                     {
@@ -4784,6 +5368,14 @@ declare global {
                     },
                     {
                         table: 'sys_dictionary'
+                        id: 'e417a1755ecb412db582147f3624afe0'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'facilitator'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
                         id: 'e48a05d6fa654c3fbbac6ed8ad0751b7'
                         key: {
                             name: 'x_snc_holg_criterion_response'
@@ -4802,6 +5394,15 @@ declare global {
                                     name: 'x_snc_holg.facilitator'
                                 }
                             }
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'e6a2a05407ba4d3c938e3f9f8496b330'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'facilitator'
+                            language: 'en'
                         }
                     },
                     {
@@ -4828,6 +5429,13 @@ declare global {
                             }
                             element: 'prompt_text'
                             position: '6'
+                        }
+                    },
+                    {
+                        table: 'sys_db_object'
+                        id: 'e7532faca576481d8d3f7cf638c1c6ab'
+                        key: {
+                            name: 'x_snc_holg_event'
                         }
                     },
                     {
@@ -4902,6 +5510,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_choice_set'
+                        id: 'e7e9bc1fda094ff29f3e9c380be2668c'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'status'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'e9288ccd2d0845859fc99770225ad4ed'
                         key: {
@@ -4965,6 +5581,14 @@ declare global {
                             element: 'NULL'
                             relationship: 'NULL'
                             parent: 'NULL'
+                        }
+                    },
+                    {
+                        table: 'sys_index'
+                        id: 'ebcf3cd244b846cf85b78c58576c2c3c'
+                        key: {
+                            logical_table_name: 'x_snc_holg_registration'
+                            col_name_string: 'event,email'
                         }
                     },
                     {
@@ -5096,6 +5720,15 @@ declare global {
                                 }
                             }
                             element: 'user'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
+                        id: 'f009d1e49173468f9814352f67a5d2a9'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'capacity'
+                            language: 'en'
                         }
                     },
                     {
@@ -5247,6 +5880,26 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_documentation'
+                        id: 'f5ab498faab24401bc04a76cdf40e7f8'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'ends_on'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_choice'
+                        id: 'f70e1ee75aef4e8ba91efbae0424d3f6'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'status'
+                            value: 'open'
+                            language: 'en'
+                            dependent_value: 'NULL'
+                        }
+                    },
+                    {
                         table: 'sys_security_acl_role'
                         id: 'f735416a09c947d0ac6fc4b0e3e561d6'
                         key: {
@@ -5331,6 +5984,14 @@ declare global {
                                 }
                             }
                             element: 'status'
+                        }
+                    },
+                    {
+                        table: 'sys_dictionary'
+                        id: 'f85232c0efbc4617956b93cd5c74c383'
+                        key: {
+                            name: 'x_snc_holg_registration'
+                            element: 'first_name'
                         }
                     },
                     {
@@ -5466,6 +6127,14 @@ declare global {
                         }
                     },
                     {
+                        table: 'sys_index'
+                        id: 'fb78490bcb9c42d4b0754ae99283167c'
+                        key: {
+                            logical_table_name: 'x_snc_holg_registration'
+                            col_name_string: 'user'
+                        }
+                    },
+                    {
                         table: 'sys_choice_set'
                         id: 'fbba3b553eaf41859175b11bcb170f14'
                         key: {
@@ -5475,11 +6144,27 @@ declare global {
                     },
                     {
                         table: 'sys_documentation'
+                        id: 'fc77323f59d84c82bb3f55a81cb23d6d'
+                        key: {
+                            name: 'x_snc_holg_event'
+                            element: 'granted_roles'
+                            language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sys_documentation'
                         id: 'fdb7995f869c42039faadcf7e4839c08'
                         key: {
                             name: 'x_snc_holg_task_prompt'
                             element: 'label'
                             language: 'en'
+                        }
+                    },
+                    {
+                        table: 'sp_page'
+                        id: 'ff416a7b3f674d46a9d1041dfd300325'
+                        key: {
+                            id: 'register'
                         }
                     },
                 ]
