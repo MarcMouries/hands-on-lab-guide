@@ -23,7 +23,6 @@ One line each. The detail is in the numbered sections below.
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
 | **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
-| **B8** | 🟠 | The form creates an account, or enrols the signed-in user | **Written and deployed; one path needs you to test it** | [5.4](#54-the-build-b6b12) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
 | **B13** | 🟠 | Email each registrant a link back to the lab | Nothing to build against; delivery depends on P6 | [5.4](#54-the-build-b6b12) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b12) |
@@ -122,7 +121,7 @@ left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
-| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4, W5 and W6 decided and the probes passed. B6–B12 are all unblocked |
+| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4, W5 and W6 decided. B6, B7, B8 and the system-context job have shipped; B9, B11 and B13 remain |
 
 ---
 
