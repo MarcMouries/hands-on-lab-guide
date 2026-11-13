@@ -155,6 +155,7 @@ the only undo.
 |---|---|
 | `README.md` | What the app is and how it is put together |
 | `FEATURES.md` | How built behaviour actually works, kept current |
+| `ARCHITECTURE.md` | Why the parts are arranged as they are, where that is not obvious from the code |
 | `ROADMAP.md` | What is left: a task list up top, detail in numbered sections |
 | `DONE.md` | What has shipped, newest first |
 

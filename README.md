@@ -167,3 +167,13 @@ npm run deploy     # now-sdk install
 npm run transform  # convert metadata XML into Fluent TypeScript
 npm run types      # refresh dependency types
 ```
+
+### Documentation
+
+| File | Holds |
+|---|---|
+| `ARCHITECTURE.md` | Why the parts are arranged as they are, where that is not obvious from the code |
+| `FEATURES.md` | What the application does, kept current |
+| `ROADMAP.md` | What is left: a task list up top, detail in numbered sections |
+| `DONE.md` | What has shipped, newest first |
+| `CLAUDE.md` | How to work in this repo without repeating its mistakes |

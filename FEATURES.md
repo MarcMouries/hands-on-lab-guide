@@ -219,7 +219,25 @@ values straight by hand. `/holg?id=authoring` is the portal surface for it.
 
 ---
 
-## 5. Artifact tracker
+## 5. Self-registration
+
+A workshop guest arrives from an invitation link with no account, fills in a
+form, and is working a minute later. `ARCHITECTURE.md` explains the mechanics —
+particularly the privilege boundary that the whole design is arranged around.
+
+| Feature | Status | Notes |
+|---|---|---|
+| **Public registration page** | Built *(recent)* | `/holg?id=register&event=<slug>`, the only part of this app reachable without signing in. An AngularJS widget, so the whole public write path is one server script and there is no public REST route |
+| **Account created in the request** | Built *(recent)* | `sys_user`, a policy-compliant password shown once with a copy button, the participant role, and enrolment in the event's plan |
+| **Platform roles from a system-context job** | Built *(recent)* | A guest cannot grant `admin` — the role belongs to Global, so the insert is cross-scope. A scheduled job with no `runAs` runs as system and finishes within a minute |
+| **A signed-in visitor joins instead** | Built *(recent)* | Their own account is granted the event's roles and enrolled, and their password is never touched. The normal case on a customer's own instance |
+| **Never two accounts for one person** | Built *(recent)* | Email matched before the derived user name, inactive accounts reactivated rather than duplicated, and a unique index on `(event, email)` |
+| **Gated by the event record** | Built *(recent)* | Status, window, capacity, and a registration code only when the event sets one. Re-checked on submit, since an event can close between page load and submit |
+| **`?email=` prefill** | Built *(recent)* | Fills the form and derives the names, for one-click testing. A prefill only — a URL that created an account on GET would hand one to every crawler |
+
+---
+
+## 6. Artifact tracker
 
 Progress bars say what a participant has *submitted*. This says what they have
 actually built, which mid-workshop is the more useful question.
@@ -248,7 +266,7 @@ The self-test asserts both halves.
 
 ---
 
-## 6. Surfaces
+## 7. Surfaces
 
 | Surface | Endpoint | Hosts |
 |---|---|---|
@@ -277,7 +295,7 @@ digest. The `.do` pages use the History API directly.
 
 ---
 
-## 7. Security
+## 8. Security
 
 **`gs.hasRole` returns true for an admin, for every role that exists.** That one
 fact hid two real bugs: the participant number was read through an ACL only an
@@ -312,7 +330,7 @@ then a facilitator in exactly the way everyone else is.
 
 ---
 
-## 8. Build and tooling
+## 9. Build and tooling
 
 | Item | Notes |
 |---|---|
@@ -326,7 +344,7 @@ then a facilitator in exactly the way everyone else is.
 
 ---
 
-## 9. Constraints behind the tracker's design
+## 10. Constraints behind the tracker's design
 
 The dashboard used to answer "how far along are they?" only from self-reported
 Task Results. Section 5 is what answers "did they build it?". These are the
@@ -344,7 +362,7 @@ constraints that shaped it, kept because they still bound anything built next:
 
 ---
 
-## 10. Known gaps and debts
+## 11. Known gaps and debts
 
 | Item | Notes |
 |---|---|
