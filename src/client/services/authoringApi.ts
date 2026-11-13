@@ -2,6 +2,15 @@ import { requestLabJson } from './labHttp'
 
 const BASE = '/api/x_snc_holg/lab/authoring'
 
+/*
+ * The app asks whether a role was GRANTED, not what gs.hasRole makes of an
+ * admin, so "I am admin, why am I refused?" is the obvious next question. The
+ * answer goes in the message rather than waiting to be asked.
+ */
+const ADMIN_IS_NOT_ENOUGH =
+    ' The admin role is not enough \u2014 it has to be granted to your user.'
+
+
 /* ------------------------------------------------------------------ *
  * Types
  *
@@ -102,7 +111,8 @@ export async function fetchAuthorPlans(): Promise<AuthorPlanSummary[]> {
     const { body } = await requestLabJson(BASE + '/plans', {
         notOkMessage: (status) =>
             status === 403
-                ? 'You need the x_snc_holg.author role to edit plans.'
+                ? 'You need the x_snc_holg.author role to edit plans.' +
+                      ADMIN_IS_NOT_ENOUGH
                 : 'Could not load plans (HTTP ' + status + ').',
         isBareShape: (candidate) => Array.isArray(candidate.plans),
     })
@@ -136,7 +146,8 @@ export async function fetchAuthorTree(planId: string): Promise<AuthorTree> {
     const { body } = await requestLabJson(BASE + '/plans/' + encodeURIComponent(planId), {
         notOkMessage: (status) =>
             status === 403
-                ? 'You need the x_snc_holg.author role to edit plans.'
+                ? 'You need the x_snc_holg.author role to edit plans.' +
+                      ADMIN_IS_NOT_ENOUGH
                 : 'Could not load this plan (HTTP ' + status + ').',
         isBareShape: (candidate) => !!candidate.plan,
     })

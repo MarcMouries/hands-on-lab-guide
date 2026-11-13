@@ -68,9 +68,14 @@ the only undo.
   Edit that file, not a copy.
 - Scoped roles are auto-namespaced, so `x_snc_holg.author` cannot collide with
   another scope's `author`.
-- `gs.hasRole` returns true for an admin. An `sp_page.roles` check is a
-  different test — an admin reaching an endpoint proves nothing about whether
-  the portal page opens for a normal user.
+- **Never gate on `gs.hasRole` for an app role.** It returns true for an admin,
+  for every role that exists, which makes the app behave differently for the
+  people building it than for the people using it. Ask `holdsAppRole`, which
+  looks for a real `sys_user_has_role` grant. Two bugs hid behind this.
+- `gs.hasRole('admin')` is still right for things that genuinely need admin,
+  such as impersonation.
+- An `sp_page.roles` check is a different test again, and admins bypass it — an
+  admin reaching a page proves nothing about whether it opens for anyone else.
 - New cross-scope access makes the instance auto-create a
   `sys_scope_privilege` row that exists **only there**. Declare in
   `src/fluent/sys-scope-privilege/` what the app genuinely needs, and leave the

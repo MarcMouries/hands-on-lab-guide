@@ -2,6 +2,15 @@ import { requestLabJson } from './labHttp'
 
 const BASE = '/api/x_snc_holg/lab'
 
+/*
+ * The app asks whether a role was GRANTED, not what gs.hasRole makes of an
+ * admin, so "I am admin, why am I refused?" is the obvious next question. The
+ * answer goes in the message rather than waiting to be asked.
+ */
+const ADMIN_IS_NOT_ENOUGH =
+    ' The admin role is not enough \u2014 it has to be granted to your user.'
+
+
 /* ------------------------------------------------------------------ *
  * Types
  * ------------------------------------------------------------------ */
@@ -171,7 +180,8 @@ export async function fetchArtifactEvidence(planId: string): Promise<ArtifactEvi
         {
             notOkMessage: (status) =>
                 status === 403
-                    ? 'You need the x_snc_holg.facilitator role to see artifact evidence.'
+                    ? 'You need the x_snc_holg.facilitator role to see artifact evidence.' +
+                      ADMIN_IS_NOT_ENOUGH
                     : 'Could not load artifact evidence (HTTP ' + status + ').',
             isBareShape: (candidate) =>
                 Array.isArray(candidate.participants) || Array.isArray(candidate.tasks),
@@ -222,7 +232,8 @@ export async function fetchFacilitatorSummary(planId: string): Promise<Facilitat
     const received = await requestLabJson(BASE + '/facilitator/plans/' + encodeURIComponent(planId) + '/summary', {
         notOkMessage: (status) =>
             status === 403
-                ? 'You need the x_snc_holg.facilitator role to view this dashboard.'
+                ? 'You need the x_snc_holg.facilitator role to view this dashboard.' +
+                  ADMIN_IS_NOT_ENOUGH
                 : 'Could not load the plan summary (HTTP ' + status + ').',
         isBareShape: (candidate) =>
             Array.isArray(candidate.participants) ||

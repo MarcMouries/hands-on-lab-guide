@@ -279,9 +279,30 @@ digest. The `.do` pages use the History API directly.
 
 ## 7. Security
 
+**`gs.hasRole` returns true for an admin, for every role that exists.** That one
+fact hid two real bugs: the participant number was read through an ACL only an
+admin could satisfy, so every participant would have been told they were number
+1; and the facilitator path had never once been exercised by a facilitator,
+because nobody on the instance holds the role. The app now asks
+`LabApi.holdsAppRole`, which looks for a `sys_user_has_role` row — direct, via a
+group, or inherited — and an admin's blanket pass is not one.
+
+What that does and does not cover:
+
+| Layer | Admin |
+|---|---|
+| REST endpoints, `getMe`, portal landing | Refused without a granted role |
+| `sp_page.roles` on the portal pages | Bypassed — the page opens, and the app inside it reports the missing role |
+| Record ACLs, platform UI and lists | Bypassed — by design, and not something an application can turn off |
+
+An admin who wants in grants themselves the role, which is one record, and is
+then a facilitator in exactly the way everyone else is.
+
+
 | Feature | Status | Notes |
 |---|---|---|
 | Three roles: `facilitator`, `participant`, `author` | Built | Plus scope defaults `admin`, `user` |
+| **The admin role does not open the lab** | Built *(recent)* | Every gate the app owns — the REST endpoints, `getMe`, and the portal landing page — asks whether a role was **granted**, via `sys_user_has_role`, not what `gs.hasRole` makes of an admin. An admin with no app role is refused with a message that says so. Record ACLs are a different layer: the platform lets an admin read and write any table, and that cannot be turned off |
 | Authoring is a separate role | Built *(recent)* | `x_snc_holg.author` gates the authoring page and the `/authoring` routes, so watching a workshop and changing the plan it runs from are different grants |
 | Plan content is writable by authors only | Built *(recent)* | Create, write and delete on the five plan tables list `x_snc_holg.author` alone. A facilitator reads every plan including drafts, but cannot change one — not through the portal and not through the platform UI |
 | ~45 record ACLs enforcing ownership | Built | Participants see only their own results and answers |

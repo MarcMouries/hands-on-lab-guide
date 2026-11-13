@@ -696,8 +696,12 @@ LabApi.prototype = {
         this._send(response, 200, {
             sys_id: gs.getUserID() + '',
             name: gs.getUserDisplayName() + '',
-            isFacilitator: gs.hasRole(LAB_ROLE_FACILITATOR),
-            isParticipant: gs.hasRole(LAB_ROLE_PARTICIPANT),
+            // Granted, not effective: an admin who has not been given an app
+            // role is not a facilitator here, and the UI should say so rather
+            // than show them a dashboard the REST layer will refuse.
+            isFacilitator: this.holdsAppRole(LAB_ROLE_FACILITATOR),
+            isParticipant: this.holdsAppRole(LAB_ROLE_PARTICIPANT),
+            isAuthor: this.holdsAppRole(LAB_ROLE_AUTHOR),
             // Effective roles: while impersonating a non-admin this is false,
             // which is exactly why the Impersonate control disappears then.
             isAdmin: gs.hasRole('admin'),
@@ -824,7 +828,7 @@ LabApi.prototype = {
          * still returned - a read must never 500 because a write was
          * refused. POST /tasks/{task_id}/result stays the per-task fallback.
          */
-        if (gs.hasRole(LAB_ROLE_PARTICIPANT)) {
+        if (this.holdsAppRole(LAB_ROLE_PARTICIPANT)) {
             try {
                 var enrolment = this._ensureParticipant(planSysId)
                 if (enrolment) {
@@ -1248,8 +1252,8 @@ LabApi.prototype = {
      * ------------------------------------------------------------ */
 
     getArtifactEvidence: function (request, response) {
-        if (!gs.hasRole(LAB_ROLE_FACILITATOR)) {
-            this._send(response, 403, { error: 'Requires the ' + LAB_ROLE_FACILITATOR + ' role' })
+        if (!this.holdsAppRole(LAB_ROLE_FACILITATOR)) {
+            this._send(response, 403, this._roleRefusal(LAB_ROLE_FACILITATOR))
             return
         }
 
@@ -1420,8 +1424,8 @@ LabApi.prototype = {
      * ------------------------------------------------------------ */
 
     getFacilitatorSummary: function (request, response) {
-        if (!gs.hasRole(LAB_ROLE_FACILITATOR)) {
-            this._send(response, 403, { error: 'Requires the ' + LAB_ROLE_FACILITATOR + ' role' })
+        if (!this.holdsAppRole(LAB_ROLE_FACILITATOR)) {
+            this._send(response, 403, this._roleRefusal(LAB_ROLE_FACILITATOR))
             return
         }
 
@@ -1871,12 +1875,10 @@ LabApi.prototype = {
 
     /** 403s unless the caller may author. Returns true when they may. */
     _authorGate: function (response) {
-        if (gs.hasRole(LAB_ROLE_AUTHOR)) {
+        if (this.holdsAppRole(LAB_ROLE_AUTHOR)) {
             return true
         }
-        this._send(response, 403, {
-            error: 'Requires the ' + LAB_ROLE_AUTHOR + ' role',
-        })
+        this._send(response, 403, this._roleRefusal(LAB_ROLE_AUTHOR))
         return false
     },
 
@@ -2036,27 +2038,79 @@ LabApi.prototype = {
      * queries work anywhere the app is installed.
      */
 
-    /** The sys_id of the facilitator role, or '' when it is missing. */
-    _facilitatorRoleId: function () {
+    /** The sys_id of a role by name, or '' when no such role exists. */
+    _roleId: function (name) {
+        if (!this._roleIdCache) {
+            this._roleIdCache = {}
+        }
+        if (Object.prototype.hasOwnProperty.call(this._roleIdCache, name)) {
+            return this._roleIdCache[name]
+        }
         var role = new GlideRecord(LAB_T_USER_ROLE)
-        role.addQuery('name', LAB_ROLE_FACILITATOR)
+        role.addQuery('name', name)
         role.setLimit(1)
         role.query()
-        return role.next() ? role.getUniqueValue() + '' : ''
+        var id = role.next() ? role.getUniqueValue() + '' : ''
+        this._roleIdCache[name] = id
+        return id
     },
 
-    /** True when a sys_id belongs to a user holding the facilitator role. */
-    _isFacilitator: function (userId) {
-        var roleId = this._facilitatorRoleId()
-        if (!roleId) {
+    /** True when a sys_id belongs to a user granted a role. */
+    _userHasRole: function (userId, roleName) {
+        var roleId = this._roleId(roleName)
+        if (!userId || !roleId) {
             return false
         }
+        /*
+         * sys_user_has_role carries every grant: direct, through a group, and
+         * inherited from a containing role. What it does NOT carry is the
+         * admin role's blanket pass, which is the whole point of asking here.
+         */
         var has = new GlideRecord(LAB_T_USER_HAS_ROLE)
         has.addQuery('user', userId)
         has.addQuery('role', roleId)
         has.setLimit(1)
         has.query()
         return has.next()
+    },
+
+    /** True when a sys_id belongs to a user holding the facilitator role. */
+    _isFacilitator: function (userId) {
+        return this._userHasRole(userId, LAB_ROLE_FACILITATOR)
+    },
+
+    /**
+     * Whether the CALLER has actually been granted one of this app's roles.
+     *
+     * Deliberately not `gs.hasRole`, which answers true for an admin for every
+     * role that exists. That made the app behave differently for the people
+     * building it than for the people using it, and it hid two real bugs: the
+     * participant number was read through an ACL only an admin could satisfy,
+     * and the facilitator path had never once been exercised by a facilitator.
+     *
+     * An admin can still grant themselves the role - it is one record - and
+     * then they are a facilitator in the same way everybody else is.
+     */
+    holdsAppRole: function (roleName) {
+        if (!this._appRoleCache) {
+            this._appRoleCache = {}
+        }
+        if (Object.prototype.hasOwnProperty.call(this._appRoleCache, roleName)) {
+            return this._appRoleCache[roleName]
+        }
+        var held = this._userHasRole(gs.getUserID() + '', roleName)
+        this._appRoleCache[roleName] = held
+        return held
+    },
+
+    /** The 403 body for a missing app role, saying what to do about it. */
+    _roleRefusal: function (roleName) {
+        return {
+            error:
+                'Requires the ' +
+                roleName +
+                ' role. The admin role is not enough: this role has to be granted to your user.',
+        }
     },
 
     /** One user's display name, through the same resolver the dashboard uses. */
