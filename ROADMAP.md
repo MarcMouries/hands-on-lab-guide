@@ -26,8 +26,8 @@ One line each. The detail is in the numbered sections below.
 | **W5** | 🔴 | Self-registration: what a registrant sees after submitting | Credentials on screen, or emailed | [5.3](#53-what-the-registrant-sees-w5) |
 | **B6** | 🟠 | Lab Event and Lab Registration tables, with ACLs | Nothing | [5.4](#54-the-build-b6b11) |
 | **B7** | 🟠 | The public registration page and widget | Nothing | [5.4](#54-the-build-b6b11) |
-| **B8** | 🟠 | Provisioning: create the user, set a password, grant the roles, enrol them | W5, and two things to verify | [5.4](#54-the-build-b6b11) |
-| **B9** | 🟠 | Facilitator view of an event's registrations | B6 | [5.4](#54-the-build-b6b11) |
+| **B8** | 🟠 | The form creates the account: user, password, roles, enrolment | W5, and two things to verify | [5.4](#54-the-build-b6b11) |
+| **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b11) |
 | **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b11) |
@@ -126,7 +126,7 @@ left here waits on a decision in section 5.
 
 | Item | Notes |
 |---|---|
-| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4 and W6 decided. B6, B7, B9–B11 are unblocked; B8 waits on W5 and two probes |
+| **Self-registration and events (B6–B12)** | Planned in [section 5](#5--self-registration-and-events--the-plan). W4 and W6 decided. B6, B7, B9–B12 are unblocked; B8 waits on W5 and two probes |
 
 ---
 
@@ -292,63 +292,35 @@ does not give us is any of the hard part:
 - Both `sp_page` records in the export carry `public: false`, so how the page
   was actually reached is not answerable from the file.
 
-### 5.2 The decision that shapes everything else (W4)
+### 5.2 What keeps abuse out (W4 — decided)
 
-A public endpoint that creates `sys_user` rows is the whole risk. Everything
-else here is ordinary work. Three ways to bound it:
+**Registration is one step.** Someone fills the form and the account exists:
+name, email, event code in, username and password out. No approval, no queue, no
+facilitator action, nothing to wait for. That is what the old app did and what
+the workshop needs.
 
-| Option | How it works | Cost |
-|---|---|---|
-| **Event code** *(recommended)* | The event carries a short code the facilitator reads out or puts on a slide. The form will not submit without it. Plus a registration cap and an open/closed window on the event | Anyone with the code can create accounts while the event is open. For a room of people that is the point |
-| Facilitator approval | The form writes a Registration row and creates nothing. The facilitator opens the list and provisions, one click or in bulk | Safest. Adds a step at the moment the room is waiting |
-| Email verification | A one-time link is emailed; the account is created when it is clicked | Proper, and proves the email belongs to them. Needs working outbound email — see P6, where email may be pointed at a sink |
+**Decided, 13 November 2026: the event code is the gate.** Every control is a
+condition on the event, checked by the form itself, and none of them needs a
+human awake:
 
-**Decided: the event code *and* facilitator approval.** Your call, 13 November
-2026, once admin was confirmed as the granted role (5.5). A code alone is the
-right gate for handing out a plan reader; it is too wide when the end of the
-flow is an admin account on this instance.
-
-So the form accepts a registration only with the right code, while the event is
-open and inside its window and under its cap — and **provisioning waits for a
-human**. In practice that is one click for the whole room: the facilitator opens
-the registration list at the start of the session and provisions everyone who
-has signed up.
-
-**Registering is always open; approval is not about the form.** Anyone can fill
-it in at any hour, as long as the event is open, inside its window and under its
-cap. `x_snc_holg_registration.status` describes where that person's *account*
-is — `pending` means registered with no account yet, `provisioned` means created
-and granted — and nothing about approval gates the form itself.
-
-**Approval belongs to the event, not to each person.** Asking a facilitator to
-click through registrants one at a time makes them the bottleneck exactly when
-the room is waiting, and it means somebody who signs up at 11pm cannot log in
-until morning. So the event carries `provisioning` with two modes:
-
-| Mode | Behaviour |
+| Condition | Why |
 |---|---|
-| `automatic` *(the default)* | A facilitator opens the event for provisioning once. From then on registrations provision as they arrive, at any hour, with no further human involvement |
-| `manual` | Each registration waits for a facilitator action. For an event where the roles granted warrant a look at every name |
+| The right `registration_code` | Shared by the facilitator — on a slide, in the invitation |
+| `status = open` | An event in draft or closed accepts nobody, however many people have the code |
+| Inside `starts_on`–`ends_on` | A code that leaks after the workshop opens nothing |
+| Under `capacity` | Bounds the damage if it leaks during |
 
-Either way the human decision is real — somebody with the facilitator role had
-to open this event for provisioning, and an event sitting in `draft` provisions
-nobody no matter how many people register. What changes is whether that decision
-is made once per event or once per person.
+Four conditions, all set when the event is created, all enforced in the form's
+own server script. People register at any hour and are working a second later.
 
-What this settles in the build:
+What I had written here before — a facilitator approving registrations, and then
+a provisioning mode on the event — was my own addition on top of your design,
+and it is gone. The event being open *is* the approval, and it happens once,
+when the facilitator creates the event.
 
-- Nothing the public form writes can create a user. That is what the guest
-  identity forces (5.5), and it holds in both modes: the form writes a
-  registration, a privileged context provisions it.
-- B9, the facilitator view, is where provisioning is opened, and in `manual`
-  mode where each approval happens — so it carries the provision action, a bulk
-  provision, and a retry.
-- Email verification stays available later as a token column, for an event that
-  ever runs without a facilitator in the room.
-
-Whichever you pick: registration never grants a **lab** role beyond
-`x_snc_holg.participant` — never facilitator, never author. The platform roles
-a workshop needs are a separate matter, in 5.5.
+**The residual risk, stated once:** anyone holding the code can create an admin
+account on this instance while the event is open. The window, the cap and
+closing the event are what bound it, and B12 takes the roles away afterwards.
 
 ### 5.3 What the registrant sees (W5)
 
@@ -367,16 +339,17 @@ This is really a question about whether outbound email works on
 
 `x_snc_holg_event`: `name` ("Customer Workshop November 13th 2026"), `starts_on`,
 `ends_on` (both optional — an event with no end date stays open until closed by
-hand), `status` (draft / open / closed), `provisioning` (automatic / manual, see
-5.2), `registration_code`, `capacity`,
+hand), `status` (draft / open / closed), `registration_code`, `capacity`,
 `evaluation_plan` (which plan registrants are enrolled into), `facilitator`,
 `granted_roles` (what provisioning grants — see 5.5), `roles_revoked_on`.
 Registration is accepted only while `status = open` and the clock is inside the
 window — two conditions, so forgetting to close it is not the only safeguard.
 
 `x_snc_holg_registration`: `event`, `first_name`, `last_name`, `email`,
-`status` (pending / provisioned / failed / revoked), `user` (the created
-`sys_user`), `created_on`, `provisioned_on`, `failure_reason`.
+`status` (created / failed / revoked), `user` (the created `sys_user`),
+`created_on`, `failure_reason`. There is no `pending`: a registration either
+produced an account or it failed, and a failure is something to retry, not
+something to approve.
 Unique index on `(event, email)` — the same lesson as participant numbers: let
 the database refuse the duplicate rather than checking first and hoping.
 
@@ -390,11 +363,12 @@ no public write path beyond the one widget. The page names the event
 ("Register for Customer Workshop November 13th 2026") from the event record, so
 one page serves every workshop via `?event=<code or slug>`.
 
-**B8 — provisioning.** Create the `sys_user` (user name derived so that the
-existing numbering lines up — see section 2), set a password, grant
+**B8 — creating the account.** Create the `sys_user` (user name derived so that
+the existing numbering lines up — see section 2), set a password, grant
 `x_snc_holg.participant` plus the event's `granted_roles`, link the row, stamp
-`provisioned_on`. Runs in a privileged context, never in the public request —
-see 5.5 for why that is forced rather than chosen.
+`created_on`. Runs as part of the registration, not after it — see 5.5 for the
+one probe that decides whether the form does it directly or hands it to a system
+context in the same breath.
 
 *To verify on the instance before building this:* whether a scoped app can set
 `user_password` at all, and whether `password_needs_reset` can be set with it.
@@ -403,8 +377,8 @@ create are already declared in the repo, so the access is there; what the
 scoped API will accept on a password field is not something to assume.
 
 **B9 — the facilitator view.** Registrations for an event, with provisioning
-state and a way to retry a failure. This is where **approval** happens (5.2):
-provision one registrant, provision everyone pending, retry a failure.
+state, and a way to retry one that failed. A monitor and a repair tool, not an
+approval queue — nobody has to act for a registration to succeed.
 
 **B10 — purge.** Real names and email addresses of customers, on a demo
 instance. A registration is needed until the event closes and not after:
@@ -436,18 +410,21 @@ one that hands out a plan reader.
 scheduled (system) context, and whether `user_password` can be set from a
 scoped app at all.
 
-**The fact that decides the architecture.** A public widget's server script runs
-as **guest**, which holds no roles at all, so the public request *cannot* grant
-anything — not admin, not the participant role. Provisioning has to happen in a
-privileged context: a scheduled job, or a facilitator action. The two-phase
-design in 5.4 is therefore not a preference, it is the only shape that works:
+**The one thing that has to be verified before B8 is written.** A public
+widget's server script runs as `guest`. Plain `GlideRecord` does not consult
+ACLs, which is how the old app wrote to its tables from a public page, so the
+likely answer is that a guest-context script *can* insert a `sys_user` row and a
+`sys_user_has_role` row. Likely is not verified, and I previously wrote the
+opposite here as though it were settled. It was not tested, and this section
+said so only after being challenged on it.
 
-```
-public form  ->  Lab Registration row        (runs as guest, grants nothing)
-                        |
-privileged  ->  create user, set password, grant roles, enrol
-(scheduled job or facilitator click, running as system or as a facilitator)
-```
+So the probe decides the shape:
+
+| If a guest-context insert works | If it is refused |
+|---|---|
+| The form creates the account outright. One step, nothing asynchronous | The form writes the registration and a system-context trigger creates the account immediately — a business rule or a short-interval job, not a person. Still one step for the registrant, still no approval |
+
+Either way the registrant's experience is the same and no human is in the loop.
 
 **W6 — decided: `admin`.** Your call, 13 November 2026. Simplest, and what a PDI
 gives everyone anyway.
@@ -477,9 +454,10 @@ Two consequences follow, and together they are the whole safety story:
   performs, so it is a button rather than a mechanism. Worth knowing what is
   *not* optional: without the scheduled sweep, an event whose end date passes
   while nobody is looking keeps its admins.
-- **W4 now wants approval, not just a code.** When every event mints an admin,
-  "whoever has the code" is too wide a gate. The recommendation in 5.2 changed
-  accordingly.
+- **The code carries more weight than it would otherwise.** When every event
+  mints an admin, the code, the window and the cap are the only things standing
+  between a leaked URL and an admin account — so an event's window should be the
+  hours it is actually needed, not left open. 5.2 has the conditions.
 
 **B12 — revoke on close.** When an event closes, remove the granted roles and
 deactivate the accounts, on a schedule as well as on the status change, so a
