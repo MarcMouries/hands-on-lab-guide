@@ -20,7 +20,7 @@ One line each. The detail is in the numbered sections below.
 | **P3** | ⚫ | Give each account app-creation and test rights | You | [3](#3--workshop-prep--your-side) |
 | **P4** | ⚫ | Turn on `sn_atf.enable` instance-wide | You | [3](#3--workshop-prep--your-side) |
 | **P5** | ⚫ | Confirm Now Assist entitlement, skills and Build Agent access | You | [3](#3--workshop-prep--your-side) |
-| **P6** | ⚫ | Point email at a sink, or leave notifications off | You — real mail reaches real managers otherwise | [3](#3--workshop-prep--your-side) |
+| **W7** | 🔴 | Stop the lab mailing real people, by fixing the prompts rather than the instance | Your call on three lines | [4.6](#46-w7--stop-the-lab-mailing-real-people) |
 | **P7** | ⚫ | Stagger section 400, or run it facilitator-led | You — five chained Build Agent prompts | [3](#3--workshop-prep--your-side) |
 | **B9** | 🟠 | Facilitator view of an event's registrations, with retry | B6 | [5.4](#54-the-build-b6b12) |
 | **B13** | 🟠 | Email each registrant a link back to the lab | Nothing to build against; delivery depends on P6 | [5.4](#54-the-build-b6b12) |
@@ -135,9 +135,8 @@ left here waits on a decision in section 5.
 - `sn_atf.enable` must be true instance-wide.
 - Now Assist for Creator entitlement and skills active; Build Agent access per
   user.
-- **Email**: with dozens of flows sending notifications, point the instance at a
-  mail sink or leave notifications off, or real mail reaches real assignment
-  group managers.
+- **Email**: see W7. Silencing the instance is no longer the plan — B13 needs
+  outbound mail to work — so the prompts get fixed instead.
 - **Stagger section 400** (Build an application) or run it facilitator-led — five
   chained Build Agent prompts, by far the heaviest on the instance.
 
@@ -260,6 +259,50 @@ them would make the prompt harder to follow, not easier:
 
 `flow`, `work note`, `Incident Task`, `Assignment group`, `Priority 1 -
 Critical`, `dashboard`, `ServiceNow Studio`, and the role names in section 400.
+
+### 4.6 W7 — stop the lab mailing real people
+
+**Your idea, and it is the right one.** Pointing the instance at a mail sink was
+P6; it cannot stay, because **B13 needs outbound mail to work** — the "here is
+your link back" email would silently send nothing. The two tasks contradicted
+each other. Fixing the content leaves mail working for the app and quiet for
+everyone else.
+
+**Almost all of it is one prompt.** `f400764c…3a2`, the flow task, is the only
+place the lab deliberately emails anybody:
+
+| Now | Suggested |
+|---|---|
+| `Send an email to the manager of the incident's Assignment group with the incident number and short description.` | `Send an email to the person who opened the incident, with the incident number and short description.` |
+| `Create an Incident Task assigned to the same Assignment group with the short description "Complete post-incident review".` | `Create an Incident Task assigned to the person who opened the incident, with the short description "{{prefix}} Complete post-incident review".` |
+| `If the Category is Network, also send an email to the members of the Network group.` | `If the Category is Network, also add a work note saying the network team would be notified.` |
+
+What each change costs and keeps:
+
+- **Row 1** keeps the Send Email action and a dynamic recipient, which is the
+  thing being learned. It just resolves to the participant instead of a real
+  manager — and the participant *wants* to see the mail arrive, so it is a
+  better exercise, not a watered-down one.
+- **Row 2** keeps the Create Record action. An Incident Task assigned to a real
+  group lands in that group's queue for everyone, times however many
+  participants; assigned to themselves, they can see their own. The prefix on
+  the short description also makes it findable.
+- **Row 3** is the only real loss: the second Send Email becomes a work note. The
+  learning objective there is a **conditional branch**, which a work note
+  exercises just as well, and it is the one action in the lab that mails people
+  who are not in the room.
+
+**What this leaves alone**, having checked every prompt:
+
+- The business rule and its ATF test name the **Service Desk** group, but
+  neither sends mail — the rule blocks a save, the test asserts on it. No change
+  needed.
+- The playbook prompt has a supervisor **approval**, but the task only generates
+  and saves the playbook; nothing runs it.
+- The Build Agent application is self-contained in the participant's own scope.
+
+So three lines in one record, and the room stops mailing strangers while the
+registration email keeps working.
 
 ---
 
