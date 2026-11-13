@@ -32,10 +32,11 @@ One line each. The detail is in the numbered sections below.
 | **B12** | 🟠 | Revoke granted roles and deactivate accounts when an event closes | Nothing | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **B10** | 🟠 | Purge personal data after an event | B6 | [5.4](#54-the-build-b6b11) |
 | **B11** | 🟠 | Give an event its own plan, and enrol registrants into it | B6 | [5.4](#54-the-build-b6b11) |
+| **N1** | 🔵 | Terminate an event early, by hand | Nothing — B12 does the work, this is the button | [5.5](#55-platform-roles-including-admin-w6-b12) |
 | **D1–D6** | ⚪ | Six known debts, none scheduled | Your word on whether any matters | [6](#6-debts-worth-clearing) |
 
-IDs are stable: **W** needs your word, **B** is mine to build, **P** is workshop
-prep on your side, **D** is a known debt. They do not renumber when something
+IDs are stable: **W** needs your word, **B** is mine to build, **N** is a nice
+to have, **P** is workshop prep on your side, **D** is a known debt. They do not renumber when something
 ships — a finished task moves to `DONE.md` and its ID retires with it.
 
 ## Status key
@@ -45,6 +46,7 @@ ships — a finished task moves to `DONE.md` and its ID retires with it.
 | 🔴 | **Input needed from you** — I cannot proceed without a decision |
 | 🟠 | **Ready** — decided and unblocked, not started |
 | ⚫ | **Your side** — workshop prep, not application work |
+| 🔵 | **Nice to have** — wanted, not needed; built when the needed work is done |
 | ⚪ | **Debt** — known, deliberate, not scheduled |
 
 Shipped work moved to `DONE.md`.
@@ -332,7 +334,8 @@ This is really a question about whether outbound email works on
 **B6 — two tables.**
 
 `x_snc_holg_event`: `name` ("Customer Workshop November 13th 2026"), `starts_on`,
-`ends_on`, `status` (draft / open / closed), `registration_code`, `capacity`,
+`ends_on` (both optional — an event with no end date stays open until closed by
+hand), `status` (draft / open / closed), `registration_code`, `capacity`,
 `evaluation_plan` (which plan registrants are enrolled into), `facilitator`,
 `granted_roles` (what provisioning grants — see 5.5), `roles_revoked_on`.
 Registration is accepted only while `status = open` and the clock is inside the
@@ -428,6 +431,19 @@ Two consequences follow, and together they are the whole safety story:
   closes the granted roles come off and the accounts are deactivated, on a
   schedule as well as on the status change, so a forgotten event leaves no
   standing admins.
+
+  The event already carries `starts_on` and `ends_on` (5.4), so **an event with
+  an end date closes itself** — the scheduled half of B12 is what makes the end
+  date mean something rather than being a label. An event with no end date stays
+  open until somebody closes it.
+
+  **N1 — terminating early, by hand.** A control on the facilitator view that
+  closes an event before its end date: the session finished early, or something
+  went wrong and the admin accounts should stop working now. Nice to have, as
+  you said, and genuinely so — it triggers the same revocation B12 already
+  performs, so it is a button rather than a mechanism. Worth knowing what is
+  *not* optional: without the scheduled sweep, an event whose end date passes
+  while nobody is looking keeps its admins.
 - **W4 now wants approval, not just a code.** When every event mints an admin,
   "whoever has the code" is too wide a gate. The recommendation in 5.2 changed
   accordingly.
