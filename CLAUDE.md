@@ -99,6 +99,12 @@ the only undo.
   digest away, so the read returns the old value. Keep what you asked for in a
   ref and compare against that. Reading it back is what made every click in the
   authoring UI write the URL twice.
+- **The Service Portal's Sass compiler does not support `&__suffix`.** A rule
+  nested as `&__hero` inside `.holg-reg` compiles to *nothing*, silently: the
+  build passes, the deploy passes, and the page ships with the parent rule only
+  and no layout. Spell every selector out in a widget stylesheet. After a CSS
+  change, read the `css` field back off `/api/now/sp/page` and check a selector
+  you expect is actually in it.
 - **A 14 KB per-file CSS limit** in the SDK bundler: past it a standalone
   `components/*.css` is emitted that nothing loads. This is why `PromptBox.css`
   is separate from `ParticipantLab.css`. After a CSS change, check the build

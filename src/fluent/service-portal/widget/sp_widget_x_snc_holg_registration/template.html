@@ -1,88 +1,111 @@
 <!--
-  Public registration form for a lab event.
+  Public registration for a lab event.
 
   Two shapes, decided by the server from the session: a signed-in visitor only
-  confirms the code, because their account already exists and must not be
-  touched; a visitor with no session gives their name and email so an account
-  can be made for them.
+  confirms, because their account already exists and must not be touched; a
+  visitor with no session gives their name and email so an account can be made.
+
+  One card, one column, one button. Someone reads this while a facilitator is
+  talking at the front of a room, so there is nothing on it to work out.
 -->
 <div class="holg-reg">
-  <div ng-if="c.data.error" class="holg-reg__alert" role="alert">{{c.data.error}}</div>
+  <div class="holg-reg__card">
 
-  <div ng-if="!c.data.error">
-    <h1 class="holg-reg__title">{{c.data.event.name}}</h1>
-    <p class="holg-reg__when" ng-if="c.data.event.when">{{c.data.event.when}}</p>
-
-    <!-- Done. Credentials are shown once and never again. -->
-    <div ng-if="c.data.result && c.data.result.ok" class="holg-reg__done">
-      <h2 class="holg-reg__doneTitle">{{c.data.result.heading}}</h2>
-      <p class="holg-reg__doneText">{{c.data.result.message}}</p>
-
-      <dl class="holg-reg__creds" ng-if="c.data.result.user_name">
-        <dt>User name</dt>
-        <dd><code>{{c.data.result.user_name}}</code></dd>
-        <dt ng-if="c.data.result.password">Password</dt>
-        <dd ng-if="c.data.result.password"><code>{{c.data.result.password}}</code></dd>
-      </dl>
-
-      <p class="holg-reg__warn" ng-if="c.data.result.password" role="status">
-        Write this down now. It is shown once and cannot be shown again.
-      </p>
-
-      <a class="holg-reg__go" ng-if="c.data.result.lab_url" ng-href="{{c.data.result.lab_url}}">
-        Open the lab
-      </a>
+    <!-- Hero: the event is the headline, because that is what they were invited to. -->
+    <div class="holg-reg__hero" ng-if="!c.data.error">
+      <span class="holg-reg__eyebrow">Hands-on lab</span>
+      <h1 class="holg-reg__title">{{c.data.event.name}}</h1>
+      <p class="holg-reg__when" ng-if="c.data.event.when">{{c.data.event.when}}</p>
     </div>
 
-    <!-- Refused, with the reason. -->
-    <div ng-if="c.data.result && !c.data.result.ok" class="holg-reg__alert" role="alert">
-      {{c.data.result.message}}
-    </div>
+    <div class="holg-reg__body">
+      <div ng-if="c.data.error" class="holg-reg__alert" role="alert">{{c.data.error}}</div>
 
-    <!-- The form itself, while the event is still accepting people. -->
-    <form ng-if="!c.data.result || !c.data.result.ok" ng-submit="c.submit()" class="holg-reg__form">
-      <p ng-if="!c.data.event.accepting" class="holg-reg__closed" role="status">
-        {{c.data.event.closed_message}}
-      </p>
+      <div ng-if="!c.data.error">
 
-      <div ng-if="c.data.event.accepting">
-        <p ng-if="c.data.signedIn" class="holg-reg__signedIn" role="status">
-          You are signed in as <strong>{{c.data.signedInName}}</strong>. Click the button below to
-          register as a participant to the workshop. Your password and your existing access are
-          not changed.
-        </p>
+        <!-- Done. The credentials appear once and are never shown again. -->
+        <div ng-if="c.data.result && c.data.result.ok">
+          <div class="holg-reg__tick" aria-hidden="true">&#10003;</div>
+          <h2 class="holg-reg__doneTitle">{{c.data.result.heading}}</h2>
+          <p class="holg-reg__doneText">{{c.data.result.message}}</p>
 
-        <div ng-if="!c.data.signedIn">
-          <label class="holg-reg__label" for="holg-reg-first">First name</label>
-          <input class="holg-reg__input" id="holg-reg-first" type="text" maxlength="60"
-                 ng-model="c.form.first_name" autocomplete="given-name" required />
+          <dl class="holg-reg__creds" ng-if="c.data.result.user_name">
+            <dt>User name</dt>
+            <dd><code>{{c.data.result.user_name}}</code></dd>
+            <dt ng-if="c.data.result.password">Password</dt>
+            <dd ng-if="c.data.result.password"><code>{{c.data.result.password}}</code></dd>
+          </dl>
 
-          <label class="holg-reg__label" for="holg-reg-last">Last name</label>
-          <input class="holg-reg__input" id="holg-reg-last" type="text" maxlength="60"
-                 ng-model="c.form.last_name" autocomplete="family-name" required />
-
-          <label class="holg-reg__label" for="holg-reg-email">Email</label>
-          <input class="holg-reg__input" id="holg-reg-email" type="email" maxlength="200"
-                 ng-model="c.form.email" autocomplete="email" required />
-        </div>
-
-        <!-- Only when the event defines a code. Most do not: the link is the
-             invitation, and the event's own window and capacity are the gate. -->
-        <div ng-if="c.data.event.needs_code">
-          <label class="holg-reg__label" for="holg-reg-code">Registration code</label>
-          <input class="holg-reg__input" id="holg-reg-code" type="text" maxlength="40"
-                 ng-model="c.form.code" autocomplete="off"
-                 aria-describedby="holg-reg-code-hint" required />
-          <p class="holg-reg__hint" id="holg-reg-code-hint">
-            Your facilitator will give you this.
+          <p class="holg-reg__warn" ng-if="c.data.result.password" role="status">
+            Write this down now &mdash; it is shown once and cannot be shown again.
           </p>
+
+          <a class="holg-reg__go" ng-if="c.data.result.lab_url" ng-href="{{c.data.result.lab_url}}">
+            Open the lab
+          </a>
         </div>
 
-        <button class="holg-reg__submit" type="submit" ng-disabled="!c.canSubmit()">
-          <span ng-if="!c.busy">{{c.data.signedIn ? 'Join this workshop' : 'Register'}}</span>
-          <span ng-if="c.busy">Working&hellip;</span>
-        </button>
+        <!-- Refused, with the reason. -->
+        <div ng-if="c.data.result && !c.data.result.ok" class="holg-reg__alert" role="alert">
+          {{c.data.result.message}}
+        </div>
+
+        <form ng-if="!c.data.result || !c.data.result.ok" ng-submit="c.submit()" novalidate>
+          <p ng-if="!c.data.event.accepting" class="holg-reg__closed" role="status">
+            {{c.data.event.closed_message}}
+          </p>
+
+          <div ng-if="c.data.event.accepting">
+            <p ng-if="c.data.signedIn" class="holg-reg__signedIn" role="status">
+              You are signed in as <strong>{{c.data.signedInName}}</strong>. Click the button below
+              to register as a participant to the workshop. Your password and your existing access
+              are not changed.
+            </p>
+
+            <p ng-if="!c.data.signedIn" class="holg-reg__welcome">
+              Welcome. Tell us who you are and we will set up your lab account.
+            </p>
+
+            <div ng-if="!c.data.signedIn">
+              <div class="holg-reg__field">
+                <label class="holg-reg__label" for="holg-reg-first">First name</label>
+                <input class="holg-reg__input" id="holg-reg-first" type="text" maxlength="60"
+                       ng-model="c.form.first_name" autocomplete="given-name" required />
+              </div>
+
+              <div class="holg-reg__field">
+                <label class="holg-reg__label" for="holg-reg-last">Last name</label>
+                <input class="holg-reg__input" id="holg-reg-last" type="text" maxlength="60"
+                       ng-model="c.form.last_name" autocomplete="family-name" required />
+              </div>
+
+              <div class="holg-reg__field">
+                <label class="holg-reg__label" for="holg-reg-email">Email</label>
+                <input class="holg-reg__input" id="holg-reg-email" type="email" maxlength="200"
+                       ng-model="c.form.email" autocomplete="email"
+                       placeholder="you@company.com" required />
+              </div>
+            </div>
+
+            <!-- Only when the event defines a code. Most do not: the link is the
+                 invitation, and the event's window and capacity are the gate. -->
+            <div class="holg-reg__field" ng-if="c.data.event.needs_code">
+              <label class="holg-reg__label" for="holg-reg-code">Registration code</label>
+              <input class="holg-reg__input" id="holg-reg-code" type="text" maxlength="40"
+                     ng-model="c.form.code" autocomplete="off"
+                     aria-describedby="holg-reg-code-hint" required />
+              <p class="holg-reg__hint" id="holg-reg-code-hint">
+                Your facilitator will give you this.
+              </p>
+            </div>
+
+            <button class="holg-reg__submit" type="submit" ng-disabled="!c.canSubmit()">
+              <span ng-if="!c.busy">{{c.data.signedIn ? 'Register me for this workshop' : 'Create my lab account'}}</span>
+              <span ng-if="c.busy">Setting things up&hellip;</span>
+            </button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   </div>
 </div>

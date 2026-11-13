@@ -1,91 +1,381 @@
-/* Registration form.
+/* Registration page.
  *
- * Standalone styling rather than the lab's stylesheets: this page is reached by
- * people who have never seen the instance, often on a phone, and it loads
- * before any React bundle. Colours resolve from Horizon tokens with literal
- * fallbacks, as everywhere else in this app. */
+ * The first thing a workshop guest ever sees of this instance, often on a phone
+ * they are holding while someone talks at the front of a room. It gets its own
+ * styling rather than the lab's stylesheets: those load with a React bundle and
+ * this page must look finished the moment the HTML arrives.
+ *
+ * Written as flat selectors on purpose. The Service Portal's Sass compiler does
+ * not support parent-selector concatenation - `&__hero` inside `.holg-reg`
+ * compiles to nothing at all, silently, and the page ships with 800 bytes of
+ * CSS and no layout. Every selector here is spelled out.
+ *
+ * Brand colours are literal hex, following brand.css and for the reason it
+ * documents: a corporate palette must stay constant across instance themes,
+ * which is what a theme token is designed not to do. Surfaces, body text and
+ * borders still resolve from `--now-*` Horizon tokens, so the card follows a
+ * light or dark theme around fixed navy chrome.
+ *
+ * Aqua is never text. #00cfec fails contrast on both navy and white, so it
+ * appears only as rules and fills, exactly as the reference palette requires.
+ */
 .holg-reg {
+    --holg-navy: #004668;
+    --holg-navy-deep: #00334d;
+    --holg-aqua: #00cfec;
+    --holg-aqua-deep: #00788f;
+    --holg-on-navy-muted: #c3dde8;
+    --holg-surface: rgb(var(--now-container-card--background-color, 255, 255, 255));
+    --holg-border: rgb(var(--now-container-card--border-color, 207, 213, 215));
+    --holg-text: rgb(var(--now-color_text--primary, 16, 23, 26));
+    --holg-text-soft: rgb(var(--now-color_text--secondary, 35, 46, 51));
+
     box-sizing: border-box;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 16px;
+    padding: 24px 16px 48px;
     font-size: 16px;
-    line-height: 1.5;
-    color: rgb(var(--now-color_text--primary, 16, 23, 26));
+    line-height: 1.55;
+    color: var(--holg-text);
+}
 
-    * { box-sizing: border-box; }
+.holg-reg *,
+.holg-reg *::before,
+.holg-reg *::after {
+    box-sizing: border-box;
+}
 
-    &__title { font-size: 24px; font-weight: 700; margin: 0 0 4px; }
-    &__when { margin: 0 0 16px; color: rgb(var(--now-color_text--secondary, 35, 46, 51)); }
+/* ---------- the card ---------- */
 
-    &__label { display: block; font-size: 14px; font-weight: 700; margin-top: 12px; }
+.holg-reg__card {
+    max-width: 520px;
+    margin: 0 auto;
+    overflow: hidden;
+    background: var(--holg-surface);
+    border: 1px solid var(--holg-border);
+    border-radius: 12px;
+    /* Soft rather than dramatic: this sits on an unknown portal theme. */
+    box-shadow: 0 1px 2px rgba(0, 51, 77, 0.08), 0 8px 24px rgba(0, 51, 77, 0.1);
+}
 
-    &__input {
-        width: 100%;
-        min-height: 40px;
-        padding: 8px;
-        font: inherit;
-        color: inherit;
-        border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
-        border-radius: 4px;
-        background-color: rgb(var(--now-container-card--background-color, 255, 255, 255));
+/* ---------- hero ---------- */
+
+.holg-reg__hero {
+    position: relative;
+    padding: 28px 28px 24px;
+    color: #fff;
+    background: linear-gradient(145deg, #004668 0%, #00334d 100%);
+}
+
+/* The one place aqua belongs: a fill, carrying the brand without being asked
+   to be legible. */
+.holg-reg__hero::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--holg-aqua);
+}
+
+.holg-reg__eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    /* 6.2:1 on the navy, so it reads as a label and not as decoration. */
+    color: var(--holg-on-navy-muted);
+}
+
+.holg-reg__title {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #fff;
+}
+
+.holg-reg__when {
+    margin: 8px 0 0;
+    font-size: 15px;
+    color: var(--holg-on-navy-muted);
+}
+
+/* ---------- body ---------- */
+
+.holg-reg__body {
+    padding: 24px 28px 28px;
+}
+
+.holg-reg__welcome {
+    margin: 0 0 20px;
+    font-size: 17px;
+    color: var(--holg-text-soft);
+}
+
+.holg-reg__field {
+    margin-bottom: 14px;
+}
+
+.holg-reg__label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--holg-navy);
+}
+
+.holg-reg__input {
+    display: block;
+    width: 100%;
+    /* 44px of target, and 16px of text so iOS does not zoom on focus. */
+    min-height: 46px;
+    padding: 11px 13px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--holg-text);
+    background: var(--holg-surface);
+    border: 1px solid var(--holg-border);
+    border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.holg-reg__input::placeholder {
+    color: var(--holg-text-soft);
+    opacity: 0.7;
+}
+
+.holg-reg__input:focus {
+    outline: none;
+    border-color: var(--holg-aqua-deep);
+    /* A visible ring, not only a hue change: a colour-only focus state is
+       invisible to anyone who cannot see the colour. */
+    box-shadow: 0 0 0 3px rgba(0, 120, 143, 0.25);
+}
+
+.holg-reg__hint {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--holg-text-soft);
+}
+
+/* ---------- the button ---------- */
+
+.holg-reg__submit {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 22px;
+    padding: 12px 20px;
+    font: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    background: var(--holg-navy);
+    border: 1px solid var(--holg-navy);
+    border-radius: 8px;
+    transition: background-color 0.15s ease, transform 0.08s ease;
+}
+
+.holg-reg__submit:hover:not([disabled]) {
+    background: var(--holg-navy-deep);
+}
+
+.holg-reg__submit:active:not([disabled]) {
+    transform: translateY(1px);
+}
+
+.holg-reg__submit:focus-visible {
+    outline: 3px solid var(--holg-aqua-deep);
+    outline-offset: 2px;
+}
+
+.holg-reg__submit[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ---------- states ---------- */
+
+.holg-reg__signedIn {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    font-size: 15px;
+    border-left: 3px solid var(--holg-aqua);
+    border-radius: 0 8px 8px 0;
+    background: rgba(0, 207, 236, 0.08);
+}
+
+.holg-reg__signedIn strong {
+    color: var(--holg-navy);
+}
+
+.holg-reg__alert {
+    margin: 0 0 16px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: #8c0021;
+    background: rgba(184, 25, 47, 0.07);
+    border-left: 3px solid #b8192f;
+    border-radius: 0 8px 8px 0;
+}
+
+.holg-reg__closed {
+    margin: 0;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: var(--holg-text-soft);
+    background: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    border-radius: 8px;
+}
+
+/* ---------- done ---------- */
+
+.holg-reg__tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    background: #00a37a;
+    border-radius: 50%;
+}
+
+.holg-reg__doneTitle {
+    margin: 0 0 8px;
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--holg-navy);
+}
+
+.holg-reg__doneText {
+    margin: 0;
+    color: var(--holg-text-soft);
+}
+
+.holg-reg__creds {
+    margin: 20px 0 0;
+    padding: 18px;
+    background: rgba(0, 70, 104, 0.04);
+    border: 1px solid var(--holg-border);
+    border-radius: 10px;
+}
+
+.holg-reg__creds dt {
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--holg-text-soft);
+}
+
+.holg-reg__creds dd {
+    margin: 0 0 14px;
+}
+
+.holg-reg__creds dd:last-child {
+    margin-bottom: 0;
+}
+
+.holg-reg__creds dd code {
+    display: block;
+    padding: 8px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 17px;
+    color: var(--holg-navy);
+    background: var(--holg-surface);
+    border: 1px solid var(--holg-border);
+    border-radius: 6px;
+    /* Long enough to need wrapping on a phone. */
+    word-break: break-all;
+}
+
+/* The one line on this page nobody may skim past. */
+.holg-reg__warn {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b4000;
+    background: rgba(255, 196, 0, 0.14);
+    border-left: 3px solid #8a5300;
+    border-radius: 0 8px 8px 0;
+}
+
+.holg-reg__go {
+    display: block;
+    margin-top: 22px;
+    padding: 13px 20px;
+    font-size: 17px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background: var(--holg-navy);
+    border-radius: 8px;
+}
+
+.holg-reg__go:hover,
+.holg-reg__go:focus {
+    color: #fff;
+    background: var(--holg-navy-deep);
+    text-decoration: none;
+}
+
+/* ---------- dark theme ----------
+   Only the surfaces move. The navy hero is brand and stays put, which is also
+   why its contrast holds in either theme. */
+
+@media (prefers-color-scheme: dark) {
+    .holg-reg__creds {
+        background: rgba(255, 255, 255, 0.04);
     }
 
-    &__hint { font-size: 13px; margin: 4px 0 0; color: rgb(var(--now-color_text--secondary, 35, 46, 51)); }
-
-    &__submit {
-        width: 100%;
-        min-height: 44px;
-        margin-top: 16px;
-        font: inherit;
-        font-weight: 700;
-        cursor: pointer;
-        color: #fff;
-        background-color: #032d42;
-        border: 1px solid #032d42;
-        border-radius: 4px;
-
-        &[disabled] { opacity: 0.5; cursor: not-allowed; }
+    .holg-reg__signedIn {
+        background: rgba(0, 207, 236, 0.12);
     }
 
-    &__alert, &__closed {
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid #b8002e;
-        color: #b8002e;
+    .holg-reg__label,
+    .holg-reg__doneTitle,
+    .holg-reg__creds dd code,
+    .holg-reg__signedIn strong {
+        color: #7fd3ef;
     }
 
-    &__closed { border-color: rgb(var(--now-container-card--border-color, 207, 213, 215)); color: inherit; }
-
-    &__signedIn {
-        padding: 8px 12px;
-        border-radius: 4px;
-        background-color: rgb(var(--now-progress-bar--background-color, 226, 229, 231));
+    .holg-reg__alert {
+        color: #ff9aa8;
     }
 
-    &__doneTitle { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+    .holg-reg__warn {
+        color: #ffd27f;
+        background: rgba(255, 196, 0, 0.1);
+    }
+}
 
-    &__creds {
-        margin: 16px 0;
-        padding: 12px;
-        border: 1px solid rgb(var(--now-container-card--border-color, 207, 213, 215));
-        border-radius: 4px;
+/* ---------- phone ---------- */
 
-        dt { font-size: 13px; font-weight: 700; }
-        dd { margin: 0 0 8px; code { font-size: 16px; } }
+@media (max-width: 480px) {
+    .holg-reg {
+        padding: 12px 12px 32px;
     }
 
-    /* The one thing on the page nobody may skim past. */
-    &__warn { font-weight: 700; }
+    .holg-reg__hero {
+        padding: 22px 20px 20px;
+    }
 
-    &__go {
-        display: inline-block;
-        min-height: 44px;
-        padding: 10px 16px;
-        font-weight: 700;
-        text-decoration: none;
-        color: #fff;
-        background-color: #032d42;
-        border-radius: 4px;
+    .holg-reg__title {
+        font-size: 22px;
+    }
+
+    .holg-reg__body {
+        padding: 20px 20px 24px;
     }
 }
